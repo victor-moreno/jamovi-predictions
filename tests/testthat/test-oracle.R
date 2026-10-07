@@ -1,4 +1,5 @@
 test_that("spline knots and basis match Hmisc", {
+    skip_if_not_installed("Hmisc")
     x <- MASS::Pima.tr$glu
     k <- .rcs_knots(x, 4, "glu")
     expect_equal(k, unname(Hmisc::rcspline.eval(x, nk = 4, knots.only = TRUE)))
@@ -8,6 +9,7 @@ test_that("spline knots and basis match Hmisc", {
 })
 
 test_that("logistic fit matches rms::lrm", {
+    skip_if_not_installed("rms")
     prep <- pima_prep()
     beta <- cp_binary_fit(cp_design(prep$spec, prep$data), prep$y)
     k <- prep$spec$vars$glu$knots
@@ -16,6 +18,7 @@ test_that("logistic fit matches rms::lrm", {
 })
 
 test_that("apparent metrics match rms::val.prob and pROC", {
+    skip_if_not_installed("rms")
     prep <- pima_prep()
     X <- cp_design(prep$spec, prep$data); y <- prep$y
     lp <- cp_lp(cp_binary_fit(X, y), X); p <- plogis(lp)
@@ -26,11 +29,13 @@ test_that("apparent metrics match rms::val.prob and pROC", {
     expect_equal(m[["r2n"]], unname(vp["R2"]), tolerance = 1e-7)
     expect_equal(m[["slope"]], 1, tolerance = 1e-7)
     expect_equal(m[["citl"]], 0, tolerance = 1e-7)
+    skip_if_not_installed("pROC")
     roc <- pROC::roc(y, p, quiet = TRUE, direction = "<")
     expect_equal(.auc_delong(y, p)$se, sqrt(pROC::var(roc)), tolerance = 1e-7)
 })
 
 test_that("validation metrics match val.prob for a miscalibrated model", {
+    skip_if_not_installed("rms")
     prep <- pima_prep()
     beta <- cp_binary_fit(cp_design(prep$spec, prep$data), prep$y)
     vd <- cp_split_data(pima_val(), prep$spec, "type")$data
@@ -47,6 +52,7 @@ test_that("validation metrics match val.prob for a miscalibrated model", {
 })
 
 test_that("bootstrap optimism matches rms::validate with the same seed", {
+    skip_if_not_installed("rms")
     prep <- pima_prep()
     X <- cp_design(prep$spec, prep$data)
     k <- prep$spec$vars$glu$knots

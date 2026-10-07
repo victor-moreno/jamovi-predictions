@@ -33,17 +33,16 @@ artifact() {
   printf '%s' "${found[0]}"
 }
 
-for SERIES in solid current; do
+# clinpred needs jamovi current (>= 28.4, File option): no solid build
+for SERIES in current; do
   rm -f "$ROOT"/dist/"${MODULE}_${VERSION}_${SERIES}"_R*.jmo
   bash "$ROOT/tools/build-jmo.sh" "$SERIES"
 done
 
-SOLID_ARM="$(artifact solid arm64)"; SOLID_X64="$(artifact solid x64)"
 CURR_ARM="$(artifact current arm64)"; CURR_X64="$(artifact current x64)"
-ASSETS=("$SOLID_ARM" "$SOLID_X64" "$CURR_ARM" "$CURR_X64")
+ASSETS=("$CURR_ARM" "$CURR_X64")
 
 rver() { echo "$1" | sed -n 's/.*_R\([0-9.]*\)_[a-z0-9]*\.jmo$/\1/p'; }
-SOLID_R="$(rver "$SOLID_ARM")"
 CURR_R="$(rver "$CURR_ARM")"
 
 echo
@@ -51,12 +50,11 @@ echo ">> releasing $TAG on $REPO"
 printf '   %s\n' "${ASSETS[@]##*/}"
 
 NOTES="$(cat <<NOTESEOF
-$MODULE $VERSION for jamovi. Four files, one per (jamovi series x CPU):
+$MODULE $VERSION for jamovi current (28.4 or later). Two files, one per CPU:
 
 | your jamovi | Apple silicon | Intel / AMD |
 | --- | --- | --- |
 | **current** (bundles R $CURR_R) | \`$(basename "$CURR_ARM")\` | \`$(basename "$CURR_X64")\` |
-| **solid** (bundles R $SOLID_R) | \`$(basename "$SOLID_ARM")\` | \`$(basename "$SOLID_X64")\` |
 
 The same file works on macOS, Windows and Linux: jamovi checks the R version
 and the CPU, not the operating system. jamovi reports its R version under

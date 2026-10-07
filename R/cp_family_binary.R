@@ -225,6 +225,11 @@ cp_family <- function(family) {
                 m[[measure]]
             },
             loss = function(y, lp) -.binary_ll(y, stats::plogis(lp)),
+            # the measures permutation importance needs, without the loess smoother
+            quick = function(y, lp) {
+                p <- stats::plogis(lp)
+                c(auc = .auc_delong(y, p)$auc, brier = mean((y - p)^2))
+            },
             strata = function(y) y),
         .fail("Unknown model family."))
 }

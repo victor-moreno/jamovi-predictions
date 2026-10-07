@@ -217,6 +217,9 @@ cpLogisticClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class(
             }
 
             private$.fillSamples(y, prep$nMissing, vsets)
+            if (length(spec$outcome$levels) > 2)
+                r$samples$setNote("lev", sprintf(.("The outcome has %d levels: '%s' is modelled against all the others combined."),
+                                                 length(spec$outcome$levels), spec$outcome$event))
             private$.fillCoefs(beta, spec, conf)
             if (o$equation) r$equationText$setContent(private$.equation(beta, spec))
 

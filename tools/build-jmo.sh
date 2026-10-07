@@ -28,9 +28,11 @@ R_VERSION="${STAMP%-*}"
 [ -n "$R_VERSION" ] || { echo "error: no JAMOVI_R_VERSION in $APP" >&2; exit 1; }
 
 SOURCE="$MODULE_DIR/${MODULE}_${VERSION}.jmo"
-NODE="$(Rscript --vanilla -e 'cat(system.file("node-darwin", "bin", "node", package = "node"))')"
-JMC="$(Rscript --vanilla -e 'cat(system.file("node_modules", "jamovi-compiler", "index.js", package = "jmvtools"))')"
-[ -x "$NODE" ] && [ -f "$JMC" ] || { echo "error: jmvtools/node not available to Rscript" >&2; exit 1; }
+# clinpred uses the File option (jamovi >= 28.4), which jmvtools' bundled
+# compiler (0.3.5) cannot compile: use jamovi-src's compiler with the node on PATH
+JMC="${JMC_COMPILER:-$ROOT/../jamovi-src/jamovi-compiler}/index.js"
+NODE="$(command -v node || true)"
+[ -x "$NODE" ] && [ -f "$JMC" ] || { echo "error: node or $JMC not found (set JMC_COMPILER)" >&2; exit 1; }
 
 echo ">> building $MODULE $VERSION against $SERIES ($(basename "$APP"), R $R_VERSION)"
 rm -f "$SOURCE"

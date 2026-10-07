@@ -60,7 +60,7 @@ cp_shapley_r2 <- function(X, y, spec, fam, measure = "r2mf", maxExact = 10, nPer
 # Measured on the data given (development or validation).
 cp_perm_importance <- function(beta, spec, df, y, fam, nPerm = 20, seed = 1,
                                keys = c("auc", "brier"), higherBetter = c(TRUE, FALSE)) {
-    base <- fam$metrics(y, fam$lp(beta, cp_design(spec, df)))[keys]
+    base <- fam$quick(y, fam$lp(beta, cp_design(spec, df)))[keys]
     # positive = loss of performance, whichever direction the measure runs
     sgn <- ifelse(higherBetter, 1, -1)
     vars <- names(spec$vars)
@@ -68,7 +68,7 @@ cp_perm_importance <- function(beta, spec, df, y, fam, nPerm = 20, seed = 1,
         d <- vapply(seq_len(nPerm), function(r) {
             dp <- df
             dp[[v]] <- dp[[v]][sample.int(nrow(dp))]
-            sgn * (base - fam$metrics(y, fam$lp(beta, cp_design(spec, dp)))[keys])
+            sgn * (base - fam$quick(y, fam$lp(beta, cp_design(spec, dp)))[keys])
         }, numeric(length(keys)))
         d <- matrix(d, nrow = length(keys))
         c(mean = rowMeans(d), sd = apply(d, 1, stats::sd))

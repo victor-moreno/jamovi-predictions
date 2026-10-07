@@ -28,7 +28,4 @@ Imports:
     openxlsx,
     foreign
 Suggests:
-    testthat (>= 3.1.5),
-    rms,
-    pROC,
-    MASS
+    testthat (>= 3.1.5)

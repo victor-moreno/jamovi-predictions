@@ -28,6 +28,17 @@ analyses:
       subset of the data or in an external data file, variable importance
       (Shapley R² decomposition, permutation importance, SHAP) and the stability
       of individual predictions.
+datasets:
+  - name: Pima diabetes (development)
+    path: pima_development.omv
+    description: >-
+      Pima women, Arizona (MASS::Pima.tr): 200 women, diabetes (type) and seven
+      clinical predictors. Develop a model here.
+  - name: Pima diabetes (development + validation)
+    path: pima_split.omv
+    description: >-
+      Pima.tr and Pima.te stacked (532 women); 'sample' marks the 332 validation
+      rows, for the Validation split box.
 usesNative: false
 minApp: 28.4.0
 
