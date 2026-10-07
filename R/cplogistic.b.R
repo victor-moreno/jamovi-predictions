@@ -34,6 +34,8 @@ cpLogisticClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class(
 
         .text = function(key) switch(key,
             outcomeRow = .("Events"),
+            outcomeLevel = "",
+            memberNote = .("Membership c-statistic: how well the predictors and the outcome distinguish validation from development rows (Debray et al. 2015). Near 0.5: similar case-mix (reproducibility); high: different populations (transportability). A larger SD of the linear predictor means a more heterogeneous case-mix, which by itself raises the AUC."),
             recalLabel = .("Logistic recalibration (intercept and slope)"),
             samplesEx = paste0(.("Event"), ": ", self$options$dep, " = ", private$.eventLabel(), ". ",
                                .("Rows with a missing outcome or predictor are excluded (complete-case analysis).")),
@@ -49,6 +51,8 @@ cpLogisticClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class(
             updNote = .("Intercept and slope: of the original linear predictor (log-odds) in the updated model. Each test compares a method with model revision (likelihood ratio); the closed testing procedure (Vergouwe et al. 2017) keeps the first method, from the original model up, not significantly worse than revision at α = %s (✓). Performance of an updated model is measured in the data used to update it, so it is optimistic, most of all for revision."),
             stabEx = .("A shrinkage factor well below 1 (e.g. < 0.9) signals overfitting: the coefficients would need to be shrunk towards 0. MAPE: average absolute difference between an individual's risk from the developed model and from models developed in bootstrap samples (Riley & Collins 2023)."),
             shapEx = .("SHAP: the contribution of each predictor to an individual's log-odds, relative to the average individual of the development data (exact for this additive model)."),
+            shapDown = .("Lowers risk"),
+            shapUp = .("Raises risk"),
             permAxis = .("Loss in AUC when permuted (mean ± SD)"),
             shapAxis = .("SHAP value (contribution to the log-odds)"),
             instabX = .("Risk from the developed model"),

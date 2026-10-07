@@ -160,7 +160,7 @@
         t$setVisible(TRUE)
         for (k in setdiff(names(sets), "dev")) t$getColumn(k)$setVisible(TRUE)
         t$addRow(rowKey = "n", values = list(var = .("N")))
-        t$addRow(rowKey = "events", values = list(var = private$.text("outcomeRow")))
+        t$addRow(rowKey = "events", values = list(var = private$.text("outcomeRow"), level = private$.text("outcomeLevel")))
         for (v in c(self$options$covs, self$options$splineVars))
             t$addRow(rowKey = v, values = list(var = v, level = .("mean (SD)")))
         for (v in self$options$factors)
@@ -533,7 +533,7 @@
             v <- lapply(cols, function(cl) cl[[rk]] %||% "")
             t$setRow(rowKey = rk, values = v)
         }
-        t$setNote("member", .("Membership c-statistic: how well the predictors and the outcome distinguish validation from development rows (Debray et al. 2015). Near 0.5: similar case-mix (reproducibility); high: different populations (transportability). A larger SD of the linear predictor means a more heterogeneous case-mix, which by itself raises the AUC."))
+        t$setNote("member", private$.text("memberNote"))
     },
 
     .fillStab = function(iv, y, lp, X) {
@@ -552,7 +552,8 @@
     .fillShapley = function(X, y, spec) {
         t <- self$results$shapleyTable
         sh <- t$state
-        measure <- self$options$shapleyMeasure %||% "r2"
+        # the linear analysis has a single R² (no shapleyMeasure option)
+        measure <- if (self$options$has("shapleyMeasure")) self$options$shapleyMeasure else "r2"
         if (is.null(sh)) {
             sh <- cp_shapley_r2(X, y, spec, private$.fam, measure, seed = self$options$seed)
             t$setState(sh)
@@ -620,6 +621,7 @@
             base <- attr(ph, "base")
             img$setState(list(label = unname(labs), phi = unname(ph[1, ]), base = base,
                               lp = lpi, risk = fam$risk(lpi), axis = private$.shapAxis(base, lpi),
+                              signs = c(private$.text("shapDown"), private$.text("shapUp")),
                               title = sprintf(.("Row %d"), row)))
         }
     },

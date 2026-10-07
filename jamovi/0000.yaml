@@ -28,6 +28,19 @@ analyses:
       subset of the data or in an external data file, variable importance
       (Shapley R² decomposition, permutation importance, SHAP) and the stability
       of individual predictions.
+  - title: Continuous Outcome (Linear)
+    name: cpLinear
+    ns: clinpred
+    category: analyses
+    menuGroup: Prediction
+    menuTitle: Continuous Outcome (Linear)
+    menuSubtitle: Develop and validate
+    description: >-
+      Develop and validate a linear prediction model for a continuous outcome:
+      R², RMSE, MAE and calibration, internal validation by bootstrap or
+      cross-validation, validation in a subset of the data or in an external
+      data file, model updating, variable importance (Shapley R² decomposition,
+      permutation importance, SHAP) and the stability of individual predictions.
 datasets:
   - name: Pima diabetes (development)
     path: pima_development.omv

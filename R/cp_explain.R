@@ -168,7 +168,8 @@ cp_crude <- function(spec, df, y, fam, conf = 0.95) {
 # For the linear model, F tests (column chisq holds F, df2 its denominator df).
 cp_lr_tests <- function(spec, X, y, fam) {
     full <- .fit_cols(X, y, fam, rep(TRUE, ncol(X)))
-    n <- NROW(X); dfResid <- n - full$df - 1
+    # full$df counts the intercept too
+    n <- NROW(X); dfResid <- n - full$df
     test <- function(drop) {
         red <- .fit_cols(X, y, fam, !drop)
         t <- .nested_test(fam, red$loss, full$loss, full$df - red$df, n, dfResid)

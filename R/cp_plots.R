@@ -153,14 +153,16 @@ cp_plot_shap_patient <- function(w, ggtheme) {
     o <- order(abs(w$phi), decreasing = TRUE)
     lab <- w$label[o]; phi <- w$phi[o]
     end <- w$base + cumsum(phi); start <- c(w$base, utils::head(end, -1))
+    # legend labels: c(lowers, raises), for risks unless the state says otherwise
+    sg <- w$signs %||% c("Lowers risk", "Raises risk")
     df <- data.frame(label = factor(lab, rev(lab)), start = start, end = end,
-                     sign = ifelse(phi > 0, "Raises risk", "Lowers risk"))
+                     sign = ifelse(phi > 0, sg[2], sg[1]))
     df$y <- as.integer(df$label)
     ggplot2::ggplot(df) +
         ggplot2::geom_vline(xintercept = w$base, linetype = "dashed", colour = "grey60") +
         ggplot2::geom_rect(ggplot2::aes(xmin = pmin(.data$start, .data$end), xmax = pmax(.data$start, .data$end),
                                         ymin = .data$y - 0.35, ymax = .data$y + 0.35, fill = .data$sign)) +
-        ggplot2::scale_fill_manual(values = c(`Raises risk` = "#D55E00", `Lowers risk` = "#0072B2")) +
+        ggplot2::scale_fill_manual(values = stats::setNames(c("#0072B2", "#D55E00"), sg)) +
         ggplot2::scale_y_continuous(breaks = df$y, labels = as.character(df$label)) +
         ggplot2::labs(x = w$axis %||% sprintf("Log-odds  (mean %.2f → this person %.2f, risk %.1f%%)",
                                               w$base, w$lp, 100 * w$risk), y = NULL,
