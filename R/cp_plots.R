@@ -114,15 +114,15 @@ cp_plot_dca <- function(sets, ggtheme) {
 cp_plot_shapley <- function(df, measureLabel, ggtheme)
     .bar_importance(df, "shapley", xlab = paste0("Share of ", measureLabel), ggtheme = ggtheme)
 
-cp_plot_perm <- function(df, ggtheme) {
-    df$lo <- df$d_auc - df$sd_auc; df$hi <- df$d_auc + df$sd_auc
-    .bar_importance(df, "d_auc", "lo", "hi", xlab = "Loss in AUC when permuted (mean ± SD)",
-                    ggtheme = ggtheme)
+cp_plot_perm <- function(df, ggtheme, key = "auc", xlab = "Loss in AUC when permuted (mean ± SD)") {
+    d <- paste0("d_", key); s <- paste0("sd_", key)
+    df$lo <- df[[d]] - df[[s]]; df$hi <- df[[d]] + df[[s]]
+    .bar_importance(df, d, "lo", "hi", xlab = xlab, ggtheme = ggtheme)
 }
 
 # Beeswarm: one row per predictor, points spread vertically by local density,
 # coloured by the predictor's value (low to high)
-cp_plot_shap_summary <- function(d, ggtheme) {
+cp_plot_shap_summary <- function(d, ggtheme, xlab = "SHAP value (contribution to the log-odds)") {
     ord <- names(sort(tapply(abs(d$phi), d$var, mean)))
     d$var <- factor(d$var, ord)
     d$offset <- 0
@@ -144,7 +144,7 @@ cp_plot_shap_summary <- function(d, ggtheme) {
                                        breaks = c(0, 1), labels = c("Low", "High"),
                                        name = "Predictor value") +
         ggplot2::scale_y_continuous(breaks = seq_along(ord), labels = ord) +
-        ggplot2::labs(x = "SHAP value (contribution to the log-odds)", y = NULL) +
+        ggplot2::labs(x = xlab, y = NULL) +
         .jtheme(ggtheme) + ggplot2::theme(legend.position = "right")
 }
 
@@ -162,15 +162,19 @@ cp_plot_shap_patient <- function(w, ggtheme) {
                                         ymin = .data$y - 0.35, ymax = .data$y + 0.35, fill = .data$sign)) +
         ggplot2::scale_fill_manual(values = c(`Raises risk` = "#D55E00", `Lowers risk` = "#0072B2")) +
         ggplot2::scale_y_continuous(breaks = df$y, labels = as.character(df$label)) +
-        ggplot2::labs(x = sprintf("Log-odds  (mean %.2f → this person %.2f, risk %.1f%%)",
-                                  w$base, w$lp, 100 * w$risk), y = NULL,
+        ggplot2::labs(x = w$axis %||% sprintf("Log-odds  (mean %.2f → this person %.2f, risk %.1f%%)",
+                                              w$base, w$lp, 100 * w$risk), y = NULL,
                       subtitle = w$title) +
         .base_theme(ggtheme)
 }
 
-cp_plot_instability <- function(s, ggtheme) {
-    pts <- data.frame(p0 = rep(s$p0, ncol(s$pts)) / 1000, pb = as.vector(s$pts) / 1000)
-    band <- data.frame(p0 = s$p0 / 1000, lo = s$lo / 1000, hi = s$hi / 1000)
+# predictions are stored on a 1/1000 scale of s$lim (see .stability)
+cp_plot_instability <- function(s, ggtheme, xlab = "Risk from the developed model",
+                                ylab = "Risk from bootstrap models") {
+    lim <- s$lim %||% c(0, 1)
+    dec <- function(v) lim[1] + v / 1000 * (lim[2] - lim[1])
+    pts <- data.frame(p0 = dec(rep(s$p0, ncol(s$pts))), pb = dec(as.vector(s$pts)))
+    band <- data.frame(p0 = dec(s$p0), lo = dec(s$lo), hi = dec(s$hi))
     band <- band[order(band$p0), ]
     sm <- function(v) stats::lowess(band$p0, v, f = 0.3)$y
     band$lo_s <- sm(band$lo); band$hi_s <- sm(band$hi)
@@ -182,21 +186,44 @@ cp_plot_instability <- function(s, ggtheme) {
                            colour = "#D55E00") +
         ggplot2::geom_line(data = band, ggplot2::aes(.data$p0, .data$hi_s), linetype = "dashed",
                            colour = "#D55E00") +
-        ggplot2::coord_equal(xlim = c(0, 1), ylim = c(0, 1)) +
-        ggplot2::labs(x = "Risk from the developed model", y = "Risk from bootstrap models",
+        ggplot2::coord_equal(xlim = lim, ylim = lim) +
+        ggplot2::labs(x = xlab, y = ylab,
                       subtitle = sprintf("MAPE %.3f; dashed: 2.5th and 97.5th percentiles", s$mape)) +
         .base_theme(ggtheme)
 }
 
-cp_plot_cal_instability <- function(s, ggtheme) {
+cp_plot_cal_instability <- function(s, ggtheme, xlab = "Predicted risk",
+                                    ylab = "Observed proportion (smoothed)") {
     df <- data.frame(x = rep(s$grid, ncol(s$curves)), y = as.vector(s$curves),
                      b = rep(seq_len(ncol(s$curves)), each = length(s$grid)))
-    lim <- min(1, max(c(s$grid, df$y)) * 1.05)
+    lim <- if (identical(s$lim %||% c(0, 1), c(0, 1))) c(0, min(1, max(c(s$grid, df$y)) * 1.05))
+        else range(s$grid, df$y)
     ggplot2::ggplot(df, ggplot2::aes(.data$x, .data$y, group = .data$b)) +
         ggplot2::geom_abline(intercept = 0, slope = 1, linetype = "dashed", colour = "grey60") +
         ggplot2::geom_line(alpha = 0.25, colour = "#0072B2") +
-        ggplot2::coord_equal(xlim = c(0, lim), ylim = c(0, lim)) +
-        ggplot2::labs(x = "Predicted risk", y = "Observed proportion (smoothed)",
+        ggplot2::coord_equal(xlim = lim, ylim = lim) +
+        ggplot2::labs(x = xlab, y = ylab,
                       subtitle = "Each line: a bootstrap model applied to the development data") +
+        .base_theme(ggtheme)
+}
+
+# Continuous outcome: observed against predicted, loess with its CI, identity line
+cp_plot_cal_cont <- function(sets, ggtheme) {
+    curve <- do.call(rbind, lapply(sets, function(s) data.frame(s$curve, label = s$label)))
+    pts <- do.call(rbind, lapply(sets, function(s) data.frame(s$points, label = s$label)))
+    lev <- vapply(sets, `[[`, "", "label")
+    curve$label <- factor(curve$label, lev); pts$label <- factor(pts$label, lev)
+    lim <- range(pts$pred, pts$obs)
+    ggplot2::ggplot() +
+        ggplot2::geom_point(data = pts, ggplot2::aes(.data$pred, .data$obs), alpha = 0.3, size = 0.9,
+                            colour = "grey40") +
+        ggplot2::geom_abline(intercept = 0, slope = 1, linetype = "dashed", colour = "grey60") +
+        ggplot2::geom_ribbon(data = curve, ggplot2::aes(.data$x, ymin = .data$lo, ymax = .data$hi),
+                             fill = "#0072B2", alpha = 0.18) +
+        ggplot2::geom_line(data = curve, ggplot2::aes(.data$x, .data$y), colour = "#0072B2",
+                           linewidth = 0.9) +
+        ggplot2::facet_wrap(~label) +
+        ggplot2::coord_cartesian(xlim = lim, ylim = lim) +
+        ggplot2::labs(x = "Predicted value", y = "Observed value") +
         .base_theme(ggtheme)
 }

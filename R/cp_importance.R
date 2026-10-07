@@ -61,7 +61,7 @@ cp_shapley_r2 <- function(X, y, spec, fam, measure = "r2mf", maxExact = 10, nPer
 # variable's values are shuffled (Breiman 2001; Fisher, Rudin & Dominici 2019).
 # Measured on the data given (development or validation).
 cp_perm_importance <- function(beta, spec, df, y, fam, nPerm = 20, seed = 1,
-                               keys = c("auc", "brier"), higherBetter = c(TRUE, FALSE)) {
+                               keys = fam$permKeys, higherBetter = fam$permHigher) {
     base <- fam$quick(y, fam$lp(beta, cp_design(spec, df)))[keys]
     # positive = loss of performance, whichever direction the measure runs
     sgn <- ifelse(higherBetter, 1, -1)

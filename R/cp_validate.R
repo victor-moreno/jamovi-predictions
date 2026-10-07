@@ -62,7 +62,8 @@ cp_internal <- function(X, y, fam, method = "boot", B = 200, k = 10, R = 1, seed
                         selection = .selection_freq(selected[ok]))
             if (stability && sum(ok) > 1)
                 out$stability <- .stability(y, fam$risk(lp0), risk[, ok, drop = FALSE],
-                                            maxCurves, maxIndiv)
+                                            maxCurves, maxIndiv, fam$smooth %||% .cal_smooth,
+                                            bounded = fam$name == "binary")
         } else {
             strata <- fam$strata(y)
             cvm <- matrix(NA_real_, R, length(apparent), dimnames = list(NULL, names(apparent)))
@@ -105,18 +106,22 @@ cp_internal <- function(X, y, fam, method = "boot", B = 200, k = 10, R = 1, seed
 # Stability of individual risks across bootstrap models applied to the original
 # data: MAPE (mean absolute prediction error versus the original model's risk),
 # a sample of points for the instability plot, and calibration curves.
-.stability <- function(y, p0, risk, maxCurves, maxIndiv) {
+# Predictions are stored as integers on a 1/1000 scale of [lo, hi]: [0, 1] for
+# risks, the range of the predictions for an unbounded outcome.
+.stability <- function(y, p0, risk, maxCurves, maxIndiv, smooth = .cal_smooth, bounded = TRUE) {
     n <- length(p0); B <- ncol(risk)
     ape <- rowMeans(abs(risk - p0))
     ind <- if (n > maxIndiv) sort(sample.int(n, maxIndiv)) else seq_len(n)
     bs <- if (B > 50) sort(sample.int(B, 50)) else seq_len(B)
     grid <- seq(stats::quantile(p0, 0.01), stats::quantile(p0, 0.99), length.out = 50)
     cb <- if (B > maxCurves) sort(sample.int(B, maxCurves)) else seq_len(B)
-    curves <- vapply(cb, function(b) .cal_smooth(y, risk[, b], grid), numeric(length(grid)))
+    curves <- vapply(cb, function(b) smooth(y, risk[, b], grid), numeric(length(grid)))
     q <- apply(risk, 1, stats::quantile, probs = c(0.025, 0.975))
-    # stored compactly: risks in thousandths as integers (results state is size-limited)
-    list(mape = mean(ape), maxape = max(ape),
-         p0 = round(p0[ind] * 1000), pts = matrix(as.integer(round(risk[ind, bs] * 1000)), length(ind)),
-         lo = round(q[1, ind] * 1000), hi = round(q[2, ind] * 1000),
-         grid = grid, curves = round(curves, 4))
+    # stored compactly as integers (results state is size-limited)
+    lim <- if (bounded) c(0, 1) else range(p0, risk[ind, bs])
+    enc <- function(v) round((v - lim[1]) / (lim[2] - lim[1]) * 1000)
+    list(mape = mean(ape), maxape = max(ape), lim = lim,
+         p0 = enc(p0[ind]), pts = matrix(as.integer(enc(risk[ind, bs])), length(ind)),
+         lo = enc(q[1, ind]), hi = enc(q[2, ind]),
+         grid = grid, curves = if (bounded) round(curves, 4) else signif(curves, 5))
 }

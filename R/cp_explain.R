@@ -108,18 +108,34 @@ cp_effect_defs <- function(spec, v) {
                            set0 = stats::setNames(list(info$quartiles[1]), v))))
 }
 
-# Effects of every predictor in a fitted model, at the reference profile
-cp_effects <- function(spec, beta, V, conf = 0.95, intercept = TRUE, vars = names(spec$vars)) {
-    z <- stats::qnorm(1 - (1 - conf) / 2)
+# Effects of every predictor in a fitted model, at the reference profile.
+# exp: ratio scale (odds or hazard ratios) or differences (linear model);
+# df: residual df for t intervals and tests (Inf: normal)
+cp_effects <- function(spec, beta, V, conf = 0.95, intercept = TRUE, vars = names(spec$vars),
+                       exp = TRUE, df = Inf) {
+    z <- stats::qt(1 - (1 - conf) / 2, df)
+    tr <- if (exp) base::exp else identity
     rows <- list()
     for (v in vars) for (d in cp_effect_defs(spec, v)) {
         cc <- cp_contrast(spec, beta, V, .profile(spec, d$set1), .profile(spec, d$set0), intercept)
         rows[[length(rows) + 1]] <- data.frame(key = d$key, var = v, level = d$level,
-            est = exp(cc[["est"]]), lower = exp(cc[["est"]] - z * cc[["se"]]),
-            upper = exp(cc[["est"]] + z * cc[["se"]]),
-            p = 2 * stats::pnorm(-abs(cc[["est"]] / cc[["se"]])), stringsAsFactors = FALSE)
+            est = tr(cc[["est"]]), lower = tr(cc[["est"]] - z * cc[["se"]]),
+            upper = tr(cc[["est"]] + z * cc[["se"]]),
+            p = 2 * stats::pt(-abs(cc[["est"]] / cc[["se"]]), df), stringsAsFactors = FALSE)
     }
     do.call(rbind, rows)
+}
+
+# Test of a nested model from the two losses: likelihood ratio χ², or for the
+# linear model the F test (losses there are n/2 log(SSE/n), so SSE is recovered)
+.nested_test <- function(fam, lossRed, lossFull, df, n, dfResid) {
+    if (identical(fam$name, "gaussian")) {
+        sse0 <- n * exp(2 * lossRed / n); sse1 <- n * exp(2 * lossFull / n)
+        f <- max(0, (sse0 - sse1) / df) / (sse1 / dfResid)
+        return(c(stat = f, df = df, df2 = dfResid, p = stats::pf(f, df, dfResid, lower.tail = FALSE)))
+    }
+    chi <- max(0, 2 * (lossRed - lossFull))
+    c(stat = chi, df = df, df2 = NA_real_, p = stats::pchisq(chi, df, lower.tail = FALSE))
 }
 
 # A spec with a single predictor (for crude effects)
@@ -137,9 +153,10 @@ cp_crude <- function(spec, df, y, fam, conf = 0.95) {
         Xv <- cp_design(sv, df)
         b <- fam$fit(Xv, y)
         V <- fam$vcov(b)
-        rows[[v]] <- cp_effects(sv, b, V, conf, fam$intercept)
-        chi <- 2 * (fam$nullLoss(y) - fam$loss(y, fam$lp(b, Xv)))
-        pAll[[v]] <- stats::pchisq(chi, ncol(Xv), lower.tail = FALSE)
+        dfr <- (fam$dfResid %||% function(b) Inf)(b)
+        rows[[v]] <- cp_effects(sv, b, V, conf, fam$intercept, exp = fam$exp %||% TRUE, df = dfr)
+        pAll[[v]] <- .nested_test(fam, fam$nullLoss(y), fam$loss(y, fam$lp(b, Xv)), ncol(Xv),
+                                  length(y), dfr)[["p"]]
     }
     out <- do.call(rbind, rows)
     attr(out, "pOverall") <- pAll
@@ -147,13 +164,15 @@ cp_crude <- function(spec, df, y, fam, conf = 0.95) {
 }
 
 # Likelihood ratio tests in the final model: each predictor overall (with its
-# interactions), the non-linear part of each spline, each interaction term
+# interactions), the non-linear part of each spline, each interaction term.
+# For the linear model, F tests (column chisq holds F, df2 its denominator df).
 cp_lr_tests <- function(spec, X, y, fam) {
     full <- .fit_cols(X, y, fam, rep(TRUE, ncol(X)))
+    n <- NROW(X); dfResid <- n - full$df - 1
     test <- function(drop) {
         red <- .fit_cols(X, y, fam, !drop)
-        chi <- max(0, 2 * (red$loss - full$loss)); df <- full$df - red$df
-        c(chisq = chi, df = df, p = stats::pchisq(chi, df, lower.tail = FALSE))
+        t <- .nested_test(fam, red$loss, full$loss, full$df - red$df, n, dfResid)
+        c(chisq = t[["stat"]], df = t[["df"]], df2 = t[["df2"]], p = t[["p"]])
     }
     rows <- list()
     add <- function(key, label, drop)
@@ -176,8 +195,9 @@ cp_lr_tests <- function(spec, X, y, fam) {
 
 # Effects of each variable of an interaction within subgroups of the other:
 # factor levels, or the quartiles of a numeric variable
-cp_subgroups <- function(spec, beta, V, conf = 0.95, intercept = TRUE) {
-    z <- stats::qnorm(1 - (1 - conf) / 2)
+cp_subgroups <- function(spec, beta, V, conf = 0.95, intercept = TRUE, exp = TRUE, df = Inf) {
+    z <- stats::qt(1 - (1 - conf) / 2, df)
+    tr <- if (exp) base::exp else identity
     rows <- list()
     for (key in names(spec$interactions)) {
         ab <- spec$interactions[[key]]
@@ -193,9 +213,9 @@ cp_subgroups <- function(spec, beta, V, conf = 0.95, intercept = TRUE) {
                 cc <- cp_contrast(spec, beta, V, .profile(spec, s1), .profile(spec, s0), intercept)
                 rows[[length(rows) + 1]] <- data.frame(
                     key = paste(key, d$key, w), term = key, effect = paste0(a, ": ", d$level), within = w,
-                    est = exp(cc[["est"]]), lower = exp(cc[["est"]] - z * cc[["se"]]),
-                    upper = exp(cc[["est"]] + z * cc[["se"]]),
-                    p = 2 * stats::pnorm(-abs(cc[["est"]] / cc[["se"]])), stringsAsFactors = FALSE)
+                    est = tr(cc[["est"]]), lower = tr(cc[["est"]] - z * cc[["se"]]),
+                    upper = tr(cc[["est"]] + z * cc[["se"]]),
+                    p = 2 * stats::pt(-abs(cc[["est"]] / cc[["se"]]), df), stringsAsFactors = FALSE)
             }
         }
     }

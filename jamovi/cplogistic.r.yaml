@@ -14,6 +14,7 @@ refs:
     - riley2023
     - vickers2006
     - debray2015
+    - vergouwe2017
     - lmg
     - lundberg2017
     - aas2021
@@ -498,6 +499,70 @@ items:
           title: Upper
           type: number
           superTitle: CI
+
+    - name: updTable
+      title: Model Updating in the Validation Data
+      type: Table
+      visible: false
+      clearWith:
+        - dep
+        - eventLevel
+        - covs
+        - splineVars
+        - factors
+        - knots
+        - refLevels
+        - covScales
+        - interactions
+        - intAllPairs
+        - intMode
+        - intAlpha
+        - splitVar
+        - splitLevel
+        - extFile
+        - updAlpha
+      columns:
+        - name: set
+          title: Data set
+          type: text
+          combineBelow: true
+        - name: method
+          title: Method
+          type: text
+        - name: k
+          title: Parameters
+          type: integer
+        - name: a
+          title: Intercept
+          type: number
+        - name: b
+          title: Slope
+          type: number
+        - name: stat
+          title: χ²
+          type: number
+          superTitle: vs revision
+        - name: df
+          title: df
+          type: integer
+          superTitle: vs revision
+        - name: p
+          title: p
+          type: number
+          format: zto,pvalue
+          superTitle: vs revision
+        - name: chosen
+          title: Chosen
+          type: text
+        - name: auc
+          title: AUC
+          type: number
+        - name: brier
+          title: Brier
+          type: number
+        - name: ici
+          title: ICI
+          type: number
 
     - name: stabTable
       title: Stability and Shrinkage (Bootstrap)

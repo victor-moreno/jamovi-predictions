@@ -227,6 +227,13 @@ children:
             children:
               - type: File
                 name: extFile
+              - type: CheckBox
+                name: updating
+                children:
+                  - type: TextBox
+                    name: updAlpha
+                    format: number
+                    enable: (updating)
           - type: TextBox
             name: ciWidth
             label: Confidence interval

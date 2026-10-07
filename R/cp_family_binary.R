@@ -156,6 +156,11 @@ cp_metric_defs <- function(family) {
                       "Calibration", "Calibration", "Calibration",
                       "Overall", "Overall", "Overall", "Overall"),
             stringsAsFactors = FALSE),
+        gaussian = data.frame(
+            key = c("r2", "rmse", "mae", "citl", "slope"),
+            label = c("R²", "RMSE", "MAE", "Calibration-in-the-large", "Calibration slope"),
+            group = c("Overall", "Overall", "Overall", "Calibration", "Calibration"),
+            stringsAsFactors = FALSE),
         .fail("Unknown model family."))
 }
 
@@ -238,7 +243,14 @@ cp_family <- function(family) {
                 p <- stats::plogis(lp)
                 c(auc = .auc_delong(y, p)$auc, brier = mean((y - p)^2))
             },
-            strata = function(y) y),
+            strata = function(y) y,
+            # hooks shared with the other families (see cp_family_gaussian.R)
+            ci = cp_binary_ci,
+            smooth = .cal_smooth,
+            dfResid = function(beta) Inf,
+            permKeys = c("auc", "brier"), permHigher = c(TRUE, FALSE),
+            exp = TRUE),
+        gaussian = .family_gaussian(),
         .fail("Unknown model family."))
 }
 
