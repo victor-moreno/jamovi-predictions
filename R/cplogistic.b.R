@@ -33,6 +33,7 @@ cpLogisticClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class(
         .eventLabel = function() private$.level(self$options$dep, self$options$eventLevel),
 
         .text = function(key) switch(key,
+            separation = .("Some predicted risks are numerically 0 or 1 (quasi-complete separation): coefficients and their intervals may be unreliable."),
             outcomeRow = .("Events"),
             outcomeLevel = "",
             memberNote = .("Membership c-statistic: how well the predictors and the outcome distinguish validation from development rows (Debray et al. 2015). Near 0.5: similar case-mix (reproducibility); high: different populations (transportability). A larger SD of the linear predictor means a more heterogeneous case-mix, which by itself raises the AUC."),
@@ -206,7 +207,7 @@ cpLogisticClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class(
             }
         },
 
-        .outputDefs = function() list(predRisk = stats::plogis, predLP = identity),
+        .outputDefs = function() list(predRisk = function(lp, beta) stats::plogis(lp), predLP = function(lp, beta) lp),
 
         .plotRoc = function(image, ggtheme, theme, ...) {
             if (is.null(image$state)) return(FALSE)

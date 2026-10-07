@@ -156,6 +156,15 @@ cp_metric_defs <- function(family) {
                       "Calibration", "Calibration", "Calibration",
                       "Overall", "Overall", "Overall", "Overall"),
             stringsAsFactors = FALSE),
+        cox = data.frame(
+            key = c("c", "uno", "auc", "d", "oe", "slope", "ici", "e50", "e90",
+                    "brier", "sbrier", "r2d", "r2n", "r2cs"),
+            label = c("Harrell's C", "Uno's C (to the horizon)", "Time-dependent AUC (at the horizon)",
+                      "Royston's D", "O/E ratio (at the horizon)", "Calibration slope",
+                      "ICI", "E50", "E90", "Brier score (at the horizon)",
+                      "Scaled Brier score (IPA)", "Royston's R²_D", "Nagelkerke R²", "Cox–Snell R²"),
+            group = c(rep("Discrimination", 4), rep("Calibration", 5), rep("Overall", 5)),
+            stringsAsFactors = FALSE),
         gaussian = data.frame(
             key = c("r2", "rmse", "mae", "citl", "slope"),
             label = c("R²", "RMSE", "MAE", "Calibration-in-the-large", "Calibration slope"),
@@ -221,7 +230,7 @@ cp_binary_samplesize <- function(nparams, prevalence, r2cs, shrinkage = 0.9, del
 }
 
 # The family object used by the generic engine
-cp_family <- function(family) {
+cp_family <- function(family, horizon = NULL) {
     switch(family,
         binary = list(
             name = "binary",
@@ -249,8 +258,10 @@ cp_family <- function(family) {
             smooth = .cal_smooth,
             dfResid = function(beta) Inf,
             permKeys = c("auc", "brier"), permHigher = c(TRUE, FALSE),
-            exp = TRUE),
+            exp = TRUE,
+            bounded = TRUE),
         gaussian = .family_gaussian(),
+        cox = .family_cox(horizon),
         .fail("Unknown model family."))
 }
 

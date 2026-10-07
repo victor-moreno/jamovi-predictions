@@ -31,6 +31,7 @@ cpLinearClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class(
         .outcomeSummary = function(y) sprintf("%.2f (%.2f)", mean(y), stats::sd(y)),
 
         .text = function(key) switch(key,
+            separation = .("Some predicted risks are numerically 0 or 1 (quasi-complete separation): coefficients and their intervals may be unreliable."),
             outcomeRow = self$options$dep,
             outcomeLevel = .("mean (SD)"),
             memberNote = .("Membership c-statistic: how well the predictors and the outcome distinguish validation from development rows (Debray et al. 2015). Near 0.5: similar case-mix (reproducibility); high: different populations (transportability). A larger SD of the predictions means a more heterogeneous case-mix, which by itself raises the R²."),
@@ -133,7 +134,7 @@ cpLinearClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class(
         .calState = function(all, sets, conf) lapply(names(all), function(k)
             c(cp_gaussian_calcurve(all[[k]]$y, all[[k]]$p, conf), list(label = sets[[k]]))),
 
-        .outputDefs = function() list(predValue = identity),
+        .outputDefs = function() list(predValue = function(lp, beta) lp),
 
         .plotCal = function(image, ggtheme, theme, ...) {
             if (is.null(image$state)) return(FALSE)

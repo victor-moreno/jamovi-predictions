@@ -23,6 +23,12 @@
     # names of the outcome options (their values: .outcomeVars())
     .outcomeNames = "dep",
 
+    # an optional switch: FALSE when this analysis has no such option
+    .on = function(name) self$options$has(name) && isTRUE(self$options$get(name)),
+
+    # the family object; Cox needs the horizon, known once the outcome is read
+    .makeFamily = function(prep) cp_family(private$.famName),
+
     # the level chosen in a LevelSelector, or the second level of the variable
     .level = function(var, chosen) {
         if (!is.null(chosen) && nzchar(chosen)) return(chosen)
@@ -97,7 +103,7 @@
                 r$perfVal$addRow(rowKey = paste(k, defs$key[i]),
                                  values = list(set = sets[[k]], group = defs$group[i], metric = defs$label[i]))
             private$.initCaseMix(sets)
-            if (isTRUE(self$options$updating)) {
+            if (private$.on("updating")) {
                 r$updTable$setVisible(TRUE)
                 meth <- private$.updMethods()
                 for (k in vsets) for (m in names(meth))
@@ -226,6 +232,7 @@
                            refLevels = private$.refs(), scales = private$.scales(), interactions = cands)
         prep$nMissing <- prep$nMissing + sum(!isDev & !isVal)
         prep <- private$.setOutcome(prep)
+        fam <- private$.fam <- private$.makeFamily(prep)
         private$.devData <- prep$data
         y <- prep$y
         # candidate interactions (specC, XC); the model keeps the selected ones
@@ -242,7 +249,7 @@
             .fail("The model did not converge. This usually means complete separation: some predictor, or a ",
                   "combination of them, predicts the outcome perfectly. Remove or merge the predictor(s) involved.")
         if (isTRUE(attr(beta, "separation")))
-            .show_warning(self, "separation", .("Some predicted risks are numerically 0 or 1 (quasi-complete separation): coefficients and their intervals may be unreliable."))
+            .show_warning(self, "separation", private$.text("separation"))
         lp <- fam$lp(beta, X); p <- fam$risk(lp)
 
         # validation data sets, each with X, y, lp, p
@@ -278,7 +285,7 @@
         private$.fillPerfDev(y, lp, iv, conf)
         for (k in names(vsets)) private$.fillPerfVal(k, vsets[[k]], conf)
         if (length(vsets)) private$.fillCaseMix(prep, X, y, lp, vsets)
-        if (isTRUE(o$updating)) for (k in names(vsets)) private$.fillUpd(k, vsets[[k]])
+        if (private$.on("updating")) for (k in names(vsets)) private$.fillUpd(k, vsets[[k]])
         if (!is.null(iv) && iv$method == "boot") private$.fillStab(iv, y, lp, X)
 
         all <- c(list(dev = list(X = X, y = y, lp = lp, p = p, df = prep$data)), vsets)
@@ -315,6 +322,8 @@
         df <- fam$dfResid(beta)
         z <- stats::qt(1 - (1 - conf) / 2, df)
         for (i in seq_along(beta)) {
+            # the Cox "intercept" (log baseline cumulative hazard) is not a model coefficient
+            if (i == 1 && identical(fam$showIntercept, FALSE)) next
             b <- unname(beta[i])
             v <- list(term = if (i == 1) .("Intercept") else names(beta)[i], est = b, se = se[i],
                       p = 2 * stats::pt(-abs(b / se[i]), df))
@@ -650,7 +659,7 @@
             out <- self$results[[k]]
             if (!out$isNotFilled()) next
             out$setRowNums(rownames(data))
-            out$setValues(unname(defs[[k]](lp)))
+            out$setValues(unname(defs[[k]](lp, beta)))
         }
     },
 

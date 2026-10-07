@@ -63,7 +63,7 @@ cp_internal <- function(X, y, fam, method = "boot", B = 200, k = 10, R = 1, seed
             if (stability && sum(ok) > 1)
                 out$stability <- .stability(y, fam$risk(lp0), risk[, ok, drop = FALSE],
                                             maxCurves, maxIndiv, fam$smooth %||% .cal_smooth,
-                                            bounded = fam$name == "binary")
+                                            bounded = isTRUE(fam$bounded))
         } else {
             strata <- fam$strata(y)
             cvm <- matrix(NA_real_, R, length(apparent), dimnames = list(NULL, names(apparent)))

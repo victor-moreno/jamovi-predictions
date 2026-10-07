@@ -42,7 +42,7 @@ cp_plot_roc <- function(sets, ggtheme) {
         .base_theme(ggtheme)
 }
 
-cp_plot_cal <- function(sets, ggtheme) {
+cp_plot_cal <- function(sets, ggtheme, xlab = "Predicted risk", ylab = "Observed proportion") {
     curve <- do.call(rbind, lapply(sets, function(s) data.frame(s$curve, label = s$label)))
     grp <- do.call(rbind, lapply(sets, function(s) data.frame(s$groups, label = s$label)))
     hist <- do.call(rbind, lapply(sets, function(s) data.frame(s$hist, label = s$label)))
@@ -64,7 +64,7 @@ cp_plot_cal <- function(sets, ggtheme) {
                                                           ymax = .data$obs_hi), size = 0.3) +
         ggplot2::facet_wrap(~label) +
         ggplot2::coord_cartesian(xlim = c(0, lim), ylim = c(0, lim)) +
-        ggplot2::labs(x = "Predicted risk", y = "Observed proportion") +
+        ggplot2::labs(x = xlab, y = ylab) +
         .base_theme(ggtheme)
 }
 
@@ -227,5 +227,27 @@ cp_plot_cal_cont <- function(sets, ggtheme) {
         ggplot2::facet_wrap(~label) +
         ggplot2::coord_cartesian(xlim = lim, ylim = lim) +
         ggplot2::labs(x = "Predicted value", y = "Observed value") +
+        .base_theme(ggtheme)
+}
+
+# Kaplan–Meier curves by risk group, one facet per data set; the dots at the
+# horizon are each group's mean predicted event-free probability
+cp_plot_km <- function(st, ggtheme) {
+    curves <- do.call(rbind, lapply(st$sets, function(s) data.frame(s$curves, label = s$label)))
+    pred <- do.call(rbind, lapply(st$sets, function(s) data.frame(s$pred, label = s$label)))
+    lev <- vapply(st$sets, `[[`, "", "label")
+    curves$label <- factor(curves$label, lev); pred$label <- factor(pred$label, lev)
+    ng <- length(unique(curves$group))
+    cols <- grDevices::colorRampPalette(c("#0072B2", "#E69F00", "#D55E00"))(ng)
+    curves$group <- factor(curves$group, unique(curves$group)); pred$group <- factor(pred$group, levels(curves$group))
+    ggplot2::ggplot(curves, ggplot2::aes(.data$time, .data$surv, colour = .data$group)) +
+        ggplot2::geom_vline(xintercept = st$h, linetype = "dashed", colour = "grey60") +
+        ggplot2::geom_step(linewidth = 0.8) +
+        ggplot2::geom_point(data = pred, size = 2.5, shape = 18) +
+        ggplot2::scale_colour_manual(values = cols) +
+        ggplot2::facet_wrap(~label) +
+        ggplot2::coord_cartesian(ylim = c(0, 1)) +
+        ggplot2::labs(x = "Time", y = "Event-free (Kaplan–Meier)",
+                      subtitle = "Diamonds: mean predicted at the horizon") +
         .base_theme(ggtheme)
 }

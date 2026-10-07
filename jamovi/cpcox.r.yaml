@@ -1,0 +1,863 @@
+---
+name:  cpCox
+title: Time to Event (Cox)
+jrs:   '1.1'
+
+refs:
+    - clinpred
+    - steyerberg2019
+    - tripodai
+    - harrell1996
+    - riley2019surv
+    - royston2004
+    - uno2007
+    - austin2020
+    - vickers2008
+    - riley2023
+    - debray2015
+    - lmg
+    - lundberg2017
+    - aas2021
+
+items:
+    - name: instructions
+      title: Instructions
+      type: Html
+      visible: true
+      clearWith: []
+
+    - name: samples
+      title: Data
+      type: Table
+      clearWith: &model
+        - time
+        - status
+        - eventLevel
+        - horizon
+        - covs
+        - splineVars
+        - factors
+        - knots
+        - refLevels
+        - covScales
+        - interactions
+        - intAllPairs
+        - intMode
+        - intAlpha
+        - splitVar
+        - splitLevel
+        - extFile
+      columns:
+        - name: set
+          title: Data set
+          type: text
+        - name: n
+          title: N
+          type: integer
+        - name: events
+          title: Events
+          type: integer
+        - name: pct
+          title: '%'
+          type: number
+          format: pc
+        - name: km
+          title: Risk by horizon (KM)
+          type: number
+          format: pc
+        - name: excluded
+          title: Excluded (missing)
+          type: integer
+
+    - name: extCheck
+      title: External Data — Variable Check
+      type: Table
+      visible: false
+      clearWith: *model
+      columns:
+        - name: var
+          title: Variable
+          type: text
+        - name: role
+          title: Role
+          type: text
+        - name: status
+          title: Status
+          type: text
+        - name: details
+          title: Details
+          type: text
+
+    - name: caseMix
+      title: Case-mix
+      type: Table
+      visible: false
+      clearWith: *model
+      columns:
+        - name: var
+          title: ''
+          type: text
+          combineBelow: true
+        - name: level
+          title: ''
+          type: text
+        - name: dev
+          title: Development
+          type: text
+        - name: split
+          title: Validation (rows)
+          type: text
+          visible: false
+        - name: ext
+          title: External
+          type: text
+          visible: false
+
+    - name: descTable
+      title: Descriptives (Development Data)
+      type: Table
+      visible: (descTable)
+      clearWith:
+        - time
+        - status
+        - eventLevel
+        - horizon
+        - covs
+        - splineVars
+        - factors
+        - splitVar
+        - splitLevel
+        - descStat
+      columns:
+        - name: var
+          title: ''
+          type: text
+          combineBelow: true
+        - name: level
+          title: ''
+          type: text
+        - name: g1
+          title: Censored
+          type: text
+        - name: g2
+          title: Event
+          type: text
+        - name: total
+          title: Total
+          type: text
+        - name: missing
+          title: Missing
+          type: text
+
+    - name: orTable
+      title: Hazard Ratios
+      type: Table
+      visible: (oddsRatios)
+      clearWith: &fitCI
+        - time
+        - status
+        - eventLevel
+        - horizon
+        - covs
+        - splineVars
+        - factors
+        - knots
+        - refLevels
+        - covScales
+        - interactions
+        - intAllPairs
+        - intMode
+        - intAlpha
+        - splitVar
+        - splitLevel
+        - ciWidth
+      columns:
+        - name: var
+          title: ''
+          type: text
+          combineBelow: true
+        - name: level
+          title: ''
+          type: text
+        - name: or_u
+          title: HR
+          superTitle: Crude
+          type: number
+          visible: (crude)
+        - name: lower_u
+          title: Lower
+          superTitle: Crude
+          type: number
+          visible: (crude)
+        - name: upper_u
+          title: Upper
+          superTitle: Crude
+          type: number
+          visible: (crude)
+        - name: p_u
+          title: p
+          superTitle: Crude
+          type: number
+          format: zto,pvalue
+          visible: (crude)
+        - name: or
+          title: HR
+          superTitle: Adjusted
+          type: number
+        - name: lower
+          title: Lower
+          superTitle: Adjusted
+          type: number
+        - name: upper
+          title: Upper
+          superTitle: Adjusted
+          type: number
+        - name: p
+          title: p
+          superTitle: Adjusted
+          type: number
+          format: zto,pvalue
+
+    - name: testTable
+      title: Likelihood Ratio Tests
+      type: Table
+      visible: (predTests)
+      clearWith: &fit
+        - time
+        - status
+        - eventLevel
+        - horizon
+        - covs
+        - splineVars
+        - factors
+        - knots
+        - refLevels
+        - covScales
+        - interactions
+        - intAllPairs
+        - intMode
+        - intAlpha
+        - splitVar
+        - splitLevel
+      columns:
+        - name: term
+          title: Term
+          type: text
+        - name: chisq
+          title: χ²
+          type: number
+        - name: df
+          title: df
+          type: integer
+        - name: p
+          title: p
+          type: number
+          format: zto,pvalue
+
+    - name: intTable
+      title: Interactions — Screening and Selection
+      type: Table
+      visible: false
+      clearWith: &fitResample
+        - time
+        - status
+        - eventLevel
+        - horizon
+        - covs
+        - splineVars
+        - factors
+        - knots
+        - refLevels
+        - covScales
+        - interactions
+        - intAllPairs
+        - intMode
+        - intAlpha
+        - splitVar
+        - splitLevel
+        - validation
+        - nBoot
+        - nFolds
+        - nRepeats
+        - seed
+      columns:
+        - name: term
+          title: Term
+          type: text
+        - name: chisq
+          title: χ²
+          type: number
+        - name: df
+          title: df
+          type: integer
+        - name: p
+          title: p
+          type: number
+          format: zto,pvalue
+        - name: daic
+          title: ΔAIC
+          type: number
+        - name: dbic
+          title: ΔBIC
+          type: number
+        - name: kept
+          title: In model
+          type: text
+        - name: freq
+          title: Resampled fits
+          type: number
+          format: pc
+          visible: false
+
+    - name: subTable
+      title: Effects Within Subgroups
+      type: Table
+      visible: false
+      clearWith: *fitCI
+      columns:
+        - name: effect
+          title: Effect
+          type: text
+          combineBelow: true
+        - name: within
+          title: Within
+          type: text
+        - name: or
+          title: HR
+          type: number
+        - name: lower
+          title: Lower
+          type: number
+        - name: upper
+          title: Upper
+          type: number
+        - name: p
+          title: p
+          type: number
+          format: zto,pvalue
+
+    - name: coefTable
+      title: Model Coefficients
+      type: Table
+      visible: (coefs)
+      clearWith: *fitCI
+      columns:
+        - name: term
+          title: Predictor
+          type: text
+        - name: est
+          title: β
+          type: number
+        - name: se
+          title: SE
+          type: number
+        - name: or
+          title: Hazard ratio
+          type: number
+        - name: lower
+          title: Lower
+          type: number
+          superTitle: CI
+        - name: upper
+          title: Upper
+          type: number
+          superTitle: CI
+        - name: p
+          title: p
+          type: number
+          format: zto,pvalue
+
+    - name: equationText
+      title: Model Equation
+      type: Preformatted
+      visible: (equation)
+      clearWith: *fit
+
+    - name: perfDev
+      title: Performance in the Development Data
+      type: Table
+      clearWith:
+        - time
+        - status
+        - eventLevel
+        - horizon
+        - covs
+        - splineVars
+        - factors
+        - knots
+        - refLevels
+        - covScales
+        - interactions
+        - intAllPairs
+        - intMode
+        - intAlpha
+        - splitVar
+        - splitLevel
+        - validation
+        - nBoot
+        - nFolds
+        - nRepeats
+        - seed
+        - ciWidth
+      columns:
+        - name: group
+          title: ''
+          type: text
+          combineBelow: true
+        - name: metric
+          title: Measure
+          type: text
+        - name: apparent
+          title: Apparent
+          type: number
+        - name: lower
+          title: Lower
+          type: number
+          superTitle: CI
+        - name: upper
+          title: Upper
+          type: number
+          superTitle: CI
+        - name: optimism
+          title: Optimism
+          type: number
+          visible: false
+        - name: corrected
+          title: Corrected
+          type: number
+          visible: false
+
+    - name: perfVal
+      title: Performance in the Validation Data
+      type: Table
+      visible: false
+      clearWith: &modelCI
+        - time
+        - status
+        - eventLevel
+        - horizon
+        - covs
+        - splineVars
+        - factors
+        - knots
+        - refLevels
+        - covScales
+        - interactions
+        - intAllPairs
+        - intMode
+        - intAlpha
+        - splitVar
+        - splitLevel
+        - extFile
+        - ciWidth
+      columns:
+        - name: set
+          title: Data set
+          type: text
+          combineBelow: true
+        - name: group
+          title: ''
+          type: text
+          combineBelow: true
+        - name: metric
+          title: Measure
+          type: text
+        - name: est
+          title: Estimate
+          type: number
+        - name: lower
+          title: Lower
+          type: number
+          superTitle: CI
+        - name: upper
+          title: Upper
+          type: number
+          superTitle: CI
+
+    - name: stabTable
+      title: Stability and Shrinkage (Bootstrap)
+      type: Table
+      visible: false
+      clearWith: &boot
+        - time
+        - status
+        - eventLevel
+        - horizon
+        - covs
+        - splineVars
+        - factors
+        - knots
+        - refLevels
+        - covScales
+        - interactions
+        - intAllPairs
+        - intMode
+        - intAlpha
+        - splitVar
+        - splitLevel
+        - validation
+        - nBoot
+        - seed
+      columns:
+        - name: measure
+          title: Measure
+          type: text
+        - name: value
+          title: Value
+          type: number
+
+    - name: nbTable
+      title: Net Benefit (at the Horizon)
+      type: Table
+      visible: (dca)
+      clearWith:
+        - time
+        - status
+        - eventLevel
+        - horizon
+        - covs
+        - splineVars
+        - factors
+        - knots
+        - refLevels
+        - covScales
+        - interactions
+        - intAllPairs
+        - intMode
+        - intAlpha
+        - splitVar
+        - splitLevel
+        - extFile
+        - nbThresholds
+      columns:
+        - name: set
+          title: Data set
+          type: text
+          combineBelow: true
+        - name: threshold
+          title: Threshold
+          type: number
+        - name: model
+          title: Model
+          type: number
+        - name: all
+          title: Treat all
+          type: number
+        - name: gain
+          title: Gain
+          type: number
+        - name: avoided
+          title: Interventions avoided per 100
+          type: number
+
+    - name: ssTable
+      title: Sample Size Adequacy (Riley et al. 2020)
+      type: Table
+      visible: (sampleSize)
+      clearWith:
+        - time
+        - status
+        - eventLevel
+        - horizon
+        - covs
+        - splineVars
+        - factors
+        - knots
+        - refLevels
+        - covScales
+        - interactions
+        - intAllPairs
+        - intMode
+        - intAlpha
+        - splitVar
+        - splitLevel
+        - validation
+        - nBoot
+        - nFolds
+        - nRepeats
+        - seed
+        - ssSource
+        - ssR2
+      columns:
+        - name: criterion
+          title: Criterion
+          type: text
+        - name: n
+          title: Required N
+          type: integer
+        - name: events
+          title: Required events
+          type: number
+        - name: epp
+          title: Events per parameter
+          type: number
+
+    - name: shapleyTable
+      title: Importance — Shapley Decomposition of R²
+      type: Table
+      visible: (shapley)
+      clearWith: &fitSeed
+        - time
+        - status
+        - eventLevel
+        - horizon
+        - covs
+        - splineVars
+        - factors
+        - knots
+        - refLevels
+        - covScales
+        - interactions
+        - intAllPairs
+        - intMode
+        - intAlpha
+        - splitVar
+        - splitLevel
+        - shapleyMeasure
+        - seed
+      columns:
+        - name: var
+          title: Predictor
+          type: text
+        - name: shapley
+          title: R² share
+          type: number
+        - name: share
+          title: '% of R²'
+          type: number
+          format: pc
+        - name: rank
+          title: Rank
+          type: integer
+
+    - name: permTable
+      title: Importance — Permutation
+      type: Table
+      visible: (permImp)
+      clearWith: &perm
+        - time
+        - status
+        - eventLevel
+        - horizon
+        - covs
+        - splineVars
+        - factors
+        - knots
+        - refLevels
+        - covScales
+        - interactions
+        - intAllPairs
+        - intMode
+        - intAlpha
+        - splitVar
+        - splitLevel
+        - extFile
+        - nPerm
+        - seed
+      columns:
+        - name: var
+          title: Predictor
+          type: text
+        - name: d_c
+          title: C loss
+          type: number
+        - name: sd_c
+          title: SD
+          type: number
+        - name: d_brier
+          title: Brier increase
+          type: number
+        - name: sd_brier
+          title: SD
+          type: number
+
+    - name: shapTable
+      title: Importance — Mean |SHAP| (log hazard)
+      type: Table
+      visible: (shap)
+      clearWith: *fit
+      columns:
+        - name: var
+          title: Predictor
+          type: text
+        - name: meanAbs
+          title: Mean |SHAP|
+          type: number
+        - name: share
+          title: '% of total'
+          type: number
+          format: pc
+
+    - name: plots
+      title: Plots
+      type: Group
+      items:
+        - name: calibration
+          title: Calibration
+          type: Image
+          width: 500
+          height: 500
+          renderFun: .plotCal
+          visible: (calPlot)
+          clearWith:
+            - time
+            - status
+            - eventLevel
+            - horizon
+            - covs
+            - splineVars
+            - factors
+            - knots
+            - refLevels
+            - covScales
+            - interactions
+            - intAllPairs
+            - intMode
+            - intAlpha
+            - splitVar
+            - splitLevel
+            - extFile
+            - ciWidth
+            - calGroups
+
+        - name: kmCurves
+          title: Kaplan–Meier by Risk Group
+          type: Image
+          width: 550
+          height: 420
+          renderFun: .plotKm
+          visible: (kmPlot)
+          clearWith:
+            - time
+            - status
+            - eventLevel
+            - horizon
+            - covs
+            - splineVars
+            - factors
+            - knots
+            - refLevels
+            - covScales
+            - interactions
+            - intAllPairs
+            - intMode
+            - intAlpha
+            - splitVar
+            - splitLevel
+            - extFile
+            - kmGroups
+
+        - name: dcaCurves
+          title: Decision Curve (at the Horizon)
+          type: Image
+          width: 550
+          height: 420
+          renderFun: .plotDca
+          visible: (dca)
+          clearWith:
+            - time
+            - status
+            - eventLevel
+            - horizon
+            - covs
+            - splineVars
+            - factors
+            - knots
+            - refLevels
+            - covScales
+            - interactions
+            - intAllPairs
+            - intMode
+            - intAlpha
+            - splitVar
+            - splitLevel
+            - extFile
+            - dcaMax
+
+        - name: shapleyBar
+          title: Shapley Decomposition of R²
+          type: Image
+          width: 550
+          height: 350
+          renderFun: .plotShapley
+          visible: (shapley)
+          clearWith: *fitSeed
+
+        - name: permBar
+          title: Permutation Importance
+          type: Image
+          width: 550
+          height: 350
+          renderFun: .plotPerm
+          visible: (permImp)
+          clearWith: *perm
+
+        - name: shapSummary
+          title: SHAP Summary
+          type: Image
+          width: 600
+          height: 400
+          renderFun: .plotShapSummary
+          visible: (shap)
+          clearWith: *fit
+
+        - name: shapPatient
+          title: Explanation of One Prediction
+          type: Image
+          width: 600
+          height: 400
+          renderFun: .plotShapPatient
+          visible: false
+          clearWith:
+            - time
+            - status
+            - eventLevel
+            - horizon
+            - covs
+            - splineVars
+            - factors
+            - knots
+            - refLevels
+            - covScales
+            - interactions
+            - intAllPairs
+            - intMode
+            - intAlpha
+            - splitVar
+            - splitLevel
+            - shapRow
+
+        - name: instability
+          title: Prediction Instability
+          type: Image
+          width: 500
+          height: 450
+          renderFun: .plotInstability
+          visible: false
+          clearWith: *boot
+
+        - name: calInstability
+          title: Calibration Instability
+          type: Image
+          width: 500
+          height: 450
+          renderFun: .plotCalInstability
+          visible: false
+          clearWith: *boot
+
+    - name: predRisk
+      title: Predicted risk at the horizon
+      type: Output
+      varTitle: Predicted risk
+      varDescription: Predicted risk of the event by the horizon, from the development model
+      measureType: continuous
+      clearWith: *model
+
+    - name: predLP
+      title: Prognostic index
+      type: Output
+      varTitle: Prognostic index
+      varDescription: Prognostic index (log relative hazard, Xβ) of the development model
+      measureType: continuous
+      clearWith: *model
+...

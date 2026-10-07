@@ -41,6 +41,20 @@ analyses:
       cross-validation, validation in a subset of the data or in an external
       data file, model updating, variable importance (Shapley R² decomposition,
       permutation importance, SHAP) and the stability of individual predictions.
+  - title: Time to Event (Cox)
+    name: cpCox
+    ns: clinpred
+    category: analyses
+    menuGroup: Prediction
+    menuTitle: Time to Event (Cox)
+    menuSubtitle: Develop and validate
+    description: >-
+      Develop and validate a Cox prediction model for the risk of an event by a
+      time horizon: concordance, time-dependent AUC, calibration at the horizon,
+      Brier score, Royston's D, net benefit, internal validation by bootstrap or
+      cross-validation, validation in a subset of the data or in an external
+      data file, variable importance (Shapley R² decomposition, permutation
+      importance, SHAP) and the stability of individual predictions.
 datasets:
   - name: Pima diabetes (development)
     path: pima_development.omv
@@ -52,6 +66,18 @@ datasets:
     description: >-
       Pima.tr and Pima.te stacked (532 women); 'sample' marks the 332 validation
       rows, for the Validation split box.
+  - name: Breast cancer, Rotterdam (development)
+    path: rotterdam_development.omv
+    description: >-
+      Node-positive breast cancer, Rotterdam tumour bank (survival::rotterdam):
+      1546 women, recurrence-free survival in years (years, rfs) and eight
+      predictors. Develop a Cox model here.
+  - name: Breast cancer, Rotterdam + GBSG (development + validation)
+    path: breast_split.omv
+    description: >-
+      The Rotterdam women and 686 women of the German Breast Cancer Study Group
+      trial (survival::gbsg) stacked; 'cohort' marks the GBSG rows, for the
+      Validation split box (Royston & Altman 2013).
 usesNative: false
 minApp: 28.4.0
 
