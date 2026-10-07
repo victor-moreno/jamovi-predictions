@@ -2,7 +2,7 @@
 name: cpLogistic
 title: Binary Outcome (Logistic)
 menuGroup: Prediction
-version: '0.1.0'
+version: '0.2.0'
 jas: '1.2'
 weightsSupport: none
 

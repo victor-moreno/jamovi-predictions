@@ -1,7 +1,7 @@
 Package: clinpred
 Type: Package
 Title: Clinical Prediction Models
-Version: 0.1.0
+Version: 0.2.0
 Date: 2026-10-07
 Authors@R: person("Victor", "Moreno", role = c("aut", "cre", "cph"), email = "v.moreno@iconcologia.net")
 Maintainer: Victor Moreno <v.moreno@iconcologia.net>
@@ -11,9 +11,9 @@ Description: Development and validation of clinical prediction models in
     internal validation by bootstrap optimism correction or repeated
     cross-validation, validation in a subset of the data or in an external
     data file (with variable and case-mix checks), sample-size adequacy,
-    variable importance (Shapley decomposition of R2, permutation importance,
-    SHAP) and the stability of individual predictions. Logistic regression
-    first; linear and Cox models follow.
+    model updating with the closed testing procedure, variable importance
+    (Shapley decomposition of R2, permutation importance, SHAP) and the
+    stability of individual predictions. Logistic, linear and Cox models.
 License: GPL (>= 2)
 Language: en-GB
 Config/testthat/edition: 3
@@ -26,6 +26,7 @@ Imports:
     ggplot2,
     jmvReadWrite,
     openxlsx,
-    foreign
+    foreign,
+    survival
 Suggests:
     testthat (>= 3.1.5)
