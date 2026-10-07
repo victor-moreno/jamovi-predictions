@@ -80,12 +80,17 @@ cp_lp <- function(beta, X) {
     f0 <- suppressWarnings(stats::glm.fit(matrix(1, length(y), 1), y, offset = lp,
                                           family = stats::binomial()))
     f1 <- suppressWarnings(stats::glm.fit(cbind(1, lp), y, family = stats::binomial()))
-    list(citl = f0$coefficients[1], citl_fit = f0, slope = f1$coefficients[2], slope_fit = f1)
+    # a fit that diverges (separated bootstrap models) gives no estimate
+    list(citl = if (f0$converged) f0$coefficients[1] else NA_real_, citl_fit = f0,
+         slope = if (f1$converged) f1$coefficients[2] else NA_real_, slope_fit = f1)
 }
 
 # All binary performance measures for outcome y and linear predictor lp.
 # Fast enough to run on every bootstrap sample.
 cp_binary_metrics <- function(y, lp) {
+    # risks closer to 0 or 1 than 3e-7 add only numerical noise (overfitted
+    # bootstrap models can produce them)
+    lp <- pmin(pmax(lp, -15), 15)
     p <- stats::plogis(lp)
     n <- length(y); ybar <- mean(y)
     auc <- .auc_delong(y, p)$auc
@@ -215,7 +220,10 @@ cp_family <- function(family) {
     switch(family,
         binary = list(
             name = "binary",
+            intercept = TRUE,
             fit = cp_binary_fit,
+            vcov = function(beta) .glm_vcov(attr(beta, "fit")),
+            nullLoss = function(y) { p <- mean(y); -length(y) * (p * log(p) + (1 - p) * log(1 - p)) },
             lp = cp_lp,
             metrics = cp_binary_metrics,
             risk = stats::plogis,

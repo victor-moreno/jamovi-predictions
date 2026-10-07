@@ -21,6 +21,28 @@ cpLogisticClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class(
             if (length(lev) >= 2) lev[2] else if (length(lev)) lev[1] else ""
         },
 
+        # Reference Levels and Covariate Scaling choices, as named lists
+        .refs = function() {
+            out <- list()
+            for (it in self$options$refLevels) if (!is.null(it$ref) && nzchar(it$ref)) out[[it$var]] <- it$ref
+            out
+        },
+        .scales = function() {
+            out <- list()
+            for (it in self$options$covScales) out[[it$var]] <- it$scale %||% "unit"
+            out
+        },
+        .refOf = function(v) private$.refs()[[v]] %||% levels(factor(self$data[[v]]))[1],
+
+        # candidate interactions: the listed two-way terms, or every pair of predictors
+        .candidates = function() {
+            preds <- private$.preds()
+            if (self$options$intAllPairs)
+                return(if (length(preds) < 2) list() else utils::combn(preds, 2, simplify = FALSE))
+            ints <- lapply(self$options$interactions, function(t) unique(unlist(t)))
+            Filter(function(t) length(t) == 2 && all(t %in% preds), ints)
+        },
+
         # data sets: development, validation rows (split variable), external file
         .sets = function() {
             sets <- c(dev = "Development")
@@ -72,7 +94,20 @@ cpLogisticClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class(
                 for (v in c(self$options$dep, private$.preds())) r$extCheck$addRow(rowKey = v, values = list(var = v))
             }
 
-            private$.initCoefs()
+            private$.initDesc()
+            private$.initOR()
+            cands <- private$.candidates()
+            if (length(cands)) {
+                t <- r$intTable
+                t$setVisible(TRUE)
+                for (ab in cands) t$addRow(rowKey = paste(ab, collapse = ":"),
+                                           values = list(term = paste(ab, collapse = " × ")))
+                t$getColumn("freq")$setVisible(val != "none" && self$options$intMode != "all")
+                if (val == "cv") t$getColumn("freq")$setTitle(.("CV fits"))
+                else t$getColumn("freq")$setTitle(.("Bootstrap fits"))
+                r$subTable$setVisible(TRUE)
+            }
+            for (cn in c("lower", "upper")) r$subTable$getColumn(cn)$setSuperTitle(ciTitle)
 
             if (val == "boot") {
                 r$stabTable$setVisible(TRUE)
@@ -138,21 +173,46 @@ cpLogisticClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class(
             t$addRow(rowKey = "member", values = list(var = .("Membership c-statistic")))
         },
 
-        .initCoefs = function() {
-            if (!self$options$coefs) return()
-            t <- self$results$coefTable
-            t$addRow(rowKey = "(Intercept)", values = list(term = .("Intercept")))
-            for (v in self$options$covs) t$addRow(rowKey = v, values = list(term = v))
-            for (v in self$options$splineVars) {
-                nm <- c(v, paste0(v, strrep("'", seq_len(self$options$knots - 2))))
-                for (n in nm) t$addRow(rowKey = n, values = list(term = n))
-            }
+        # descriptive table: one column per outcome group (event last)
+        .initDesc = function() {
+            if (!self$options$descTable) return()
+            t <- self$results$descTable
+            dep <- self$options$dep
+            lev <- levels(factor(self$data[[dep]]))
+            ev <- private$.level(dep, self$options$eventLevel)
+            other <- setdiff(lev, ev)
+            t$getColumn("g1")$setTitle(if (length(other) == 1) other else .("Other levels"))
+            t$getColumn("g2")$setTitle(ev)
+            t$addRow(rowKey = "n", values = list(var = .("N")))
+            stat <- if (self$options$descStat == "meanSD") .("mean (SD)") else .("median [Q1, Q3]")
+            for (v in c(self$options$covs, self$options$splineVars))
+                t$addRow(rowKey = v, values = list(var = v, level = stat))
+            for (v in self$options$factors)
+                for (l in levels(factor(self$data[[v]])))
+                    t$addRow(rowKey = paste(v, l), values = list(var = v, level = l))
+        },
+
+        # odds-ratio table: one row per covariate, reference + one per level of a factor
+        .initOR = function() {
+            if (!self$options$oddsRatios) return()
+            t <- self$results$orTable
+            sc <- private$.scales()
+            labs <- c(unit = .("per unit"), sd = .("per 1 SD"), ten = .("per 10 units"),
+                      hundred = .("per 100 units"), thousand = .("per 1000 units"))
+            for (v in self$options$covs) t$addRow(rowKey = v, values = list(var = v, level = labs[[sc[[v]] %||% "unit"]]))
+            for (v in self$options$splineVars) t$addRow(rowKey = v, values = list(var = v, level = .("Q3 vs Q1")))
             for (v in self$options$factors) {
+                ref <- private$.refOf(v)
                 lev <- levels(factor(self$data[[v]]))
-                if (length(lev)) t$addRow(rowKey = paste0(v, " (ref)"),
-                                          values = list(term = paste0(v, ": ", lev[1], " (reference)")))
-                for (l in lev[-1]) t$addRow(rowKey = paste0(v, ": ", l), values = list(term = paste0(v, ": ", l)))
+                t$addRow(rowKey = paste0(v, " (ref)"), values = list(var = v, level = ref))
+                for (l in setdiff(lev, ref)) t$addRow(rowKey = paste0(v, ": ", l), values = list(var = v, level = l))
             }
+        },
+
+        # write a row by key, adding it when .init could not know it
+        .putRow = function(tab, key, values) {
+            if (key %in% tab$rowKeys) tab$setRow(rowKey = key, values = values)
+            else tab$addRow(rowKey = key, values = values)
         },
 
         # ---- computation -------------------------------------------------------
@@ -181,12 +241,20 @@ cpLogisticClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class(
                 if (!any(isDev)) .fail("Every row is a validation row; no data are left to develop the model.")
                 if (!any(isVal)) .fail("No row has ", o$splitVar, " = ", sl, ".")
             }
-            prep <- cp_prepare(data[isDev, , drop = FALSE], o$dep, o$covs, o$splineVars, o$factors, o$knots)
+            if (o$descTable) private$.fillDesc(data[isDev, , drop = FALSE])
+            cands <- private$.candidates()
+            prep <- cp_prepare(data[isDev, , drop = FALSE], o$dep, o$covs, o$splineVars, o$factors, o$knots,
+                               refLevels = private$.refs(), scales = private$.scales(), interactions = cands)
             prep$nMissing <- prep$nMissing + sum(!isDev & !isVal)
             prep <- cp_binary_outcome(prep, o$eventLevel)
             private$.devData <- prep$data
-            spec <- prep$spec
-            X <- cp_design(spec, prep$data); y <- prep$y
+            y <- prep$y
+            # candidate interactions (specC, XC); the model keeps the selected ones
+            specC <- prep$spec
+            XC <- cp_design(specC, prep$data)
+            sel <- cp_select_interactions(XC, y, specC, fam, o$intMode, o$intAlpha)
+            spec <- cp_with_interactions(specC, attr(sel, "selected"))
+            X <- cp_design(spec, prep$data)
             beta <- fam$fit(X, y)
             if (anyNA(beta))
                 .fail("The predictor column '", names(beta)[is.na(beta)][1], "' is redundant (a combination of ",
@@ -222,8 +290,12 @@ cpLogisticClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class(
                                                  length(spec$outcome$levels), spec$outcome$event))
             private$.fillCoefs(beta, spec, conf)
             if (o$equation) r$equationText$setContent(private$.equation(beta, spec))
+            lrt <- if (o$oddsRatios || o$predTests) cp_lr_tests(spec, X, y, fam) else NULL
+            if (o$oddsRatios) private$.fillOR(spec, beta, prep, y, lrt, conf)
+            if (o$predTests) private$.fillTests(lrt)
 
-            iv <- private$.internal(X, y)
+            iv <- private$.internal(XC, y, specC)
+            if (length(cands)) private$.fillInt(XC, y, specC, sel, iv, conf, spec, beta)
             private$.fillPerfDev(y, lp, iv, conf)
             for (k in names(vsets)) private$.fillPerfVal(k, vsets[[k]], conf)
             if (length(vsets)) private$.fillCaseMix(prep, X, y, lp, vsets)
@@ -270,17 +342,110 @@ cpLogisticClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class(
             se <- sqrt(diag(V))
             z <- stats::qnorm(1 - (1 - conf) / 2)
             for (i in seq_along(beta)) {
-                key <- names(beta)[i]
-                if (!(key %in% t$rowKeys)) next
                 b <- unname(beta[i])
-                t$setRow(rowKey = key, values = list(
-                    est = b, se = se[i],
+                private$.putRow(t, names(beta)[i], list(
+                    term = if (i == 1) .("Intercept") else names(beta)[i], est = b, se = se[i],
                     or = if (i > 1) exp(b) else "", lower = if (i > 1) exp(b - z * se[i]) else "",
                     upper = if (i > 1) exp(b + z * se[i]) else "",
                     p = 2 * stats::pnorm(-abs(b / se[i]))))
             }
+            refs <- vapply(Filter(function(i) i$role == "factor", spec$vars),
+                           function(i) paste0(i$name, " = ", i$levels[1]), "")
+            if (length(refs)) t$setNote("ref", paste0(.("Reference levels"), ": ", paste(refs, collapse = "; "), "."))
             if (length(self$options$splineVars))
-                t$setNote("spl", .("Spline terms (', '') are the non-linear parts of a restricted cubic spline; their odds ratios have no direct interpretation. Use the model equation, or SHAP, to see the shape of the association."))
+                t$setNote("spl", .("Spline terms (', '') are the non-linear parts of a restricted cubic spline; their coefficients have no direct interpretation (see the odds ratios, Q3 vs Q1, or SHAP)."))
+        },
+
+        .fillDesc = function(dd) {
+            o <- self$options
+            ev <- private$.level(o$dep, o$eventLevel)
+            yv <- as.character(dd[[o$dep]])
+            dd$.grp <- ifelse(is.na(yv), NA, ifelse(yv == ev, "e", "n"))
+            rows <- cp_describe(dd, ".grp", c("n", "e"), c(o$covs, o$splineVars), o$factors, o$descStat)
+            t <- self$results$descTable
+            for (rw in rows)
+                private$.putRow(t, rw$key, list(var = rw$var, level = rw$level, g1 = rw$values$g1,
+                                                g2 = rw$values$g2, total = rw$values$total, missing = rw$missing))
+            t$setNote("dev", .("Development rows, before excluding missing values; percentages of the non-missing values."))
+        },
+
+        .fillOR = function(spec, beta, prep, y, lrt, conf) {
+            t <- self$results$orTable
+            fam <- private$.fam
+            adj <- cp_effects(spec, beta, fam$vcov(beta), conf)
+            cr <- if (self$options$crude) cp_crude(spec, prep$data, y, fam, conf) else NULL
+            pAdj <- stats::setNames(lrt$p, lrt$key)
+            for (info in spec$vars) {
+                v <- info$name
+                if (info$role == "factor")
+                    private$.putRow(t, paste0(v, " (ref)"), list(var = v, level = info$levels[1],
+                        or_u = 1, lower_u = "", upper_u = "", p_u = if (!is.null(cr)) attr(cr, "pOverall")[[v]] else "",
+                        or = 1, lower = "", upper = "", p = pAdj[[v]]))
+                for (i in which(adj$var == v)) {
+                    a <- adj[i, ]
+                    vals <- list(var = v, level = a$level, or = a$est, lower = a$lower, upper = a$upper,
+                                 p = if (info$role == "spline") pAdj[[v]] else a$p)
+                    if (!is.null(cr)) {
+                        cc <- cr[cr$key == a$key, ]
+                        vals <- c(vals, list(or_u = cc$est, lower_u = cc$lower, upper_u = cc$upper,
+                                             p_u = if (info$role == "spline") attr(cr, "pOverall")[[v]] else cc$p))
+                    }
+                    private$.putRow(t, a$key, vals)
+                }
+            }
+            if (self$options$crude)
+                t$setNote("crude", .("Crude: each predictor alone, on the same rows. Adjusted: in the prediction model."))
+            if (length(self$options$splineVars))
+                t$setNote("spl", .("Spline predictors: odds ratio between the third and the first quartile; the p is the likelihood ratio test of the whole (non-linear) association."))
+            if (length(self$options$factors))
+                t$setNote("ref", .("The p on a factor's reference row is the likelihood ratio test of the factor."))
+            if (length(spec$interactions))
+                t$setNote("int", .("With interactions, an adjusted odds ratio is the effect at the reference level (factor) or median (covariate) of the variables it interacts with; see Effects Within Subgroups."))
+        },
+
+        .fillTests = function(lrt) {
+            t <- self$results$testTable
+            for (i in seq_len(nrow(lrt)))
+                private$.putRow(t, lrt$key[i], list(term = lrt$term[i], chisq = lrt$chisq[i],
+                                                    df = lrt$df[i], p = lrt$p[i]))
+            t$setNote("ex", .("Each test drops the term from the model (a predictor with its non-linear and interaction terms)."))
+        },
+
+        # screening of each candidate added alone to the main effects, the
+        # selection, and how often resampled fits selected it
+        .fillInt = function(XC, y, specC, sel, iv, conf, spec, beta) {
+            o <- self$options
+            t <- self$results$intTable
+            screen <- attr(sel, "screen") %||%
+                attr(cp_select_interactions(XC, y, specC, private$.fam, "lrt", 0), "screen")
+            kept <- attr(sel, "selected")
+            for (i in seq_len(NROW(screen))) {
+                k <- screen$term[i]
+                step <- match(k, kept)
+                private$.putRow(t, k, list(chisq = screen$chisq[i], df = screen$df[i], p = screen$p[i],
+                    daic = screen$daic[i], dbic = screen$dbic[i],
+                    kept = if (o$intMode == "all") .("yes") else if (is.na(step)) .("no") else sprintf(.("step %d"), step),
+                    freq = if (!is.null(iv$selection)) iv$selection[[k]] %||% 0 else ""))
+            }
+            t$setNote("ex", .("χ², ΔAIC and ΔBIC: the term added alone to the main-effects model (negative Δ: the term improves the criterion)."))
+            if (o$intMode != "all") {
+                t$setNote("sel", switch(o$intMode,
+                    aic = .("Forward selection: at each step the term that lowers the AIC most enters, while the AIC decreases."),
+                    bic = .("Forward selection: at each step the term that lowers the BIC most enters, while the BIC decreases."),
+                    lrt = sprintf(.("Forward selection: at each step the term with the smallest likelihood ratio p enters, while p < %s."), .num(o$intAlpha))))
+                if (o$validation != "none")
+                    t$setNote("res", .("The selection is repeated in every resampled fit, so the internal validation includes its optimism; the last column is the share of fits that selected the term."))
+            }
+            sub <- if (length(spec$interactions)) cp_subgroups(spec, beta, private$.fam$vcov(beta), conf) else NULL
+            st <- self$results$subTable
+            if (is.null(sub)) {
+                st$setNote("none", .("No interaction is in the model."))
+                return()
+            }
+            for (i in seq_len(nrow(sub)))
+                private$.putRow(st, sub$key[i], list(effect = sub$effect[i], within = sub$within[i],
+                    or = sub$est[i], lower = sub$lower[i], upper = sub$upper[i], p = sub$p[i]))
+            st$setNote("ex", .("Odds ratio of each variable of an interaction at the levels (factor) or quartiles (covariate) of the other; other predictors at their reference level or median."))
         },
 
         .equation = function(beta, spec) {
@@ -291,6 +456,8 @@ cpLogisticClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class(
                      sprintf("    %.5g", b[1]), paste0("    ", terms), "",
                      "risk = 1 / (1 + exp(−log-odds))")
             for (info in spec$vars) {
+                if (info$role == "numeric" && info$scale != 1)
+                    out <- c(out, "", sprintf("[%s] = %s / %s  (%s)", info$name, info$name, .num(info$scale, 5), info$scaleLabel))
                 if (info$role == "factor")
                     out <- c(out, "", sprintf("[%s: level] = 1 if %s is that level, else 0 (reference: %s)",
                                               info$name, info$name, info$levels[1]))
@@ -306,12 +473,17 @@ cpLogisticClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class(
         },
 
         # internal validation, cached in the performance table's state
-        .internal = function(X, y) {
+        .internal = function(X, y, specC) {
             o <- self$options
             if (o$validation == "none") return(NULL)
             iv <- self$results$perfDev$state
             if (is.null(iv)) {
-                iv <- cp_internal(X, y, private$.fam, o$validation, B = o$nBoot, k = o$nFolds,
+                fam <- private$.fam
+                if (length(specC$interactions) && o$intMode != "all") {
+                    base <- fam
+                    fam$fit <- function(X, y) cp_select_interactions(X, y, specC, base, o$intMode, o$intAlpha)
+                }
+                iv <- cp_internal(X, y, fam, o$validation, B = o$nBoot, k = o$nFolds,
                                   R = o$nRepeats, seed = o$seed, stability = o$validation == "boot")
                 self$results$perfDev$setState(iv)
             }
@@ -336,6 +508,8 @@ cpLogisticClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class(
             } else {
                 t$setNote("iv", .("Apparent performance is optimistic: it is measured in the data used to fit the model. Choose bootstrap or cross-validation under Validation."))
             }
+            if (!is.null(iv) && any(iv$corrected[c("r2n", "r2cs", "sbrier")] < 0, na.rm = TRUE))
+                t$setNote("neg", .("A negative corrected R² or scaled Brier score means that, in new patients, the model would predict worse than giving everyone the overall risk: it is overfitted."))
             if (self$options$explain)
                 t$setNote("ex", .("AUC: probability that a random event has a higher predicted risk than a random non-event (0.5 = no discrimination). Calibration-in-the-large: 0 is ideal (log-odds). Calibration slope: 1 is ideal; below 1 the predictions are too extreme (overfitting). O/E: observed / expected events. ICI, E50, E90, Emax: mean, median, 90th percentile and maximum absolute difference between the predicted and the (smoothed) observed risk. Brier: mean squared error of the predicted risks (lower is better); scaled Brier: 1 − Brier / Brier of a model without predictors."))
         },

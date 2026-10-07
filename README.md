@@ -10,8 +10,24 @@ Menu: **Prediction ▸ Binary Outcome (Logistic)**. Needs **jamovi 28.4 or later
 
 ## Features
 
-- **Predictors**: linear covariates, **restricted cubic splines** (3–7 knots, Harrell's
-  placement) for non-linear associations, and factors.
+- **Predictors**:
+  - Linear covariates, with **covariate scaling** (OR per unit, per 1 SD, per 10, 100 or
+    1000 units).
+  - **Restricted cubic splines** (3–7 knots, Harrell's placement) for non-linear
+    associations.
+  - Factors, with a chosen **reference level**.
+- **Interactions**, two ways: listed in an interaction builder, or all pairs of
+  predictors as candidates.
+  - A screening table gives each candidate added alone (LR χ², ΔAIC, ΔBIC).
+  - The candidates are all kept, or selected forward by AIC, BIC or LR test.
+  - The selection is **repeated in every bootstrap or cross-validation fit**, so the
+    optimism includes it, and the table reports how often each term was selected.
+- **Explaining the model**:
+  - A **descriptive table** by outcome, with missing values.
+  - **Crude and adjusted odds ratios** with reference rows; splines as Q3 vs Q1.
+  - **Likelihood ratio tests** per predictor, for the non-linear part of each spline and
+    for each interaction.
+  - **Effects within subgroups** for each interaction kept.
 - **Performance**, with confidence intervals where they exist:
   - *Discrimination*: C-statistic (AUC, DeLong CI) and discrimination slope.
   - *Calibration*: calibration-in-the-large, calibration slope, O/E ratio, and ICI, E50, E90

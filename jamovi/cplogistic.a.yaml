@@ -82,6 +82,91 @@ options:
       description:
           R: categorical predictors; the first level is the reference
 
+    - name: refLevels
+      title: Reference Levels
+      type: Array
+      default:
+      template:
+          type: Group
+          elements:
+              - name: var
+                type: Variable
+              - name: ref
+                type: Level
+      description:
+          R: >-
+              a list of lists `list(var = , ref = )` with the reference level of
+              each factor (default: the first level)
+
+    - name: covScales
+      title: Covariate Scaling
+      type: Array
+      default:
+      template:
+          type: Group
+          elements:
+              - name: var
+                type: Variable
+              - name: scale
+                type: List
+                options:
+                  - name: unit
+                    title: per unit
+                  - name: sd
+                    title: per 1 SD
+                  - name: ten
+                    title: per 10 units
+                  - name: hundred
+                    title: per 100 units
+                  - name: thousand
+                    title: per 1000 units
+                default: unit
+      description:
+          R: >-
+              a list of lists `list(var = , scale = )`: the unit of the odds ratio
+              of each linear covariate, `'unit'` (default), `'sd'`, `'ten'`,
+              `'hundred'` or `'thousand'`; the covariate is divided by it before
+              fitting, so predictions do not change
+
+    - name: interactions
+      title: Interaction terms
+      type: Terms
+      default: null
+      description:
+          R: >-
+              a list of pairs of predictors, the candidate interaction terms
+
+    - name: intAllPairs
+      title: All pairs of predictors as candidates
+      type: Bool
+      default: false
+
+    - name: intMode
+      title: Interactions to keep
+      type: List
+      options:
+        - name: all
+          title: All candidates
+        - name: aic
+          title: Forward selection, AIC
+        - name: bic
+          title: Forward selection, BIC
+        - name: lrt
+          title: Forward selection, LR test
+      default: all
+      description:
+          R: >-
+              `'all'` keeps every candidate interaction; `'aic'`, `'bic'` or
+              `'lrt'` select them forward (repeated within each bootstrap or
+              cross-validation fit)
+
+    - name: intAlpha
+      title: α to enter
+      type: Number
+      min: 0.0001
+      max: 0.5
+      default: 0.05
+
     - name: knots
       title: Spline knots
       type: Integer
@@ -171,10 +256,40 @@ options:
       max: 99.9
       default: 95
 
-    - name: coefs
-      title: Coefficients (odds ratios)
+    - name: descTable
+      title: Descriptive table
+      type: Bool
+      default: false
+
+    - name: descStat
+      title: Numeric predictors
+      type: List
+      options:
+        - name: meanSD
+          title: Mean (SD)
+        - name: medianIQR
+          title: Median [Q1, Q3]
+      default: meanSD
+
+    - name: oddsRatios
+      title: Odds ratios
       type: Bool
       default: true
+
+    - name: crude
+      title: Crude and adjusted
+      type: Bool
+      default: true
+
+    - name: predTests
+      title: Likelihood ratio tests
+      type: Bool
+      default: false
+
+    - name: coefs
+      title: Model coefficients (β)
+      type: Bool
+      default: false
 
     - name: equation
       title: Model equation

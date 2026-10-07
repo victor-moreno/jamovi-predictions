@@ -3,7 +3,9 @@ full_options <- function(...) list(
     factors = "agegrp", splitVar = "sample", splitLevel = "test", validation = "boot", nBoot = 20,
     stability = TRUE, equation = TRUE, sampleSize = TRUE, classif = TRUE, dca = TRUE, shapley = TRUE,
     permImp = TRUE, nPerm = 5, shap = TRUE, shapRow = 3, rocPlot = TRUE, calPlot = TRUE,
-    riskPlot = TRUE, explain = TRUE, ...)
+    riskPlot = TRUE, explain = TRUE, refLevels = list(list(var = "agegrp", ref = "30-45")),
+    covScales = list(list(var = "bmi", scale = "ten")), interactions = list(list("bmi", "agegrp")),
+    intMode = "aic", descTable = TRUE, predTests = TRUE, coefs = TRUE, ...)
 
 test_that("the analysis runs with every option and matches the engine", {
     d <- pima_stacked()

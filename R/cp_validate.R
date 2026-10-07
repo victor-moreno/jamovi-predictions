@@ -35,6 +35,8 @@ cp_internal <- function(X, y, fam, method = "boot", B = 200, k = 10, R = 1, seed
         if (method == "boot") {
             opt <- matrix(NA_real_, B, length(apparent), dimnames = list(NULL, names(apparent)))
             testSlope <- rep(NA_real_, B)
+            selected <- vector("list", B)
+            fitted <- rep(FALSE, B)
             risk <- if (stability) matrix(NA_real_, n, B) else NULL
             for (b in seq_len(B)) {
                 idx <- sample.int(n, n, replace = TRUE)
@@ -47,40 +49,57 @@ cp_internal <- function(X, y, fam, method = "boot", B = 200, k = 10, R = 1, seed
                 mTest <- tryCatch(fam$metrics(y, lpTest), error = function(e) NULL)
                 if (is.null(mApp) || is.null(mTest)) next
                 opt[b, ] <- mApp - mTest
+                fitted[b] <- TRUE
+                selected[[b]] <- attr(fb, "selected")
                 testSlope[b] <- mTest[["slope"]]
                 if (stability) risk[, b] <- fam$risk(lpTest)
             }
-            ok <- stats::complete.cases(opt)
-            optimism <- colMeans(opt[ok, , drop = FALSE])
+            # each measure averaged over the samples where it could be computed
+            ok <- fitted
+            optimism <- colMeans(opt[ok, , drop = FALSE], na.rm = TRUE)
             out <- list(method = "boot", B = B, nOk = sum(ok),
-                        shrinkage = mean(testSlope[ok]))
+                        shrinkage = mean(testSlope[ok], na.rm = TRUE),
+                        selection = .selection_freq(selected[ok]))
             if (stability && sum(ok) > 1)
                 out$stability <- .stability(y, fam$risk(lp0), risk[, ok, drop = FALSE],
                                             maxCurves, maxIndiv)
         } else {
             strata <- fam$strata(y)
             cvm <- matrix(NA_real_, R, length(apparent), dimnames = list(NULL, names(apparent)))
+            selected <- list()
             for (r in seq_len(R)) {
                 fold <- .folds(strata, k)
                 oof <- rep(NA_real_, n)
                 for (f in seq_len(k)) {
                     test <- fold == f
                     fb <- .try_fit(fam, X[!test, , drop = FALSE], .ysub(y, !test))
-                    if (!is.null(fb)) oof[test] <- fam$lp(fb, X[test, , drop = FALSE])
+                    if (!is.null(fb)) {
+                        oof[test] <- fam$lp(fb, X[test, , drop = FALSE])
+                        selected[[length(selected) + 1]] <- attr(fb, "selected")
+                    }
                 }
                 if (!anyNA(oof))
                     cvm[r, ] <- tryCatch(fam$metrics(y, oof), error = function(e) NA_real_)
             }
-            ok <- stats::complete.cases(cvm)
+            ok <- rowSums(!is.na(cvm)) > 0
             if (!any(ok)) .fail("Cross-validation failed in every repeat: the folds are too small for this model. Use fewer folds or the bootstrap.")
-            optimism <- apparent - colMeans(cvm[ok, , drop = FALSE])
-            out <- list(method = "cv", k = k, R = R, nOk = sum(ok))
+            optimism <- apparent - colMeans(cvm[ok, , drop = FALSE], na.rm = TRUE)
+            out <- list(method = "cv", k = k, R = R, nOk = sum(ok),
+                        selection = .selection_freq(selected))
         }
     })
     out$apparent <- apparent
     out$optimism <- optimism
     out$corrected <- apparent - optimism
     out
+}
+
+# How often each selected term (e.g. an interaction) was chosen across the
+# resampled fits; NULL when the fitting procedure selects nothing
+.selection_freq <- function(sel) {
+    if (!length(sel) || all(vapply(sel, is.null, TRUE))) return(NULL)
+    terms <- unique(unlist(sel))
+    stats::setNames(vapply(terms, function(t) mean(vapply(sel, function(s) t %in% s, TRUE)), 0), terms)
 }
 
 # Stability of individual risks across bootstrap models applied to the original

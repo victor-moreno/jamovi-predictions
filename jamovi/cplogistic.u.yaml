@@ -4,6 +4,8 @@ name: cpLogistic
 jus: '3.0'
 stage: 0
 compilerMode: tame
+events:
+  update: './cplogistic.events::update'
 children:
   - type: VariableSupplier
     persistentItems: false
@@ -28,18 +30,24 @@ children:
           - type: VariablesListBox
             name: covs
             isTarget: true
+            events:
+              change: './cplogistic.events::onChange_predictors'
       - type: TargetLayoutBox
         label: Covariates (spline)
         children:
           - type: VariablesListBox
             name: splineVars
             isTarget: true
+            events:
+              change: './cplogistic.events::onChange_predictors'
       - type: TargetLayoutBox
         label: Factors
         children:
           - type: VariablesListBox
             name: factors
             isTarget: true
+            events:
+              change: './cplogistic.events::onChange_predictors'
       - type: TargetLayoutBox
         label: Validation split (optional)
         children:
@@ -65,6 +73,20 @@ children:
             name: knots
             format: number
           - type: CheckBox
+            name: descTable
+            children:
+              - type: ComboBox
+                name: descStat
+                enable: (descTable)
+          - type: CheckBox
+            name: oddsRatios
+            children:
+              - type: CheckBox
+                name: crude
+                enable: (oddsRatios)
+          - type: CheckBox
+            name: predTests
+          - type: CheckBox
             name: coefs
           - type: CheckBox
             name: equation
@@ -78,6 +100,97 @@ children:
                 name: ssR2
                 format: number
                 enable: (sampleSize && ssSource:value)
+
+  - type: CollapseBox
+    label: Reference Levels
+    collapsed: true
+    stretchFactor: 1
+    children:
+      - type: ListBox
+        name: refLevels
+        showColumnHeaders: true
+        fullRowSelect: true
+        stretchFactor: 1
+        height: large
+        events:
+          change: './cplogistic.events::onChange_refLevels'
+        columns:
+          - name: var
+            label: Factor
+            selectable: false
+            stretchFactor: 1
+            maxWidth: 300
+            template:
+              type: VariableLabel
+          - name: ref
+            label: Reference Level
+            selectable: false
+            stretchFactor: 0.5
+            template:
+              type: LevelSelector
+              label: ''
+
+  - type: CollapseBox
+    label: Covariate Scaling
+    collapsed: true
+    stretchFactor: 1
+    children:
+      - type: ListBox
+        name: covScales
+        showColumnHeaders: true
+        fullRowSelect: true
+        stretchFactor: 1
+        height: large
+        columns:
+          - name: var
+            label: Covariate
+            selectable: false
+            stretchFactor: 1
+            maxWidth: 300
+            template:
+              type: VariableLabel
+          - name: scale
+            label: Odds ratio
+            selectable: false
+            stretchFactor: 0.5
+            template:
+              type: ComboBox
+
+  - type: CollapseBox
+    label: Interactions
+    collapsed: true
+    stretchFactor: 1
+    children:
+      - type: Supplier
+        name: interactionSupplier
+        label: Predictors
+        persistentItems: true
+        stretchFactor: 1
+        events:
+          update: './cplogistic.events::onUpdate_interactionSupplier'
+        children:
+          - type: TargetLayoutBox
+            transferAction: interactions
+            label: Candidate interactions
+            children:
+              - type: ListBox
+                name: interactions
+                valueFilter: unique
+                isTarget: true
+                itemDropBehaviour: emptyspace
+                template:
+                  type: TermLabel
+      - type: LayoutBox
+        margin: large
+        children:
+          - type: CheckBox
+            name: intAllPairs
+          - type: ComboBox
+            name: intMode
+          - type: TextBox
+            name: intAlpha
+            format: number
+            enable: (intMode:lrt)
 
   - type: CollapseBox
     label: Validation

@@ -11,6 +11,12 @@ cpLogisticOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             covs = list(),
             splineVars = list(),
             factors = list(),
+            refLevels = NULL,
+            covScales = NULL,
+            interactions = NULL,
+            intAllPairs = FALSE,
+            intMode = "all",
+            intAlpha = 0.05,
             knots = 4,
             splitVar = NULL,
             splitLevel = "",
@@ -21,7 +27,12 @@ cpLogisticOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             nRepeats = 5,
             seed = 1234,
             ciWidth = 95,
-            coefs = TRUE,
+            descTable = FALSE,
+            descStat = "meanSD",
+            oddsRatios = TRUE,
+            crude = TRUE,
+            predTests = FALSE,
+            coefs = FALSE,
             equation = FALSE,
             sampleSize = FALSE,
             ssSource = "model",
@@ -87,6 +98,64 @@ cpLogisticOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                 permitted=list(
                     "factor"),
                 default=list())
+            private$..refLevels <- jmvcore::OptionArray$new(
+                "refLevels",
+                refLevels,
+                default=NULL,
+                template=jmvcore::OptionGroup$new(
+                    "refLevels",
+                    NULL,
+                    elements=list(
+                        jmvcore::OptionVariable$new(
+                            "var",
+                            NULL),
+                        jmvcore::OptionLevel$new(
+                            "ref",
+                            NULL))))
+            private$..covScales <- jmvcore::OptionArray$new(
+                "covScales",
+                covScales,
+                default=NULL,
+                template=jmvcore::OptionGroup$new(
+                    "covScales",
+                    NULL,
+                    elements=list(
+                        jmvcore::OptionVariable$new(
+                            "var",
+                            NULL),
+                        jmvcore::OptionList$new(
+                            "scale",
+                            NULL,
+                            options=list(
+                                "unit",
+                                "sd",
+                                "ten",
+                                "hundred",
+                                "thousand"),
+                            default="unit"))))
+            private$..interactions <- jmvcore::OptionTerms$new(
+                "interactions",
+                interactions,
+                default=NULL)
+            private$..intAllPairs <- jmvcore::OptionBool$new(
+                "intAllPairs",
+                intAllPairs,
+                default=FALSE)
+            private$..intMode <- jmvcore::OptionList$new(
+                "intMode",
+                intMode,
+                options=list(
+                    "all",
+                    "aic",
+                    "bic",
+                    "lrt"),
+                default="all")
+            private$..intAlpha <- jmvcore::OptionNumber$new(
+                "intAlpha",
+                intAlpha,
+                min=0.0001,
+                max=0.5,
+                default=0.05)
             private$..knots <- jmvcore::OptionInteger$new(
                 "knots",
                 knots,
@@ -151,10 +220,33 @@ cpLogisticOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                 min=50,
                 max=99.9,
                 default=95)
+            private$..descTable <- jmvcore::OptionBool$new(
+                "descTable",
+                descTable,
+                default=FALSE)
+            private$..descStat <- jmvcore::OptionList$new(
+                "descStat",
+                descStat,
+                options=list(
+                    "meanSD",
+                    "medianIQR"),
+                default="meanSD")
+            private$..oddsRatios <- jmvcore::OptionBool$new(
+                "oddsRatios",
+                oddsRatios,
+                default=TRUE)
+            private$..crude <- jmvcore::OptionBool$new(
+                "crude",
+                crude,
+                default=TRUE)
+            private$..predTests <- jmvcore::OptionBool$new(
+                "predTests",
+                predTests,
+                default=FALSE)
             private$..coefs <- jmvcore::OptionBool$new(
                 "coefs",
                 coefs,
-                default=TRUE)
+                default=FALSE)
             private$..equation <- jmvcore::OptionBool$new(
                 "equation",
                 equation,
@@ -274,6 +366,12 @@ cpLogisticOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             self$.addOption(private$..covs)
             self$.addOption(private$..splineVars)
             self$.addOption(private$..factors)
+            self$.addOption(private$..refLevels)
+            self$.addOption(private$..covScales)
+            self$.addOption(private$..interactions)
+            self$.addOption(private$..intAllPairs)
+            self$.addOption(private$..intMode)
+            self$.addOption(private$..intAlpha)
             self$.addOption(private$..knots)
             self$.addOption(private$..splitVar)
             self$.addOption(private$..splitLevel)
@@ -284,6 +382,11 @@ cpLogisticOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             self$.addOption(private$..nRepeats)
             self$.addOption(private$..seed)
             self$.addOption(private$..ciWidth)
+            self$.addOption(private$..descTable)
+            self$.addOption(private$..descStat)
+            self$.addOption(private$..oddsRatios)
+            self$.addOption(private$..crude)
+            self$.addOption(private$..predTests)
             self$.addOption(private$..coefs)
             self$.addOption(private$..equation)
             self$.addOption(private$..sampleSize)
@@ -316,6 +419,12 @@ cpLogisticOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
         covs = function() private$..covs$value,
         splineVars = function() private$..splineVars$value,
         factors = function() private$..factors$value,
+        refLevels = function() private$..refLevels$value,
+        covScales = function() private$..covScales$value,
+        interactions = function() private$..interactions$value,
+        intAllPairs = function() private$..intAllPairs$value,
+        intMode = function() private$..intMode$value,
+        intAlpha = function() private$..intAlpha$value,
         knots = function() private$..knots$value,
         splitVar = function() private$..splitVar$value,
         splitLevel = function() private$..splitLevel$value,
@@ -326,6 +435,11 @@ cpLogisticOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
         nRepeats = function() private$..nRepeats$value,
         seed = function() private$..seed$value,
         ciWidth = function() private$..ciWidth$value,
+        descTable = function() private$..descTable$value,
+        descStat = function() private$..descStat$value,
+        oddsRatios = function() private$..oddsRatios$value,
+        crude = function() private$..crude$value,
+        predTests = function() private$..predTests$value,
         coefs = function() private$..coefs$value,
         equation = function() private$..equation$value,
         sampleSize = function() private$..sampleSize$value,
@@ -357,6 +471,12 @@ cpLogisticOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
         ..covs = NA,
         ..splineVars = NA,
         ..factors = NA,
+        ..refLevels = NA,
+        ..covScales = NA,
+        ..interactions = NA,
+        ..intAllPairs = NA,
+        ..intMode = NA,
+        ..intAlpha = NA,
         ..knots = NA,
         ..splitVar = NA,
         ..splitLevel = NA,
@@ -367,6 +487,11 @@ cpLogisticOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
         ..nRepeats = NA,
         ..seed = NA,
         ..ciWidth = NA,
+        ..descTable = NA,
+        ..descStat = NA,
+        ..oddsRatios = NA,
+        ..crude = NA,
+        ..predTests = NA,
         ..coefs = NA,
         ..equation = NA,
         ..sampleSize = NA,
@@ -402,6 +527,11 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
         samples = function() private$.items[["samples"]],
         extCheck = function() private$.items[["extCheck"]],
         caseMix = function() private$.items[["caseMix"]],
+        descTable = function() private$.items[["descTable"]],
+        orTable = function() private$.items[["orTable"]],
+        testTable = function() private$.items[["testTable"]],
+        intTable = function() private$.items[["intTable"]],
+        subTable = function() private$.items[["subTable"]],
         coefTable = function() private$.items[["coefTable"]],
         equationText = function() private$.items[["equationText"]],
         perfDev = function() private$.items[["perfDev"]],
@@ -455,6 +585,12 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "splineVars",
                     "factors",
                     "knots",
+                    "refLevels",
+                    "covScales",
+                    "interactions",
+                    "intAllPairs",
+                    "intMode",
+                    "intAlpha",
                     "splitVar",
                     "splitLevel",
                     "extFile"),
@@ -492,6 +628,12 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "splineVars",
                     "factors",
                     "knots",
+                    "refLevels",
+                    "covScales",
+                    "interactions",
+                    "intAllPairs",
+                    "intMode",
+                    "intAlpha",
                     "splitVar",
                     "splitLevel",
                     "extFile"),
@@ -524,6 +666,12 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "splineVars",
                     "factors",
                     "knots",
+                    "refLevels",
+                    "covScales",
+                    "interactions",
+                    "intAllPairs",
+                    "intMode",
+                    "intAlpha",
                     "splitVar",
                     "splitLevel",
                     "extFile"),
@@ -553,6 +701,270 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                         `visible`=FALSE))))
             self$add(jmvcore::Table$new(
                 options=options,
+                name="descTable",
+                title="Descriptives (Development Data)",
+                visible="(descTable)",
+                clearWith=list(
+                    "dep",
+                    "eventLevel",
+                    "covs",
+                    "splineVars",
+                    "factors",
+                    "splitVar",
+                    "splitLevel",
+                    "descStat"),
+                columns=list(
+                    list(
+                        `name`="var", 
+                        `title`="", 
+                        `type`="text", 
+                        `combineBelow`=TRUE),
+                    list(
+                        `name`="level", 
+                        `title`="", 
+                        `type`="text"),
+                    list(
+                        `name`="g1", 
+                        `title`="Non-event", 
+                        `type`="text"),
+                    list(
+                        `name`="g2", 
+                        `title`="Event", 
+                        `type`="text"),
+                    list(
+                        `name`="total", 
+                        `title`="Total", 
+                        `type`="text"),
+                    list(
+                        `name`="missing", 
+                        `title`="Missing", 
+                        `type`="text"))))
+            self$add(jmvcore::Table$new(
+                options=options,
+                name="orTable",
+                title="Odds Ratios",
+                visible="(oddsRatios)",
+                clearWith=list(
+                    "dep",
+                    "eventLevel",
+                    "covs",
+                    "splineVars",
+                    "factors",
+                    "knots",
+                    "refLevels",
+                    "covScales",
+                    "interactions",
+                    "intAllPairs",
+                    "intMode",
+                    "intAlpha",
+                    "splitVar",
+                    "splitLevel",
+                    "ciWidth"),
+                columns=list(
+                    list(
+                        `name`="var", 
+                        `title`="", 
+                        `type`="text", 
+                        `combineBelow`=TRUE),
+                    list(
+                        `name`="level", 
+                        `title`="", 
+                        `type`="text"),
+                    list(
+                        `name`="or_u", 
+                        `title`="OR", 
+                        `superTitle`="Crude", 
+                        `type`="number", 
+                        `visible`="(crude)"),
+                    list(
+                        `name`="lower_u", 
+                        `title`="Lower", 
+                        `superTitle`="Crude", 
+                        `type`="number", 
+                        `visible`="(crude)"),
+                    list(
+                        `name`="upper_u", 
+                        `title`="Upper", 
+                        `superTitle`="Crude", 
+                        `type`="number", 
+                        `visible`="(crude)"),
+                    list(
+                        `name`="p_u", 
+                        `title`="p", 
+                        `superTitle`="Crude", 
+                        `type`="number", 
+                        `format`="zto,pvalue", 
+                        `visible`="(crude)"),
+                    list(
+                        `name`="or", 
+                        `title`="OR", 
+                        `superTitle`="Adjusted", 
+                        `type`="number"),
+                    list(
+                        `name`="lower", 
+                        `title`="Lower", 
+                        `superTitle`="Adjusted", 
+                        `type`="number"),
+                    list(
+                        `name`="upper", 
+                        `title`="Upper", 
+                        `superTitle`="Adjusted", 
+                        `type`="number"),
+                    list(
+                        `name`="p", 
+                        `title`="p", 
+                        `superTitle`="Adjusted", 
+                        `type`="number", 
+                        `format`="zto,pvalue"))))
+            self$add(jmvcore::Table$new(
+                options=options,
+                name="testTable",
+                title="Likelihood Ratio Tests",
+                visible="(predTests)",
+                clearWith=list(
+                    "dep",
+                    "eventLevel",
+                    "covs",
+                    "splineVars",
+                    "factors",
+                    "knots",
+                    "refLevels",
+                    "covScales",
+                    "interactions",
+                    "intAllPairs",
+                    "intMode",
+                    "intAlpha",
+                    "splitVar",
+                    "splitLevel"),
+                columns=list(
+                    list(
+                        `name`="term", 
+                        `title`="Term", 
+                        `type`="text"),
+                    list(
+                        `name`="chisq", 
+                        `title`="\u03C7\u00B2", 
+                        `type`="number"),
+                    list(
+                        `name`="df", 
+                        `title`="df", 
+                        `type`="integer"),
+                    list(
+                        `name`="p", 
+                        `title`="p", 
+                        `type`="number", 
+                        `format`="zto,pvalue"))))
+            self$add(jmvcore::Table$new(
+                options=options,
+                name="intTable",
+                title="Interactions \u2014 Screening and Selection",
+                visible=FALSE,
+                clearWith=list(
+                    "dep",
+                    "eventLevel",
+                    "covs",
+                    "splineVars",
+                    "factors",
+                    "knots",
+                    "refLevels",
+                    "covScales",
+                    "interactions",
+                    "intAllPairs",
+                    "intMode",
+                    "intAlpha",
+                    "splitVar",
+                    "splitLevel",
+                    "validation",
+                    "nBoot",
+                    "nFolds",
+                    "nRepeats",
+                    "seed"),
+                columns=list(
+                    list(
+                        `name`="term", 
+                        `title`="Term", 
+                        `type`="text"),
+                    list(
+                        `name`="chisq", 
+                        `title`="\u03C7\u00B2", 
+                        `type`="number"),
+                    list(
+                        `name`="df", 
+                        `title`="df", 
+                        `type`="integer"),
+                    list(
+                        `name`="p", 
+                        `title`="p", 
+                        `type`="number", 
+                        `format`="zto,pvalue"),
+                    list(
+                        `name`="daic", 
+                        `title`="\u0394AIC", 
+                        `type`="number"),
+                    list(
+                        `name`="dbic", 
+                        `title`="\u0394BIC", 
+                        `type`="number"),
+                    list(
+                        `name`="kept", 
+                        `title`="In model", 
+                        `type`="text"),
+                    list(
+                        `name`="freq", 
+                        `title`="Resampled fits", 
+                        `type`="number", 
+                        `format`="pc", 
+                        `visible`=FALSE))))
+            self$add(jmvcore::Table$new(
+                options=options,
+                name="subTable",
+                title="Effects Within Subgroups",
+                visible=FALSE,
+                clearWith=list(
+                    "dep",
+                    "eventLevel",
+                    "covs",
+                    "splineVars",
+                    "factors",
+                    "knots",
+                    "refLevels",
+                    "covScales",
+                    "interactions",
+                    "intAllPairs",
+                    "intMode",
+                    "intAlpha",
+                    "splitVar",
+                    "splitLevel",
+                    "ciWidth"),
+                columns=list(
+                    list(
+                        `name`="effect", 
+                        `title`="Effect", 
+                        `type`="text", 
+                        `combineBelow`=TRUE),
+                    list(
+                        `name`="within", 
+                        `title`="Within", 
+                        `type`="text"),
+                    list(
+                        `name`="or", 
+                        `title`="OR", 
+                        `type`="number"),
+                    list(
+                        `name`="lower", 
+                        `title`="Lower", 
+                        `type`="number"),
+                    list(
+                        `name`="upper", 
+                        `title`="Upper", 
+                        `type`="number"),
+                    list(
+                        `name`="p", 
+                        `title`="p", 
+                        `type`="number", 
+                        `format`="zto,pvalue"))))
+            self$add(jmvcore::Table$new(
+                options=options,
                 name="coefTable",
                 title="Model Coefficients",
                 visible="(coefs)",
@@ -563,6 +975,12 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "splineVars",
                     "factors",
                     "knots",
+                    "refLevels",
+                    "covScales",
+                    "interactions",
+                    "intAllPairs",
+                    "intMode",
+                    "intAlpha",
                     "splitVar",
                     "splitLevel",
                     "ciWidth"),
@@ -610,6 +1028,12 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "splineVars",
                     "factors",
                     "knots",
+                    "refLevels",
+                    "covScales",
+                    "interactions",
+                    "intAllPairs",
+                    "intMode",
+                    "intAlpha",
                     "splitVar",
                     "splitLevel")))
             self$add(jmvcore::Table$new(
@@ -623,6 +1047,12 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "splineVars",
                     "factors",
                     "knots",
+                    "refLevels",
+                    "covScales",
+                    "interactions",
+                    "intAllPairs",
+                    "intMode",
+                    "intAlpha",
                     "splitVar",
                     "splitLevel",
                     "validation",
@@ -677,6 +1107,12 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "splineVars",
                     "factors",
                     "knots",
+                    "refLevels",
+                    "covScales",
+                    "interactions",
+                    "intAllPairs",
+                    "intMode",
+                    "intAlpha",
                     "splitVar",
                     "splitLevel",
                     "extFile",
@@ -722,6 +1158,12 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "splineVars",
                     "factors",
                     "knots",
+                    "refLevels",
+                    "covScales",
+                    "interactions",
+                    "intAllPairs",
+                    "intMode",
+                    "intAlpha",
                     "splitVar",
                     "splitLevel",
                     "validation",
@@ -748,6 +1190,12 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "splineVars",
                     "factors",
                     "knots",
+                    "refLevels",
+                    "covScales",
+                    "interactions",
+                    "intAllPairs",
+                    "intMode",
+                    "intAlpha",
                     "splitVar",
                     "splitLevel",
                     "extFile",
@@ -791,6 +1239,12 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "splineVars",
                     "factors",
                     "knots",
+                    "refLevels",
+                    "covScales",
+                    "interactions",
+                    "intAllPairs",
+                    "intMode",
+                    "intAlpha",
                     "splitVar",
                     "splitLevel",
                     "extFile",
@@ -836,6 +1290,12 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "splineVars",
                     "factors",
                     "knots",
+                    "refLevels",
+                    "covScales",
+                    "interactions",
+                    "intAllPairs",
+                    "intMode",
+                    "intAlpha",
                     "splitVar",
                     "splitLevel",
                     "extFile",
@@ -878,6 +1338,12 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "splineVars",
                     "factors",
                     "knots",
+                    "refLevels",
+                    "covScales",
+                    "interactions",
+                    "intAllPairs",
+                    "intMode",
+                    "intAlpha",
                     "splitVar",
                     "splitLevel",
                     "ssSource",
@@ -911,6 +1377,12 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "splineVars",
                     "factors",
                     "knots",
+                    "refLevels",
+                    "covScales",
+                    "interactions",
+                    "intAllPairs",
+                    "intMode",
+                    "intAlpha",
                     "splitVar",
                     "splitLevel",
                     "shapleyMeasure",
@@ -945,6 +1417,12 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "splineVars",
                     "factors",
                     "knots",
+                    "refLevels",
+                    "covScales",
+                    "interactions",
+                    "intAllPairs",
+                    "intMode",
+                    "intAlpha",
                     "splitVar",
                     "splitLevel",
                     "extFile",
@@ -983,6 +1461,12 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "splineVars",
                     "factors",
                     "knots",
+                    "refLevels",
+                    "covScales",
+                    "interactions",
+                    "intAllPairs",
+                    "intMode",
+                    "intAlpha",
                     "splitVar",
                     "splitLevel"),
                 columns=list(
@@ -1034,6 +1518,12 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                                 "splineVars",
                                 "factors",
                                 "knots",
+                                "refLevels",
+                                "covScales",
+                                "interactions",
+                                "intAllPairs",
+                                "intMode",
+                                "intAlpha",
                                 "splitVar",
                                 "splitLevel",
                                 "extFile")))
@@ -1052,6 +1542,12 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                                 "splineVars",
                                 "factors",
                                 "knots",
+                                "refLevels",
+                                "covScales",
+                                "interactions",
+                                "intAllPairs",
+                                "intMode",
+                                "intAlpha",
                                 "splitVar",
                                 "splitLevel",
                                 "extFile",
@@ -1071,6 +1567,12 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                                 "splineVars",
                                 "factors",
                                 "knots",
+                                "refLevels",
+                                "covScales",
+                                "interactions",
+                                "intAllPairs",
+                                "intMode",
+                                "intAlpha",
                                 "splitVar",
                                 "splitLevel",
                                 "extFile")))
@@ -1089,6 +1591,12 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                                 "splineVars",
                                 "factors",
                                 "knots",
+                                "refLevels",
+                                "covScales",
+                                "interactions",
+                                "intAllPairs",
+                                "intMode",
+                                "intAlpha",
                                 "splitVar",
                                 "splitLevel",
                                 "extFile",
@@ -1108,6 +1616,12 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                                 "splineVars",
                                 "factors",
                                 "knots",
+                                "refLevels",
+                                "covScales",
+                                "interactions",
+                                "intAllPairs",
+                                "intMode",
+                                "intAlpha",
                                 "splitVar",
                                 "splitLevel",
                                 "shapleyMeasure",
@@ -1127,6 +1641,12 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                                 "splineVars",
                                 "factors",
                                 "knots",
+                                "refLevels",
+                                "covScales",
+                                "interactions",
+                                "intAllPairs",
+                                "intMode",
+                                "intAlpha",
                                 "splitVar",
                                 "splitLevel",
                                 "extFile",
@@ -1147,6 +1667,12 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                                 "splineVars",
                                 "factors",
                                 "knots",
+                                "refLevels",
+                                "covScales",
+                                "interactions",
+                                "intAllPairs",
+                                "intMode",
+                                "intAlpha",
                                 "splitVar",
                                 "splitLevel")))
                         self$add(jmvcore::Image$new(
@@ -1164,6 +1690,12 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                                 "splineVars",
                                 "factors",
                                 "knots",
+                                "refLevels",
+                                "covScales",
+                                "interactions",
+                                "intAllPairs",
+                                "intMode",
+                                "intAlpha",
                                 "splitVar",
                                 "splitLevel",
                                 "shapRow")))
@@ -1182,6 +1714,12 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                                 "splineVars",
                                 "factors",
                                 "knots",
+                                "refLevels",
+                                "covScales",
+                                "interactions",
+                                "intAllPairs",
+                                "intMode",
+                                "intAlpha",
                                 "splitVar",
                                 "splitLevel",
                                 "validation",
@@ -1202,6 +1740,12 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                                 "splineVars",
                                 "factors",
                                 "knots",
+                                "refLevels",
+                                "covScales",
+                                "interactions",
+                                "intAllPairs",
+                                "intMode",
+                                "intAlpha",
                                 "splitVar",
                                 "splitLevel",
                                 "validation",
@@ -1221,6 +1765,12 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "splineVars",
                     "factors",
                     "knots",
+                    "refLevels",
+                    "covScales",
+                    "interactions",
+                    "intAllPairs",
+                    "intMode",
+                    "intAlpha",
                     "splitVar",
                     "splitLevel",
                     "extFile")))
@@ -1238,6 +1788,12 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "splineVars",
                     "factors",
                     "knots",
+                    "refLevels",
+                    "covScales",
+                    "interactions",
+                    "intAllPairs",
+                    "intMode",
+                    "intAlpha",
                     "splitVar",
                     "splitLevel",
                     "extFile")))}))
@@ -1285,6 +1841,19 @@ cpLogisticBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
 #' @param splineVars numeric predictors entered as restricted cubic splines,
 #'   allowing a non-linear association
 #' @param factors categorical predictors; the first level is the reference
+#' @param refLevels a list of lists \code{list(var = , ref = )} with the
+#'   reference level of each factor (default: the first level)
+#' @param covScales a list of lists \code{list(var = , scale = )}: the unit of
+#'   the odds ratio of each linear covariate, \code{'unit'} (default),
+#'   \code{'sd'}, \code{'ten'}, \code{'hundred'} or \code{'thousand'}; the
+#'   covariate is divided by it before fitting, so predictions do not change
+#' @param interactions a list of pairs of predictors, the candidate
+#'   interaction terms
+#' @param intAllPairs .
+#' @param intMode \code{'all'} keeps every candidate interaction;
+#'   \code{'aic'}, \code{'bic'} or \code{'lrt'} select them forward (repeated
+#'   within each bootstrap or cross-validation fit)
+#' @param intAlpha .
 #' @param knots number of knots of the restricted cubic splines (3 to 7)
 #' @param splitVar a variable that marks the rows used for validation only
 #'   (e.g. a later period or another centre)
@@ -1299,6 +1868,11 @@ cpLogisticBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
 #' @param nRepeats .
 #' @param seed .
 #' @param ciWidth .
+#' @param descTable .
+#' @param descStat .
+#' @param oddsRatios .
+#' @param crude .
+#' @param predTests .
 #' @param coefs .
 #' @param equation .
 #' @param sampleSize .
@@ -1328,6 +1902,11 @@ cpLogisticBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
 #'   \code{results$samples} \tab \tab \tab \tab \tab a table \cr
 #'   \code{results$extCheck} \tab \tab \tab \tab \tab a table \cr
 #'   \code{results$caseMix} \tab \tab \tab \tab \tab a table \cr
+#'   \code{results$descTable} \tab \tab \tab \tab \tab a table \cr
+#'   \code{results$orTable} \tab \tab \tab \tab \tab a table \cr
+#'   \code{results$testTable} \tab \tab \tab \tab \tab a table \cr
+#'   \code{results$intTable} \tab \tab \tab \tab \tab a table \cr
+#'   \code{results$subTable} \tab \tab \tab \tab \tab a table \cr
 #'   \code{results$coefTable} \tab \tab \tab \tab \tab a table \cr
 #'   \code{results$equationText} \tab \tab \tab \tab \tab a preformatted \cr
 #'   \code{results$perfDev} \tab \tab \tab \tab \tab a table \cr
@@ -1368,6 +1947,12 @@ cpLogistic <- function(
     covs = list(),
     splineVars = list(),
     factors = list(),
+    refLevels = NULL,
+    covScales = NULL,
+    interactions = NULL,
+    intAllPairs = FALSE,
+    intMode = "all",
+    intAlpha = 0.05,
     knots = 4,
     splitVar = NULL,
     splitLevel = "",
@@ -1378,7 +1963,12 @@ cpLogistic <- function(
     nRepeats = 5,
     seed = 1234,
     ciWidth = 95,
-    coefs = TRUE,
+    descTable = FALSE,
+    descStat = "meanSD",
+    oddsRatios = TRUE,
+    crude = TRUE,
+    predTests = FALSE,
+    coefs = FALSE,
     equation = FALSE,
     sampleSize = FALSE,
     ssSource = "model",
@@ -1422,6 +2012,7 @@ cpLogistic <- function(
     for (v in dep) if (v %in% names(data)) data[[v]] <- as.factor(data[[v]])
     for (v in factors) if (v %in% names(data)) data[[v]] <- as.factor(data[[v]])
     for (v in splitVar) if (v %in% names(data)) data[[v]] <- as.factor(data[[v]])
+    if (inherits(interactions, "formula")) interactions <- jmvcore::decomposeFormula(interactions)
 
     options <- cpLogisticOptions$new(
         dep = dep,
@@ -1429,6 +2020,12 @@ cpLogistic <- function(
         covs = covs,
         splineVars = splineVars,
         factors = factors,
+        refLevels = refLevels,
+        covScales = covScales,
+        interactions = interactions,
+        intAllPairs = intAllPairs,
+        intMode = intMode,
+        intAlpha = intAlpha,
         knots = knots,
         splitVar = splitVar,
         splitLevel = splitLevel,
@@ -1439,6 +2036,11 @@ cpLogistic <- function(
         nRepeats = nRepeats,
         seed = seed,
         ciWidth = ciWidth,
+        descTable = descTable,
+        descStat = descStat,
+        oddsRatios = oddsRatios,
+        crude = crude,
+        predTests = predTests,
         coefs = coefs,
         equation = equation,
         sampleSize = sampleSize,

@@ -35,6 +35,12 @@ items:
         - splineVars
         - factors
         - knots
+        - refLevels
+        - covScales
+        - interactions
+        - intAllPairs
+        - intMode
+        - intAlpha
         - splitVar
         - splitLevel
         - extFile
@@ -100,6 +106,236 @@ items:
           type: text
           visible: false
 
+    - name: descTable
+      title: Descriptives (Development Data)
+      type: Table
+      visible: (descTable)
+      clearWith:
+        - dep
+        - eventLevel
+        - covs
+        - splineVars
+        - factors
+        - splitVar
+        - splitLevel
+        - descStat
+      columns:
+        - name: var
+          title: ''
+          type: text
+          combineBelow: true
+        - name: level
+          title: ''
+          type: text
+        - name: g1
+          title: Non-event
+          type: text
+        - name: g2
+          title: Event
+          type: text
+        - name: total
+          title: Total
+          type: text
+        - name: missing
+          title: Missing
+          type: text
+
+    - name: orTable
+      title: Odds Ratios
+      type: Table
+      visible: (oddsRatios)
+      clearWith:
+        - dep
+        - eventLevel
+        - covs
+        - splineVars
+        - factors
+        - knots
+        - refLevels
+        - covScales
+        - interactions
+        - intAllPairs
+        - intMode
+        - intAlpha
+        - splitVar
+        - splitLevel
+        - ciWidth
+      columns:
+        - name: var
+          title: ''
+          type: text
+          combineBelow: true
+        - name: level
+          title: ''
+          type: text
+        - name: or_u
+          title: OR
+          superTitle: Crude
+          type: number
+          visible: (crude)
+        - name: lower_u
+          title: Lower
+          superTitle: Crude
+          type: number
+          visible: (crude)
+        - name: upper_u
+          title: Upper
+          superTitle: Crude
+          type: number
+          visible: (crude)
+        - name: p_u
+          title: p
+          superTitle: Crude
+          type: number
+          format: zto,pvalue
+          visible: (crude)
+        - name: or
+          title: OR
+          superTitle: Adjusted
+          type: number
+        - name: lower
+          title: Lower
+          superTitle: Adjusted
+          type: number
+        - name: upper
+          title: Upper
+          superTitle: Adjusted
+          type: number
+        - name: p
+          title: p
+          superTitle: Adjusted
+          type: number
+          format: zto,pvalue
+
+    - name: testTable
+      title: Likelihood Ratio Tests
+      type: Table
+      visible: (predTests)
+      clearWith:
+        - dep
+        - eventLevel
+        - covs
+        - splineVars
+        - factors
+        - knots
+        - refLevels
+        - covScales
+        - interactions
+        - intAllPairs
+        - intMode
+        - intAlpha
+        - splitVar
+        - splitLevel
+      columns:
+        - name: term
+          title: Term
+          type: text
+        - name: chisq
+          title: χ²
+          type: number
+        - name: df
+          title: df
+          type: integer
+        - name: p
+          title: p
+          type: number
+          format: zto,pvalue
+
+    - name: intTable
+      title: Interactions — Screening and Selection
+      type: Table
+      visible: false
+      clearWith:
+        - dep
+        - eventLevel
+        - covs
+        - splineVars
+        - factors
+        - knots
+        - refLevels
+        - covScales
+        - interactions
+        - intAllPairs
+        - intMode
+        - intAlpha
+        - splitVar
+        - splitLevel
+        - validation
+        - nBoot
+        - nFolds
+        - nRepeats
+        - seed
+      columns:
+        - name: term
+          title: Term
+          type: text
+        - name: chisq
+          title: χ²
+          type: number
+        - name: df
+          title: df
+          type: integer
+        - name: p
+          title: p
+          type: number
+          format: zto,pvalue
+        - name: daic
+          title: ΔAIC
+          type: number
+        - name: dbic
+          title: ΔBIC
+          type: number
+        - name: kept
+          title: In model
+          type: text
+        - name: freq
+          title: Resampled fits
+          type: number
+          format: pc
+          visible: false
+
+    - name: subTable
+      title: Effects Within Subgroups
+      type: Table
+      visible: false
+      clearWith:
+        - dep
+        - eventLevel
+        - covs
+        - splineVars
+        - factors
+        - knots
+        - refLevels
+        - covScales
+        - interactions
+        - intAllPairs
+        - intMode
+        - intAlpha
+        - splitVar
+        - splitLevel
+        - ciWidth
+      columns:
+        - name: effect
+          title: Effect
+          type: text
+          combineBelow: true
+        - name: within
+          title: Within
+          type: text
+        - name: or
+          title: OR
+          type: number
+        - name: lower
+          title: Lower
+          type: number
+        - name: upper
+          title: Upper
+          type: number
+        - name: p
+          title: p
+          type: number
+          format: zto,pvalue
+
     - name: coefTable
       title: Model Coefficients
       type: Table
@@ -111,6 +347,12 @@ items:
         - splineVars
         - factors
         - knots
+        - refLevels
+        - covScales
+        - interactions
+        - intAllPairs
+        - intMode
+        - intAlpha
         - splitVar
         - splitLevel
         - ciWidth
@@ -151,6 +393,12 @@ items:
         - splineVars
         - factors
         - knots
+        - refLevels
+        - covScales
+        - interactions
+        - intAllPairs
+        - intMode
+        - intAlpha
         - splitVar
         - splitLevel
 
@@ -164,6 +412,12 @@ items:
         - splineVars
         - factors
         - knots
+        - refLevels
+        - covScales
+        - interactions
+        - intAllPairs
+        - intMode
+        - intAlpha
         - splitVar
         - splitLevel
         - validation
@@ -211,6 +465,12 @@ items:
         - splineVars
         - factors
         - knots
+        - refLevels
+        - covScales
+        - interactions
+        - intAllPairs
+        - intMode
+        - intAlpha
         - splitVar
         - splitLevel
         - extFile
@@ -250,6 +510,12 @@ items:
         - splineVars
         - factors
         - knots
+        - refLevels
+        - covScales
+        - interactions
+        - intAllPairs
+        - intMode
+        - intAlpha
         - splitVar
         - splitLevel
         - validation
@@ -274,6 +540,12 @@ items:
         - splineVars
         - factors
         - knots
+        - refLevels
+        - covScales
+        - interactions
+        - intAllPairs
+        - intMode
+        - intAlpha
         - splitVar
         - splitLevel
         - extFile
@@ -339,6 +611,12 @@ items:
         - splineVars
         - factors
         - knots
+        - refLevels
+        - covScales
+        - interactions
+        - intAllPairs
+        - intMode
+        - intAlpha
         - splitVar
         - splitLevel
         - extFile
@@ -375,6 +653,12 @@ items:
         - splineVars
         - factors
         - knots
+        - refLevels
+        - covScales
+        - interactions
+        - intAllPairs
+        - intMode
+        - intAlpha
         - splitVar
         - splitLevel
         - ssSource
@@ -404,6 +688,12 @@ items:
         - splineVars
         - factors
         - knots
+        - refLevels
+        - covScales
+        - interactions
+        - intAllPairs
+        - intMode
+        - intAlpha
         - splitVar
         - splitLevel
         - shapleyMeasure
@@ -434,6 +724,12 @@ items:
         - splineVars
         - factors
         - knots
+        - refLevels
+        - covScales
+        - interactions
+        - intAllPairs
+        - intMode
+        - intAlpha
         - splitVar
         - splitLevel
         - extFile
@@ -467,6 +763,12 @@ items:
         - splineVars
         - factors
         - knots
+        - refLevels
+        - covScales
+        - interactions
+        - intAllPairs
+        - intMode
+        - intAlpha
         - splitVar
         - splitLevel
       columns:
@@ -508,6 +810,12 @@ items:
             - splineVars
             - factors
             - knots
+            - refLevels
+            - covScales
+            - interactions
+            - intAllPairs
+            - intMode
+            - intAlpha
             - splitVar
             - splitLevel
             - extFile
@@ -536,6 +844,12 @@ items:
             - splineVars
             - factors
             - knots
+            - refLevels
+            - covScales
+            - interactions
+            - intAllPairs
+            - intMode
+            - intAlpha
             - splitVar
             - splitLevel
             - extFile
@@ -555,6 +869,12 @@ items:
             - splineVars
             - factors
             - knots
+            - refLevels
+            - covScales
+            - interactions
+            - intAllPairs
+            - intMode
+            - intAlpha
             - splitVar
             - splitLevel
             - shapleyMeasure
@@ -574,6 +894,12 @@ items:
             - splineVars
             - factors
             - knots
+            - refLevels
+            - covScales
+            - interactions
+            - intAllPairs
+            - intMode
+            - intAlpha
             - splitVar
             - splitLevel
             - extFile
@@ -594,6 +920,12 @@ items:
             - splineVars
             - factors
             - knots
+            - refLevels
+            - covScales
+            - interactions
+            - intAllPairs
+            - intMode
+            - intAlpha
             - splitVar
             - splitLevel
 
@@ -611,6 +943,12 @@ items:
             - splineVars
             - factors
             - knots
+            - refLevels
+            - covScales
+            - interactions
+            - intAllPairs
+            - intMode
+            - intAlpha
             - splitVar
             - splitLevel
             - shapRow
@@ -629,6 +967,12 @@ items:
             - splineVars
             - factors
             - knots
+            - refLevels
+            - covScales
+            - interactions
+            - intAllPairs
+            - intMode
+            - intAlpha
             - splitVar
             - splitLevel
             - validation

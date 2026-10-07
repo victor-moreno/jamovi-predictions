@@ -14,7 +14,9 @@ cp_shapley_r2 <- function(X, y, spec, fam, measure = "r2mf", maxExact = 10, nPer
         if (!length(set)) return(0)
         key <- paste(sort(set), collapse = ",")
         if (!is.null(cache[[key]])) return(cache[[key]])
-        cols <- spec$colVar %in% vars[set]
+        # a column enters when all its variables are in the coalition (an
+        # interaction joins once both of its variables have)
+        cols <- vapply(spec$colVars, function(vs) all(vs %in% vars[set]), TRUE)
         Xs <- X[, cols, drop = FALSE]
         beta <- fam$fit(Xs, y)
         v <- fam$r2(y, fam$lp(beta, Xs), measure)
@@ -79,21 +81,35 @@ cp_perm_importance <- function(beta, spec, df, y, fam, nPerm = 20, seed = 1,
     out
 }
 
-# SHAP values of an additive model on the linear-predictor scale (log-odds for
-# logistic, log hazard for Cox). With main effects only, the exact
-# interventional Shapley value of variable j for individual i is
-#   phi_ij = sum over j's columns c of beta_c * (X_ic - mean of X_c in the background)
-# (Aas, Jullum & Loland 2021), and the phi of an individual add up to its linear
-# predictor minus the mean linear predictor of the background (development) data.
+# SHAP values of the model on the linear-predictor scale (log-odds for
+# logistic, log hazard for Cox): exact interventional Shapley values
+# (Aas, Jullum & Loland 2021), the background being the development data.
+# A main-effect column c of variable j gives phi_ij += beta_c (X_ic - mean X_c).
+# An interaction column beta_c a(x_A) b(x_B) is a two-player game with
+#   v0 = beta_c mean(a b), vA = beta_c a_i mean(b), vB = beta_c mean(a) b_i, vAB = beta_c a_i b_i
+# so phi_A = ((vA - v0) + (vAB - vB)) / 2 and phi_B = ((vB - v0) + (vAB - vA)) / 2.
+# The phi of an individual add up to its linear predictor minus the mean
+# linear predictor of the background.
 cp_shap <- function(beta, spec, X, Xbg = X, intercept = TRUE) {
     b <- beta; b[is.na(b)] <- 0
     if (intercept) b <- b[-1]
-    centred <- sweep(X, 2, colMeans(Xbg))
-    contrib <- sweep(centred, 2, b, `*`)
     vars <- names(spec$vars)
-    phi <- vapply(vars, function(v) rowSums(contrib[, spec$colVar == v, drop = FALSE]),
-                  numeric(nrow(X)))
-    phi <- matrix(phi, nrow = nrow(X), dimnames = list(NULL, vars))
+    phi <- matrix(0, nrow(X), length(vars), dimnames = list(NULL, vars))
+    for (c in seq_along(spec$columns)) {
+        if (b[c] == 0) next
+        ab <- spec$colParts[[c]]
+        if (is.null(ab)) {
+            v <- spec$colVars[[c]]
+            phi[, v] <- phi[, v] + b[c] * (X[, c] - mean(Xbg[, c]))
+        } else {
+            vs <- spec$colVars[[c]]
+            a <- X[, ab[1]]; bb <- X[, ab[2]]
+            v0 <- b[c] * mean(Xbg[, c]); vA <- b[c] * a * mean(Xbg[, ab[2]])
+            vB <- b[c] * mean(Xbg[, ab[1]]) * bb; vAB <- b[c] * a * bb
+            phi[, vs[1]] <- phi[, vs[1]] + ((vA - v0) + (vAB - vB)) / 2
+            phi[, vs[2]] <- phi[, vs[2]] + ((vB - v0) + (vAB - vA)) / 2
+        }
+    }
     attr(phi, "base") <- sum(c(if (intercept) beta[1] else 0, b * colMeans(Xbg)), na.rm = TRUE)
     phi
 }
