@@ -1,0 +1,662 @@
+---
+name:  cpLogistic
+title: Binary Outcome (Logistic)
+jrs:   '1.1'
+
+refs:
+    - clinpred
+    - steyerberg2019
+    - tripodai
+    - harrell1996
+    - vancalster2016
+    - austin2019
+    - riley2020
+    - riley2023
+    - vickers2006
+    - debray2015
+    - lmg
+    - lundberg2017
+    - aas2021
+
+items:
+    - name: instructions
+      title: Instructions
+      type: Html
+      visible: true
+      clearWith: []
+
+    - name: samples
+      title: Data
+      type: Table
+      clearWith: &model
+        - dep
+        - eventLevel
+        - covs
+        - splineVars
+        - factors
+        - knots
+        - splitVar
+        - splitLevel
+        - extFile
+      columns:
+        - name: set
+          title: Data set
+          type: text
+        - name: n
+          title: N
+          type: integer
+        - name: events
+          title: Events
+          type: integer
+        - name: pct
+          title: '%'
+          type: number
+          format: pc
+        - name: excluded
+          title: Excluded (missing)
+          type: integer
+
+    - name: extCheck
+      title: External Data — Variable Check
+      type: Table
+      visible: false
+      clearWith: *model
+      columns:
+        - name: var
+          title: Variable
+          type: text
+        - name: role
+          title: Role
+          type: text
+        - name: status
+          title: Status
+          type: text
+        - name: details
+          title: Details
+          type: text
+
+    - name: caseMix
+      title: Case-mix
+      type: Table
+      visible: false
+      clearWith: *model
+      columns:
+        - name: var
+          title: ''
+          type: text
+          combineBelow: true
+        - name: level
+          title: ''
+          type: text
+        - name: dev
+          title: Development
+          type: text
+        - name: split
+          title: Validation (rows)
+          type: text
+          visible: false
+        - name: ext
+          title: External
+          type: text
+          visible: false
+
+    - name: coefTable
+      title: Model Coefficients
+      type: Table
+      visible: (coefs)
+      clearWith:
+        - dep
+        - eventLevel
+        - covs
+        - splineVars
+        - factors
+        - knots
+        - splitVar
+        - splitLevel
+        - ciWidth
+      columns:
+        - name: term
+          title: Predictor
+          type: text
+        - name: est
+          title: β
+          type: number
+        - name: se
+          title: SE
+          type: number
+        - name: or
+          title: Odds ratio
+          type: number
+        - name: lower
+          title: Lower
+          type: number
+          superTitle: CI
+        - name: upper
+          title: Upper
+          type: number
+          superTitle: CI
+        - name: p
+          title: p
+          type: number
+          format: zto,pvalue
+
+    - name: equationText
+      title: Model Equation
+      type: Preformatted
+      visible: (equation)
+      clearWith:
+        - dep
+        - eventLevel
+        - covs
+        - splineVars
+        - factors
+        - knots
+        - splitVar
+        - splitLevel
+
+    - name: perfDev
+      title: Performance in the Development Data
+      type: Table
+      clearWith:
+        - dep
+        - eventLevel
+        - covs
+        - splineVars
+        - factors
+        - knots
+        - splitVar
+        - splitLevel
+        - validation
+        - nBoot
+        - nFolds
+        - nRepeats
+        - seed
+        - ciWidth
+      columns:
+        - name: group
+          title: ''
+          type: text
+          combineBelow: true
+        - name: metric
+          title: Measure
+          type: text
+        - name: apparent
+          title: Apparent
+          type: number
+        - name: lower
+          title: Lower
+          type: number
+          superTitle: CI
+        - name: upper
+          title: Upper
+          type: number
+          superTitle: CI
+        - name: optimism
+          title: Optimism
+          type: number
+          visible: false
+        - name: corrected
+          title: Corrected
+          type: number
+          visible: false
+
+    - name: perfVal
+      title: Performance in the Validation Data
+      type: Table
+      visible: false
+      clearWith:
+        - dep
+        - eventLevel
+        - covs
+        - splineVars
+        - factors
+        - knots
+        - splitVar
+        - splitLevel
+        - extFile
+        - ciWidth
+      columns:
+        - name: set
+          title: Data set
+          type: text
+          combineBelow: true
+        - name: group
+          title: ''
+          type: text
+          combineBelow: true
+        - name: metric
+          title: Measure
+          type: text
+        - name: est
+          title: Estimate
+          type: number
+        - name: lower
+          title: Lower
+          type: number
+          superTitle: CI
+        - name: upper
+          title: Upper
+          type: number
+          superTitle: CI
+
+    - name: stabTable
+      title: Stability and Shrinkage (Bootstrap)
+      type: Table
+      visible: false
+      clearWith:
+        - dep
+        - eventLevel
+        - covs
+        - splineVars
+        - factors
+        - knots
+        - splitVar
+        - splitLevel
+        - validation
+        - nBoot
+        - seed
+      columns:
+        - name: measure
+          title: Measure
+          type: text
+        - name: value
+          title: Value
+          type: number
+
+    - name: confTable
+      title: Classification — Counts
+      type: Table
+      visible: (classif)
+      clearWith: &classif
+        - dep
+        - eventLevel
+        - covs
+        - splineVars
+        - factors
+        - knots
+        - splitVar
+        - splitLevel
+        - extFile
+        - thrMethod
+        - threshold
+        - ciWidth
+      columns:
+        - name: set
+          title: Data set
+          type: text
+        - name: threshold
+          title: Threshold
+          type: number
+        - name: tp
+          title: TP
+          type: integer
+        - name: fp
+          title: FP
+          type: integer
+        - name: fn
+          title: FN
+          type: integer
+        - name: tn
+          title: TN
+          type: integer
+
+    - name: classTable
+      title: Classification — Accuracy
+      type: Table
+      visible: (classif)
+      clearWith: *classif
+      columns:
+        - name: set
+          title: Data set
+          type: text
+          combineBelow: true
+        - name: measure
+          title: Measure
+          type: text
+        - name: est
+          title: Estimate
+          type: number
+          format: pc
+        - name: lower
+          title: Lower
+          type: number
+          format: pc
+          superTitle: CI
+        - name: upper
+          title: Upper
+          type: number
+          format: pc
+          superTitle: CI
+
+    - name: nbTable
+      title: Net Benefit
+      type: Table
+      visible: (dca)
+      clearWith:
+        - dep
+        - eventLevel
+        - covs
+        - splineVars
+        - factors
+        - knots
+        - splitVar
+        - splitLevel
+        - extFile
+        - nbThresholds
+      columns:
+        - name: set
+          title: Data set
+          type: text
+          combineBelow: true
+        - name: threshold
+          title: Threshold
+          type: number
+        - name: model
+          title: Model
+          type: number
+        - name: all
+          title: Treat all
+          type: number
+        - name: gain
+          title: Gain
+          type: number
+        - name: avoided
+          title: Interventions avoided per 100
+          type: number
+
+    - name: ssTable
+      title: Sample Size Adequacy (Riley et al. 2020)
+      type: Table
+      visible: (sampleSize)
+      clearWith:
+        - dep
+        - eventLevel
+        - covs
+        - splineVars
+        - factors
+        - knots
+        - splitVar
+        - splitLevel
+        - ssSource
+        - ssR2
+      columns:
+        - name: criterion
+          title: Criterion
+          type: text
+        - name: n
+          title: Required N
+          type: integer
+        - name: events
+          title: Required events
+          type: number
+        - name: epp
+          title: Events per parameter
+          type: number
+
+    - name: shapleyTable
+      title: Importance — Shapley Decomposition of R²
+      type: Table
+      visible: (shapley)
+      clearWith:
+        - dep
+        - eventLevel
+        - covs
+        - splineVars
+        - factors
+        - knots
+        - splitVar
+        - splitLevel
+        - shapleyMeasure
+        - seed
+      columns:
+        - name: var
+          title: Predictor
+          type: text
+        - name: shapley
+          title: R² share
+          type: number
+        - name: share
+          title: '% of R²'
+          type: number
+          format: pc
+        - name: rank
+          title: Rank
+          type: integer
+
+    - name: permTable
+      title: Importance — Permutation
+      type: Table
+      visible: (permImp)
+      clearWith:
+        - dep
+        - eventLevel
+        - covs
+        - splineVars
+        - factors
+        - knots
+        - splitVar
+        - splitLevel
+        - extFile
+        - nPerm
+        - seed
+      columns:
+        - name: var
+          title: Predictor
+          type: text
+        - name: d_auc
+          title: AUC loss
+          type: number
+        - name: sd_auc
+          title: SD
+          type: number
+        - name: d_brier
+          title: Brier increase
+          type: number
+        - name: sd_brier
+          title: SD
+          type: number
+
+    - name: shapTable
+      title: Importance — Mean |SHAP| (log-odds)
+      type: Table
+      visible: (shap)
+      clearWith:
+        - dep
+        - eventLevel
+        - covs
+        - splineVars
+        - factors
+        - knots
+        - splitVar
+        - splitLevel
+      columns:
+        - name: var
+          title: Predictor
+          type: text
+        - name: meanAbs
+          title: Mean |SHAP|
+          type: number
+        - name: share
+          title: '% of total'
+          type: number
+          format: pc
+
+    - name: plots
+      title: Plots
+      type: Group
+      items:
+        - name: roc
+          title: ROC Curve
+          type: Image
+          width: 500
+          height: 450
+          renderFun: .plotRoc
+          visible: (rocPlot)
+          clearWith: *model
+
+        - name: calibration
+          title: Calibration
+          type: Image
+          width: 500
+          height: 500
+          renderFun: .plotCal
+          visible: (calPlot)
+          clearWith:
+            - dep
+            - eventLevel
+            - covs
+            - splineVars
+            - factors
+            - knots
+            - splitVar
+            - splitLevel
+            - extFile
+            - calGroups
+
+        - name: riskDist
+          title: Risk Distribution
+          type: Image
+          width: 550
+          height: 350
+          renderFun: .plotRisk
+          visible: (riskPlot)
+          clearWith: *model
+
+        - name: dcaCurves
+          title: Decision Curve
+          type: Image
+          width: 550
+          height: 420
+          renderFun: .plotDca
+          visible: (dca)
+          clearWith:
+            - dep
+            - eventLevel
+            - covs
+            - splineVars
+            - factors
+            - knots
+            - splitVar
+            - splitLevel
+            - extFile
+            - dcaMax
+
+        - name: shapleyBar
+          title: Shapley Decomposition of R²
+          type: Image
+          width: 550
+          height: 350
+          renderFun: .plotShapley
+          visible: (shapley)
+          clearWith:
+            - dep
+            - eventLevel
+            - covs
+            - splineVars
+            - factors
+            - knots
+            - splitVar
+            - splitLevel
+            - shapleyMeasure
+            - seed
+
+        - name: permBar
+          title: Permutation Importance
+          type: Image
+          width: 550
+          height: 350
+          renderFun: .plotPerm
+          visible: (permImp)
+          clearWith:
+            - dep
+            - eventLevel
+            - covs
+            - splineVars
+            - factors
+            - knots
+            - splitVar
+            - splitLevel
+            - extFile
+            - nPerm
+            - seed
+
+        - name: shapSummary
+          title: SHAP Summary
+          type: Image
+          width: 600
+          height: 400
+          renderFun: .plotShapSummary
+          visible: (shap)
+          clearWith:
+            - dep
+            - eventLevel
+            - covs
+            - splineVars
+            - factors
+            - knots
+            - splitVar
+            - splitLevel
+
+        - name: shapPatient
+          title: Explanation of One Prediction
+          type: Image
+          width: 600
+          height: 400
+          renderFun: .plotShapPatient
+          visible: false
+          clearWith:
+            - dep
+            - eventLevel
+            - covs
+            - splineVars
+            - factors
+            - knots
+            - splitVar
+            - splitLevel
+            - shapRow
+
+        - name: instability
+          title: Prediction Instability
+          type: Image
+          width: 500
+          height: 450
+          renderFun: .plotInstability
+          visible: false
+          clearWith: &boot
+            - dep
+            - eventLevel
+            - covs
+            - splineVars
+            - factors
+            - knots
+            - splitVar
+            - splitLevel
+            - validation
+            - nBoot
+            - seed
+
+        - name: calInstability
+          title: Calibration Instability
+          type: Image
+          width: 500
+          height: 450
+          renderFun: .plotCalInstability
+          visible: false
+          clearWith: *boot
+
+    - name: predRisk
+      title: Predicted risk
+      type: Output
+      varTitle: Predicted risk
+      varDescription: Predicted risk of the event from the development model
+      measureType: continuous
+      clearWith: *model
+
+    - name: predLP
+      title: Linear predictor
+      type: Output
+      varTitle: Linear predictor
+      varDescription: Linear predictor (log-odds) of the development model
+      measureType: continuous
+      clearWith: *model
+...

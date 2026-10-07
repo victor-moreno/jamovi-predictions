@@ -1,0 +1,5 @@
+# Hand-maintained: jamovi reaches each analysis via namespace[[paste0(name, "Class")]],
+# so the exports only serve clinpred::cpLogistic(...) from plain R (tests, tools/smoke.R).
+export(cpLogistic)
+importFrom(jmvcore,.)
+importFrom(ggplot2,.data)

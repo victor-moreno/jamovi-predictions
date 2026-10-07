@@ -1,0 +1,25 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+.tmp
+.cache
+.venv
+.envrc
+.env
+.claude
+node_modules
+*.jmo
+*.tar.gz
+*.zip
+dist/
+build/
+.jmc-docker.jmo
+# local only, never pushed: development notes and plans (task_plan, findings, progress)
+documents/
+# tutorial: Quarto source, data generator and caches are local only; the
+# rendered site (docs/, GitHub Pages) is pushed
+tutorial/
+# compiled from jamovi/i18n/*.po by the build
+inst/i18n
+Rplots.pdf

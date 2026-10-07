@@ -1,0 +1,324 @@
+---
+name: cpLogistic
+title: Binary Outcome (Logistic)
+menuGroup: Prediction
+version: '0.1.0'
+jas: '1.2'
+weightsSupport: none
+
+description:
+    main: >-
+        Develop and validate a logistic prediction model for a binary outcome:
+        discrimination, calibration, overall performance and clinical utility,
+        internal validation by bootstrap or cross-validation, validation in a
+        subset of the data or in an external data file, variable importance
+        (Shapley R² decomposition, permutation importance, SHAP) and the
+        stability of individual predictions.
+    R:
+        dontrun: false
+        usage: |
+            data <- MASS::Pima.tr
+            cpLogistic(data, dep = "type", covs = c("npreg", "bmi", "ped"),
+                       splineVars = "glu", validation = "boot", nBoot = 100)
+
+options:
+    - name: data
+      type: Data
+      description:
+          R: the data as a data frame
+
+    - name: dep
+      title: Outcome
+      type: Variable
+      suggested:
+        - nominal
+      permitted:
+        - factor
+      description:
+          R: a string naming the binary outcome variable
+
+    - name: eventLevel
+      title: Event level
+      type: String
+      default: ''
+      description:
+          R: >-
+              the level of the outcome that is the event; '' (default) uses the
+              second level
+
+    - name: covs
+      title: Covariates (linear)
+      type: Variables
+      suggested:
+        - continuous
+      permitted:
+        - numeric
+      default: []
+      description:
+          R: numeric predictors entered as linear terms
+
+    - name: splineVars
+      title: Covariates (spline)
+      type: Variables
+      suggested:
+        - continuous
+      permitted:
+        - numeric
+      default: []
+      description:
+          R: >-
+              numeric predictors entered as restricted cubic splines, allowing a
+              non-linear association
+
+    - name: factors
+      title: Factors
+      type: Variables
+      suggested:
+        - nominal
+        - ordinal
+      permitted:
+        - factor
+      default: []
+      description:
+          R: categorical predictors; the first level is the reference
+
+    - name: knots
+      title: Spline knots
+      type: Integer
+      min: 3
+      max: 7
+      default: 4
+      description:
+          R: number of knots of the restricted cubic splines (3 to 7)
+
+    - name: splitVar
+      title: Validation split
+      type: Variable
+      default: null
+      suggested:
+        - nominal
+      permitted:
+        - factor
+      description:
+          R: >-
+              a variable that marks the rows used for validation only (e.g. a
+              later period or another centre)
+
+    - name: splitLevel
+      title: Validation rows
+      type: String
+      default: ''
+      description:
+          R: >-
+              the level of splitVar that marks validation rows; '' (default) uses
+              the second level
+
+    - name: extFile
+      title: External validation data
+      type: File
+      extensions: [csv, tsv, txt, omv, xlsx, sav]
+      description:
+          R: >-
+              a file with the external validation data (csv, tsv, txt, omv, xlsx
+              or sav), with the same variable names as the development data
+
+    - name: validation
+      title: Internal validation
+      type: List
+      options:
+        - name: none
+          title: None (apparent only)
+        - name: boot
+          title: Bootstrap (optimism correction)
+        - name: cv
+          title: Cross-validation (k-fold)
+      default: none
+      description:
+          R: >-
+              `'none'`, `'boot'` (Harrell's bootstrap optimism correction) or
+              `'cv'` (repeated k-fold cross-validation)
+
+    - name: nBoot
+      title: Bootstrap samples
+      type: Integer
+      min: 10
+      max: 5000
+      default: 200
+
+    - name: nFolds
+      title: Folds
+      type: Integer
+      min: 2
+      max: 50
+      default: 10
+
+    - name: nRepeats
+      title: Repeats
+      type: Integer
+      min: 1
+      max: 100
+      default: 5
+
+    - name: seed
+      title: Random seed
+      type: Integer
+      default: 1234
+
+    - name: ciWidth
+      title: Confidence level
+      type: Number
+      min: 50
+      max: 99.9
+      default: 95
+
+    - name: coefs
+      title: Coefficients (odds ratios)
+      type: Bool
+      default: true
+
+    - name: equation
+      title: Model equation
+      type: Bool
+      default: false
+
+    - name: sampleSize
+      title: Sample size adequacy (Riley)
+      type: Bool
+      default: false
+
+    - name: ssSource
+      title: Anticipated R²
+      type: List
+      options:
+        - name: model
+          title: From this model
+        - name: value
+          title: Value
+      default: model
+
+    - name: ssR2
+      title: Cox–Snell R²
+      type: Number
+      min: 0.001
+      max: 0.999
+      default: 0.1
+
+    - name: classif
+      title: Classification at a threshold
+      type: Bool
+      default: false
+
+    - name: thrMethod
+      title: Threshold
+      type: List
+      options:
+        - name: value
+          title: Value
+        - name: prevalence
+          title: Outcome prevalence
+        - name: youden
+          title: Youden (data-driven)
+      default: value
+
+    - name: threshold
+      title: Risk threshold
+      type: Number
+      min: 0.001
+      max: 0.999
+      default: 0.5
+
+    - name: dca
+      title: Decision curve
+      type: Bool
+      default: false
+
+    - name: dcaMax
+      title: Maximum threshold
+      type: Number
+      min: 0.02
+      max: 0.99
+      default: 0.5
+
+    - name: nbThresholds
+      title: Net benefit at
+      type: String
+      default: '0.05, 0.1, 0.2'
+
+    - name: shapley
+      title: Shapley R² decomposition
+      type: Bool
+      default: false
+
+    - name: shapleyMeasure
+      title: R² measure
+      type: List
+      options:
+        - name: r2mf
+          title: McFadden (deviance)
+        - name: r2n
+          title: Nagelkerke
+      default: r2mf
+
+    - name: permImp
+      title: Permutation importance
+      type: Bool
+      default: false
+
+    - name: nPerm
+      title: Permutations
+      type: Integer
+      min: 1
+      max: 1000
+      default: 20
+
+    - name: shap
+      title: SHAP values
+      type: Bool
+      default: false
+
+    - name: shapRow
+      title: Explain the prediction for row
+      type: Integer
+      min: 0
+      default: 0
+
+    - name: rocPlot
+      title: ROC curve
+      type: Bool
+      default: false
+
+    - name: calPlot
+      title: Calibration plot
+      type: Bool
+      default: false
+
+    - name: calGroups
+      title: Risk groups
+      type: Integer
+      min: 2
+      max: 50
+      default: 10
+
+    - name: riskPlot
+      title: Risk distribution
+      type: Bool
+      default: false
+
+    - name: stability
+      title: Prediction stability (bootstrap)
+      type: Bool
+      default: false
+
+    - name: explain
+      title: Explanations
+      type: Bool
+      default: false
+
+    - name: predRisk
+      title: Predicted risk
+      type: Output
+
+    - name: predLP
+      title: Linear predictor
+      type: Output
+...

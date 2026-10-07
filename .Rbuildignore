@@ -1,0 +1,9 @@
+^tutorial$
+^dist$
+^\.tmp$
+^tools$
+^docs$
+^documents$
+^build$
+^README\.md$
+^.*\.jmo$
