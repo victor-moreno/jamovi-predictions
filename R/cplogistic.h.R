@@ -43,6 +43,7 @@ cpLogisticOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             nFolds = 10,
             nRepeats = 5,
             seed = 1234,
+            cores = 1,
             ciWidth = 95,
             descTable = FALSE,
             descStat = "meanSD",
@@ -346,6 +347,12 @@ cpLogisticOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                 "seed",
                 seed,
                 default=1234)
+            private$..cores <- jmvcore::OptionInteger$new(
+                "cores",
+                cores,
+                min=1,
+                max=64,
+                default=1)
             private$..ciWidth <- jmvcore::OptionNumber$new(
                 "ciWidth",
                 ciWidth,
@@ -558,6 +565,7 @@ cpLogisticOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             self$.addOption(private$..nFolds)
             self$.addOption(private$..nRepeats)
             self$.addOption(private$..seed)
+            self$.addOption(private$..cores)
             self$.addOption(private$..ciWidth)
             self$.addOption(private$..descTable)
             self$.addOption(private$..descStat)
@@ -635,6 +643,7 @@ cpLogisticOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
         nFolds = function() private$..nFolds$value,
         nRepeats = function() private$..nRepeats$value,
         seed = function() private$..seed$value,
+        cores = function() private$..cores$value,
         ciWidth = function() private$..ciWidth$value,
         descTable = function() private$..descTable$value,
         descStat = function() private$..descStat$value,
@@ -711,6 +720,7 @@ cpLogisticOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
         ..nFolds = NA,
         ..nRepeats = NA,
         ..seed = NA,
+        ..cores = NA,
         ..ciWidth = NA,
         ..descTable = NA,
         ..descStat = NA,
@@ -3050,7 +3060,7 @@ cpLogisticBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             super$initialize(
                 package = "clinpred",
                 name = "cpLogistic",
-                version = c(0,4,2),
+                version = c(0,4,3),
                 options = options,
                 results = cpLogisticResults$new(options=options),
                 data = data,
@@ -3147,6 +3157,10 @@ cpLogisticBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
 #' @param nFolds .
 #' @param nRepeats .
 #' @param seed .
+#' @param cores number of processor cores for the resampling, the elastic net
+#'   tuning, the Shapley decomposition, permutation importance and multiple
+#'   imputation (macOS and Linux; Windows uses one); the results do not depend
+#'   on it
 #' @param ciWidth .
 #' @param descTable .
 #' @param descStat .
@@ -3278,6 +3292,7 @@ cpLogistic <- function(
     nFolds = 10,
     nRepeats = 5,
     seed = 1234,
+    cores = 1,
     ciWidth = 95,
     descTable = FALSE,
     descStat = "meanSD",
@@ -3375,6 +3390,7 @@ cpLogistic <- function(
         nFolds = nFolds,
         nRepeats = nRepeats,
         seed = seed,
+        cores = cores,
         ciWidth = ciWidth,
         descTable = descTable,
         descStat = descStat,

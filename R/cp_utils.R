@@ -13,12 +13,15 @@
 # The message is picked inside tryCatch and shown outside it, because tryCatch
 # nests its handlers.
 .guard <- function(analysis, expr) {
+    # jamovi's request to restart (new options while computing) must reach jamovi
+    restart <- NULL
     msg <- tryCatch({ expr; NULL },
         cp_user_error = function(e) conditionMessage(e),
-        error = function(e) paste(
+        error = function(e) if (identical(e$code, "restart")) { restart <<- e; NULL } else paste(
             "The model could not be computed with these data and options.",
             "Check that the outcome has enough events, that each factor level",
             "has observations in both outcome groups, and that the predictors vary."))
+    if (!is.null(restart)) stop(restart)
     if (!is.null(msg)) .show_problem(analysis, msg)
     invisible(msg)
 }

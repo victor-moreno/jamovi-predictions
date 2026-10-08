@@ -94,6 +94,10 @@ Needs **jamovi 28.4 or later**.
     and a waterfall explaining one patient's prediction.
 - Coefficients and the **model equation**, with the spline formulae (and, for Cox, the baseline
   survival at the horizon), so the model can be reported and transported.
+- **Multicore** (macOS and Linux, opt-in *Cores*): bootstrap and cross-validation fits, the elastic
+  net's λ tuning, the Shapley decomposition, permutation importance and the imputation chains run on
+  several cores; random draws are made first, so results do not depend on the number of cores. Long
+  computations stop when the options change.
 - Plots, one panel per data set: calibration (smoothed curve with CI, grouped observed values,
   histogram of predictions), ROC curves and risk distributions (logistic), Kaplan–Meier curves
   by risk group (Cox), decision curves.

@@ -750,7 +750,7 @@ cpPublishedBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             super$initialize(
                 package = "clinpred",
                 name = "cpPublished",
-                version = c(0,4,2),
+                version = c(0,4,3),
                 options = options,
                 results = cpPublishedResults$new(options=options),
                 data = data,

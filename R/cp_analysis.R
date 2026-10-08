@@ -273,7 +273,12 @@
     },
 
     # ---- computation -------------------------------------------------------
-    .run = function() .guard(self, private$.analyse()),
+    # the cores (macOS/Linux) and jamovi's checkpoint, between chunks of work,
+    # so that a long computation can be abandoned when the options change
+    .run = function() {
+        cores <- if (self$options$has("cores")) self$options$cores else 1L
+        .cp_with_cores(cores, function() private$.checkpoint(flush = FALSE), .guard(self, private$.analyse()))
+    },
 
     .analyse = function() {
         if (!private$.ready()) return()

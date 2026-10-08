@@ -146,7 +146,8 @@ cp_impute <- function(df, impVars, m = 5, maxit = 10, seed = 1, donors = 5) {
     if (any(vapply(others, function(v) anyNA(df[[v]]), TRUE)))
         stop("cp_impute: the auxiliary columns must be complete")
     miss <- lapply(stats::setNames(impVars, impVars), function(v) is.na(df[[v]]))
-    .with_seed(seed, lapply(seq_len(m), function(i) {
+    # one seed per chain: a chain is the same whichever core runs it
+    .cp_lapply(seq_len(m), function(i) .with_seed(seed + 7919L * (i - 1L), {
         d <- df
         for (v in impVars) {
             o <- !miss[[v]]

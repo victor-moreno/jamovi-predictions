@@ -24,6 +24,14 @@ cp_shapley_r2 <- function(X, y, spec, fam, measure = "r2mf", maxExact = 10, nPer
         v
     }
     if (m <= maxExact) {
+        # every subset model fitted first (possibly on several cores), then combined
+        subsets <- unlist(lapply(seq_len(m), function(s) utils::combn(m, s, simplify = FALSE)), recursive = FALSE)
+        vals <- .cp_lapply(subsets, function(S) {
+            cols <- vapply(spec$colVars, function(vs) all(vs %in% vars[S]), TRUE)
+            Xs <- X[, cols, drop = FALSE]
+            fam$r2(y, fam$lp(fam$fit(Xs, y), Xs), measure)
+        })
+        for (i in seq_along(subsets)) assign(paste(sort(subsets[[i]]), collapse = ","), vals[[i]], envir = cache)
         phi <- numeric(m)
         w <- factorial(0:(m - 1)) * factorial((m - 1):0) / factorial(m)
         for (j in seq_len(m)) {
@@ -66,15 +74,18 @@ cp_perm_importance <- function(beta, spec, df, y, fam, nPerm = 20, seed = 1,
     # positive = loss of performance, whichever direction the measure runs
     sgn <- ifelse(higherBetter, 1, -1)
     vars <- names(spec$vars)
-    res <- .with_seed(seed, lapply(vars, function(v) {
-        d <- vapply(seq_len(nPerm), function(r) {
+    # the permutations drawn first, in the order of a plain loop
+    perms <- .with_seed(seed, lapply(vars, function(v) lapply(seq_len(nPerm), function(r) sample.int(nrow(df)))))
+    res <- .cp_lapply(seq_along(vars), function(i) {
+        v <- vars[i]
+        d <- vapply(perms[[i]], function(o) {
             dp <- df
-            dp[[v]] <- dp[[v]][sample.int(nrow(dp))]
+            dp[[v]] <- dp[[v]][o]
             sgn * (base - fam$quick(y, fam$lp(beta, cp_design(spec, dp)))[keys])
         }, numeric(length(keys)))
         d <- matrix(d, nrow = length(keys))
         c(mean = rowMeans(d), sd = apply(d, 1, stats::sd))
-    }))
+    })
     out <- data.frame(var = vars, do.call(rbind, res), stringsAsFactors = FALSE, check.names = FALSE)
     names(out) <- c("var", paste0("d_", keys), paste0("sd_", keys))
     attr(out, "base") <- base

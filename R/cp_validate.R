@@ -33,35 +33,34 @@ cp_internal <- function(X, y, fam, method = "boot", B = 200, k = 10, R = 1, seed
 
     .with_seed(seed, {
         if (method == "boot") {
-            opt <- matrix(NA_real_, B, length(apparent), dimnames = list(NULL, names(apparent)))
-            testSlope <- rep(NA_real_, B)
-            selected <- vector("list", B)
-            # coefficients and selected terms of each bootstrap fit (Heinze et al. 2018)
-            coefs <- matrix(NA_real_, B, length(beta), dimnames = list(NULL, names(beta)))
-            sets <- rep(NA_character_, B)
-            fitted <- rep(FALSE, B)
-            risk <- if (stability) matrix(NA_real_, n, B) else NULL
-            for (b in seq_len(B)) {
-                idx <- sample.int(n, n, replace = TRUE)
+            # the bootstrap samples are drawn first (in this order, as a plain
+            # loop would), then fitted, possibly on several cores
+            idxs <- lapply(seq_len(B), function(b) sample.int(n, n, replace = TRUE))
+            res <- .cp_lapply(idxs, function(idx) {
                 yb <- .ysub(y, idx)
                 fb <- .try_fit(fam, X[idx, , drop = FALSE], yb)
-                if (is.null(fb)) next
-                mApp <- tryCatch(fam$metrics(yb, fam$lp(fb, X[idx, , drop = FALSE])),
-                                 error = function(e) NULL)
+                if (is.null(fb)) return(NULL)
+                mApp <- tryCatch(fam$metrics(yb, fam$lp(fb, X[idx, , drop = FALSE])), error = function(e) NULL)
                 lpTest <- fam$lp(fb, X)
                 mTest <- tryCatch(fam$metrics(y, lpTest), error = function(e) NULL)
-                if (is.null(mApp) || is.null(mTest)) next
-                opt[b, ] <- mApp - mTest
-                fitted[b] <- TRUE
-                selected[[b]] <- attr(fb, "selected")
-                coefs[b, ] <- fb
-                if (!is.null(attr(fb, "vars")))
-                    sets[b] <- paste(c(sort(attr(fb, "vars")), sort(attr(fb, "ints"))), collapse = ", ")
-                testSlope[b] <- mTest[["slope"]]
-                if (stability) risk[, b] <- fam$risk(lpTest)
+                if (is.null(mApp) || is.null(mTest)) return(NULL)
+                list(opt = mApp - mTest, slope = mTest[["slope"]], selected = attr(fb, "selected"),
+                     coef = as.numeric(fb),
+                     set = if (!is.null(attr(fb, "vars"))) paste(c(sort(attr(fb, "vars")), sort(attr(fb, "ints"))), collapse = ", ") else NA_character_,
+                     risk = if (stability) fam$risk(lpTest) else NULL)
+            })
+            ok <- !vapply(res, is.null, TRUE)
+            opt <- matrix(NA_real_, B, length(apparent), dimnames = list(NULL, names(apparent)))
+            coefs <- matrix(NA_real_, B, length(beta), dimnames = list(NULL, names(beta)))
+            testSlope <- rep(NA_real_, B); sets <- rep(NA_character_, B); selected <- vector("list", B)
+            risk <- if (stability) matrix(NA_real_, n, B) else NULL
+            for (b in which(ok)) {
+                z <- res[[b]]
+                opt[b, ] <- z$opt; testSlope[b] <- z$slope; coefs[b, ] <- z$coef; sets[b] <- z$set
+                if (!is.null(z$selected)) selected[[b]] <- z$selected
+                if (stability) risk[, b] <- z$risk
             }
             # each measure averaged over the samples where it could be computed
-            ok <- fitted
             optimism <- colMeans(opt[ok, , drop = FALSE], na.rm = TRUE)
             out <- list(method = "boot", B = B, nOk = sum(ok),
                         shrinkage = mean(testSlope[ok], na.rm = TRUE),
@@ -73,18 +72,24 @@ cp_internal <- function(X, y, fam, method = "boot", B = 200, k = 10, R = 1, seed
                                             bounded = isTRUE(fam$bounded))
         } else {
             strata <- fam$strata(y)
+            # all folds of all repeats drawn first, then every fold fitted
+            folds <- lapply(seq_len(R), function(r) .folds(strata, k))
+            tasks <- expand.grid(f = seq_len(k), r = seq_len(R))
+            fits <- .cp_lapply(seq_len(nrow(tasks)), function(i) {
+                test <- folds[[tasks$r[i]]] == tasks$f[i]
+                fb <- .try_fit(fam, X[!test, , drop = FALSE], .ysub(y, !test))
+                if (is.null(fb)) return(NULL)
+                list(lp = fam$lp(fb, X[test, , drop = FALSE]), selected = attr(fb, "selected"))
+            })
             cvm <- matrix(NA_real_, R, length(apparent), dimnames = list(NULL, names(apparent)))
             selected <- list()
             for (r in seq_len(R)) {
-                fold <- .folds(strata, k)
                 oof <- rep(NA_real_, n)
-                for (f in seq_len(k)) {
-                    test <- fold == f
-                    fb <- .try_fit(fam, X[!test, , drop = FALSE], .ysub(y, !test))
-                    if (!is.null(fb)) {
-                        oof[test] <- fam$lp(fb, X[test, , drop = FALSE])
-                        selected[[length(selected) + 1]] <- attr(fb, "selected")
-                    }
+                for (i in which(tasks$r == r)) {
+                    z <- fits[[i]]
+                    if (is.null(z)) next
+                    oof[folds[[r]] == tasks$f[i]] <- z$lp
+                    selected[[length(selected) + 1]] <- z$selected
                 }
                 if (!anyNA(oof))
                     cvm[r, ] <- tryCatch(fam$metrics(y, oof), error = function(e) NA_real_)

@@ -124,3 +124,17 @@ test_that("the relaxed lasso is the unpenalised refit of the kept terms; bootstr
     expect_null(rm$get("problem"))
     expect_false("Intercept" %in% rm$bootCoefTable$asDF$term)
 })
+
+test_that("results do not depend on the number of cores; a restart request passes through the guard", {
+    skip_on_os("windows")
+    f <- test_path("..", "..", "data", "heart_cohort.omv"); skip_if_not(file.exists(f))
+    d <- jmvReadWrite::read_omv(f)
+    run <- function(cores) cpLogistic(data = d, dep = "event10", eventLevel = "yes", covs = c("sbp", "chol"), splineVars = "age",
+                                      factors = "smoking", selMode = "enet", enetFolds = 3, validation = "boot", nBoot = 10,
+                                      shapley = TRUE, permImp = TRUE, nPerm = 3, bootCoefs = TRUE, cores = cores)
+    r1 <- run(1); r3 <- run(3)
+    for (t in c("perfDev", "shapleyTable", "permTable", "bootCoefTable", "coefTable"))
+        expect_equal(r3[[t]]$asDF, r1[[t]]$asDF, label = t)
+    e <- jmvcore::createError("restarting", "restart")
+    expect_error(.guard(list(), stop(e)), "restarting")
+})

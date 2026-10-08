@@ -153,19 +153,19 @@ cp_enet_cv <- function(X, y, family, alpha, pf, nfolds = 10, seed = 1, strata = 
     lam <- full$lambda
     n <- NROW(X)
     fold <- .with_seed(seed, .folds(strata %||% rep(1, n), nfolds))
-    dev <- matrix(NA_real_, nfolds, length(lam)); wts <- numeric(nfolds)
-    for (f in seq_len(nfolds)) {
+    # the folds are fitted possibly on several cores (not inside a resampled fit)
+    perFold <- .cp_lapply(seq_len(nfolds), function(f) {
         tr <- fold != f
         ytr <- if (is.matrix(y)) y[tr, , drop = FALSE] else y[tr]
         fit <- cp_enet_path(X[tr, , drop = FALSE], ytr, family, alpha, pf, lambda = lam)
-        for (k in seq_along(lam)) {
+        dv <- vapply(seq_along(lam), function(k) {
             eta <- fit$a0[k] + drop(X %*% fit$beta[, k])
-            dev[f, k] <- if (family == "cox")
-                2 * (.enet_loss("cox", y, eta) - .enet_loss("cox", ytr, eta[tr])) else
+            if (family == "cox") 2 * (.enet_loss("cox", y, eta) - .enet_loss("cox", ytr, eta[tr])) else
                 2 * .enet_loss(family, if (is.matrix(y)) y[!tr, , drop = FALSE] else y[!tr], eta[!tr])
-        }
-        wts[f] <- if (family == "cox") sum(y[!tr, 2]) else sum(!tr)
-    }
+        }, 0)
+        list(dev = dv, w = if (family == "cox") sum(y[!tr, 2]) else sum(!tr))
+    })
+    dev <- do.call(rbind, lapply(perFold, `[[`, "dev")); wts <- vapply(perFold, `[[`, 0, "w")
     cvm <- colSums(dev) / sum(wts)
     cvsd <- sqrt(colSums(sweep(dev / wts, 2, cvm)^2 * wts) / sum(wts) / (nfolds - 1))
     imin <- which.min(cvm)

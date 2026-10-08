@@ -307,6 +307,9 @@ children:
               - type: TextBox
                 name: seed
                 format: number
+              - type: TextBox
+                name: cores
+                format: number
               - type: CheckBox
                 name: stability
                 enable: (validation:boot)
