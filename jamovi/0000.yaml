@@ -1,12 +1,12 @@
 ---
 title: Clinical Prediction Models
 name: clinpred
-version: 0.2.0
+version: 0.3.0
 jms: '1.0'
 authors:
   - V. Moreno
 maintainer: V. Moreno <v.moreno@iconcologia.net>
-date: '2026-10-07'
+date: '2026-10-08'
 type: R
 description: >-
   Develop and validate clinical prediction models (TRIPOD+AI) for binary,
@@ -56,6 +56,20 @@ analyses:
       cross-validation, validation in a subset of the data or in an external
       data file, variable importance (Shapley R² decomposition, permutation
       importance, SHAP) and the stability of individual predictions.
+  - title: Validate a Published Model
+    name: cpPublished
+    ns: clinpred
+    category: analyses
+    menuGroup: Prediction
+    menuTitle: Validate a Published Model
+    menuSubtitle: JSON or table of coefficients
+    description: >-
+      Validate a published prediction model, or one exported by clinpred, in the
+      current data: the model is read from a JSON file exported by clinpred or
+      from a table of coefficients (term, estimate, SE), applied unchanged, and
+      its discrimination, calibration, overall performance and clinical utility
+      are measured; the model can be updated (recalibrated or revised) by the
+      closed testing procedure.
 datasets:
   - name: Pima diabetes (development)
     path: pima_development.omv

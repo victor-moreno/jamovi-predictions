@@ -1,8 +1,8 @@
 Package: clinpred
 Type: Package
 Title: Clinical Prediction Models
-Version: 0.2.0
-Date: 2026-10-07
+Version: 0.3.0
+Date: 2026-10-08
 Authors@R: person("Victor", "Moreno", role = c("aut", "cre", "cph"), email = "v.moreno@iconcologia.net")
 Maintainer: Victor Moreno <v.moreno@iconcologia.net>
 Description: Development and validation of clinical prediction models in
@@ -27,6 +27,7 @@ Imports:
     jmvReadWrite,
     openxlsx,
     foreign,
+    jsonlite,
     survival
 Suggests:
     testthat (>= 3.1.5)

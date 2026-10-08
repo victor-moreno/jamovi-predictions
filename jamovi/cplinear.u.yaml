@@ -271,3 +271,8 @@ children:
                 name: predValue
           - type: CheckBox
             name: explain
+          - type: Label
+            label: Export
+            children:
+              - type: ActionButton
+                name: exportModel

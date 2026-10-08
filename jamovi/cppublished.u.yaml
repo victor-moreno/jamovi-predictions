@@ -1,0 +1,154 @@
+---
+title: Validate a Published Model
+name: cpPublished
+jus: '3.0'
+stage: 0
+compilerMode: tame
+children:
+  - type: LayoutBox
+    margin: large
+    children:
+      - type: Label
+        label: Model
+        children:
+          - type: File
+            name: modelFile
+          - type: ComboBox
+            name: family
+
+  - type: VariableSupplier
+    persistentItems: false
+    stretchFactor: 1
+    children:
+      - type: TargetLayoutBox
+        label: Outcome / event
+        children:
+          - type: VariablesListBox
+            name: dep
+            maxItemCount: 1
+            isTarget: true
+            fitToGrid: true
+          - type: LevelSelector
+            name: eventLevel
+            label: Event level
+            variable: (dep)
+            defaultLevelIndex: 1
+            enable: (family:binary || family:cox)
+      - type: TargetLayoutBox
+        label: Predictor variables
+        children:
+          - type: VariablesListBox
+            name: covs
+            isTarget: true
+      - type: TargetLayoutBox
+        label: Time (Cox)
+        children:
+          - type: VariablesListBox
+            name: time
+            maxItemCount: 1
+            isTarget: true
+            fitToGrid: true
+
+  - type: LayoutBox
+    margin: large
+    children:
+      - type: TextBox
+        name: horizon
+        format: number
+        suffix: (0 = from the model file)
+        enable: (family:cox)
+
+  - type: CollapseBox
+    label: Validation
+    collapsed: false
+    children:
+      - type: LayoutBox
+        margin: large
+        children:
+          - type: TextBox
+            name: ciWidth
+            label: Confidence interval
+            suffix: '%'
+            format: number
+          - type: CheckBox
+            name: updating
+            enable: (family:binary || family:gaussian)
+            children:
+              - type: TextBox
+                name: updAlpha
+                format: number
+                enable: (updating)
+
+  - type: CollapseBox
+    label: Plots
+    collapsed: true
+    children:
+      - type: LayoutBox
+        margin: large
+        children:
+          - type: CheckBox
+            name: calPlot
+            children:
+              - type: TextBox
+                name: calGroups
+                format: number
+                enable: (calPlot)
+          - type: CheckBox
+            name: rocPlot
+            enable: (family:binary)
+          - type: CheckBox
+            name: kmPlot
+            enable: (family:cox)
+            children:
+              - type: TextBox
+                name: kmGroups
+                format: number
+                enable: (kmPlot)
+
+  - type: CollapseBox
+    label: Clinical Utility
+    collapsed: true
+    children:
+      - type: LayoutBox
+        margin: large
+        children:
+          - type: CheckBox
+            name: classif
+            enable: (family:binary)
+            children:
+              - type: ComboBox
+                name: thrMethod
+                enable: (classif)
+              - type: TextBox
+                name: threshold
+                format: number
+                enable: (classif && thrMethod:value)
+          - type: CheckBox
+            name: dca
+            enable: (family:binary || family:cox)
+            children:
+              - type: TextBox
+                name: dcaMax
+                format: number
+                enable: (dca)
+              - type: TextBox
+                name: nbThresholds
+                format: string
+                enable: (dca)
+
+  - type: CollapseBox
+    label: Save and Explain
+    collapsed: true
+    children:
+      - type: LayoutBox
+        margin: large
+        children:
+          - type: Label
+            label: Save to the data
+            children:
+              - type: Output
+                name: pred
+              - type: Output
+                name: predLP
+          - type: CheckBox
+            name: explain

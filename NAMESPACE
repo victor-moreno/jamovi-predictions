@@ -3,5 +3,6 @@
 export(cpCox)
 export(cpLinear)
 export(cpLogistic)
+export(cpPublished)
 importFrom(jmvcore,.)
 importFrom(ggplot2,.data)

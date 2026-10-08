@@ -45,7 +45,8 @@ cpLinearOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             shapRow = 0,
             calPlot = FALSE,
             stability = FALSE,
-            explain = FALSE, ...) {
+            explain = FALSE,
+            exportModel = FALSE, ...) {
 
             super$initialize(
                 package="clinpred",
@@ -300,6 +301,10 @@ cpLinearOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                 "explain",
                 explain,
                 default=FALSE)
+            private$..exportModel <- jmvcore::OptionAction$new(
+                "exportModel",
+                exportModel,
+                action="openExternal")
             private$..predValue <- jmvcore::OptionOutput$new(
                 "predValue")
 
@@ -343,6 +348,7 @@ cpLinearOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             self$.addOption(private$..calPlot)
             self$.addOption(private$..stability)
             self$.addOption(private$..explain)
+            self$.addOption(private$..exportModel)
             self$.addOption(private$..predValue)
         }),
     active = list(
@@ -386,6 +392,7 @@ cpLinearOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
         calPlot = function() private$..calPlot$value,
         stability = function() private$..stability$value,
         explain = function() private$..explain$value,
+        exportModel = function() private$..exportModel$value,
         predValue = function() private$..predValue$value),
     private = list(
         ..dep = NA,
@@ -428,6 +435,7 @@ cpLinearOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
         ..calPlot = NA,
         ..stability = NA,
         ..explain = NA,
+        ..exportModel = NA,
         ..predValue = NA)
 )
 
@@ -1508,7 +1516,7 @@ cpLinearBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             super$initialize(
                 package = "clinpred",
                 name = "cpLinear",
-                version = c(0,2,0),
+                version = c(0,3,0),
                 options = options,
                 results = cpLinearResults$new(options=options),
                 data = data,
@@ -1589,6 +1597,9 @@ cpLinearBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
 #' @param calPlot .
 #' @param stability .
 #' @param explain .
+#' @param exportModel writes the fitted model (predictors, coding, spline
+#'   knots, coefficients and, for Cox, the baseline survival at the horizon) to
+#'   a JSON file, which Validate a Published Model reads
 #' @return A results object containing:
 #' \tabular{llllll}{
 #'   \code{results$instructions} \tab \tab \tab \tab \tab a html \cr
@@ -1668,7 +1679,8 @@ cpLinear <- function(
     shapRow = 0,
     calPlot = FALSE,
     stability = FALSE,
-    explain = FALSE) {
+    explain = FALSE,
+    exportModel = FALSE) {
 
     if ( ! requireNamespace("jmvcore", quietly=TRUE))
         stop("cpLinear requires jmvcore to be installed (restart may be required)")
@@ -1731,7 +1743,8 @@ cpLinear <- function(
         shapRow = shapRow,
         calPlot = calPlot,
         stability = stability,
-        explain = explain)
+        explain = explain,
+        exportModel = exportModel)
 
     analysis <- cpLinearClass$new(
         options = options,

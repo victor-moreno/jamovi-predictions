@@ -53,7 +53,8 @@ cpCoxOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             kmPlot = FALSE,
             kmGroups = 4,
             stability = FALSE,
-            explain = FALSE, ...) {
+            explain = FALSE,
+            exportModel = FALSE, ...) {
 
             super$initialize(
                 package="clinpred",
@@ -351,6 +352,10 @@ cpCoxOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                 "explain",
                 explain,
                 default=FALSE)
+            private$..exportModel <- jmvcore::OptionAction$new(
+                "exportModel",
+                exportModel,
+                action="openExternal")
             private$..predRisk <- jmvcore::OptionOutput$new(
                 "predRisk")
             private$..predLP <- jmvcore::OptionOutput$new(
@@ -404,6 +409,7 @@ cpCoxOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             self$.addOption(private$..kmGroups)
             self$.addOption(private$..stability)
             self$.addOption(private$..explain)
+            self$.addOption(private$..exportModel)
             self$.addOption(private$..predRisk)
             self$.addOption(private$..predLP)
         }),
@@ -456,6 +462,7 @@ cpCoxOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
         kmGroups = function() private$..kmGroups$value,
         stability = function() private$..stability$value,
         explain = function() private$..explain$value,
+        exportModel = function() private$..exportModel$value,
         predRisk = function() private$..predRisk$value,
         predLP = function() private$..predLP$value),
     private = list(
@@ -507,6 +514,7 @@ cpCoxOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
         ..kmGroups = NA,
         ..stability = NA,
         ..explain = NA,
+        ..exportModel = NA,
         ..predRisk = NA,
         ..predLP = NA)
 )
@@ -1742,7 +1750,7 @@ cpCoxBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             super$initialize(
                 package = "clinpred",
                 name = "cpCox",
-                version = c(0,2,0),
+                version = c(0,3,0),
                 options = options,
                 results = cpCoxResults$new(options=options),
                 data = data,
@@ -1834,6 +1842,9 @@ cpCoxBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
 #' @param kmGroups .
 #' @param stability .
 #' @param explain .
+#' @param exportModel writes the fitted model (predictors, coding, spline
+#'   knots, coefficients and, for Cox, the baseline survival at the horizon) to
+#'   a JSON file, which Validate a Published Model reads
 #' @return A results object containing:
 #' \tabular{llllll}{
 #'   \code{results$instructions} \tab \tab \tab \tab \tab a html \cr
@@ -1924,7 +1935,8 @@ cpCox <- function(
     kmPlot = FALSE,
     kmGroups = 4,
     stability = FALSE,
-    explain = FALSE) {
+    explain = FALSE,
+    exportModel = FALSE) {
 
     if ( ! requireNamespace("jmvcore", quietly=TRUE))
         stop("cpCox requires jmvcore to be installed (restart may be required)")
@@ -1998,7 +2010,8 @@ cpCox <- function(
         kmPlot = kmPlot,
         kmGroups = kmGroups,
         stability = stability,
-        explain = explain)
+        explain = explain,
+        exportModel = exportModel)
 
     analysis <- cpCoxClass$new(
         options = options,

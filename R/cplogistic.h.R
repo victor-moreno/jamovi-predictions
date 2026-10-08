@@ -56,7 +56,8 @@ cpLogisticOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             calGroups = 10,
             riskPlot = FALSE,
             stability = FALSE,
-            explain = FALSE, ...) {
+            explain = FALSE,
+            exportModel = FALSE, ...) {
 
             super$initialize(
                 package="clinpred",
@@ -368,6 +369,10 @@ cpLogisticOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                 "explain",
                 explain,
                 default=FALSE)
+            private$..exportModel <- jmvcore::OptionAction$new(
+                "exportModel",
+                exportModel,
+                action="openExternal")
             private$..predRisk <- jmvcore::OptionOutput$new(
                 "predRisk")
             private$..predLP <- jmvcore::OptionOutput$new(
@@ -424,6 +429,7 @@ cpLogisticOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             self$.addOption(private$..riskPlot)
             self$.addOption(private$..stability)
             self$.addOption(private$..explain)
+            self$.addOption(private$..exportModel)
             self$.addOption(private$..predRisk)
             self$.addOption(private$..predLP)
         }),
@@ -479,6 +485,7 @@ cpLogisticOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
         riskPlot = function() private$..riskPlot$value,
         stability = function() private$..stability$value,
         explain = function() private$..explain$value,
+        exportModel = function() private$..exportModel$value,
         predRisk = function() private$..predRisk$value,
         predLP = function() private$..predLP$value),
     private = list(
@@ -533,6 +540,7 @@ cpLogisticOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
         ..riskPlot = NA,
         ..stability = NA,
         ..explain = NA,
+        ..exportModel = NA,
         ..predRisk = NA,
         ..predLP = NA)
 )
@@ -1902,7 +1910,7 @@ cpLogisticBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             super$initialize(
                 package = "clinpred",
                 name = "cpLogistic",
-                version = c(0,2,0),
+                version = c(0,3,0),
                 options = options,
                 results = cpLogisticResults$new(options=options),
                 data = data,
@@ -1996,6 +2004,9 @@ cpLogisticBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
 #' @param riskPlot .
 #' @param stability .
 #' @param explain .
+#' @param exportModel writes the fitted model (predictors, coding, spline
+#'   knots, coefficients and, for Cox, the baseline survival at the horizon) to
+#'   a JSON file, which Validate a Published Model reads
 #' @return A results object containing:
 #' \tabular{llllll}{
 #'   \code{results$instructions} \tab \tab \tab \tab \tab a html \cr
@@ -2093,7 +2104,8 @@ cpLogistic <- function(
     calGroups = 10,
     riskPlot = FALSE,
     stability = FALSE,
-    explain = FALSE) {
+    explain = FALSE,
+    exportModel = FALSE) {
 
     if ( ! requireNamespace("jmvcore", quietly=TRUE))
         stop("cpLogistic requires jmvcore to be installed (restart may be required)")
@@ -2168,7 +2180,8 @@ cpLogistic <- function(
         calGroups = calGroups,
         riskPlot = riskPlot,
         stability = stability,
-        explain = explain)
+        explain = explain,
+        exportModel = exportModel)
 
     analysis <- cpLogisticClass$new(
         options = options,

@@ -2,7 +2,7 @@
 name: cpCox
 title: Time to Event (Cox)
 menuGroup: Prediction
-version: '0.2.0'
+version: '0.3.0'
 jas: '1.2'
 weightsSupport: none
 
@@ -429,6 +429,16 @@ options:
       title: Explanations
       type: Bool
       default: false
+
+    - name: exportModel
+      title: Export model (JSON)
+      type: Action
+      action: openExternal
+      description:
+          R: >-
+              writes the fitted model (predictors, coding, spline knots,
+              coefficients and, for Cox, the baseline survival at the horizon)
+              to a JSON file, which Validate a Published Model reads
 
     - name: predRisk
       title: Predicted risk at the horizon

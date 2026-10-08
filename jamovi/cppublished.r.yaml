@@ -1,0 +1,376 @@
+---
+name:  cpPublished
+title: Validate a Published Model
+jrs:   '1.1'
+
+refs:
+    - clinpred
+    - steyerberg2019
+    - tripodai
+    - debray2015
+    - vergouwe2017
+    - vancalster2016
+    - austin2019
+    - austin2020
+    - uno2007
+    - royston2004
+    - vickers2006
+    - vickers2008
+
+items:
+    - name: instructions
+      title: Instructions
+      type: Html
+      visible: true
+      clearWith: []
+
+    - name: modelTable
+      title: Model
+      type: Table
+      clearWith: &model
+        - modelFile
+        - family
+        - dep
+        - eventLevel
+        - time
+        - covs
+        - horizon
+      columns:
+        - name: term
+          title: Term
+          type: text
+        - name: est
+          title: Estimate
+          type: number
+        - name: se
+          title: SE
+          type: number
+        - name: ratio
+          title: Ratio
+          type: number
+          visible: false
+        - name: lower
+          title: Lower
+          type: number
+          superTitle: CI
+        - name: upper
+          title: Upper
+          type: number
+          superTitle: CI
+        - name: p
+          title: p
+          type: number
+          format: zto,pvalue
+
+    - name: check
+      title: Variables
+      type: Table
+      clearWith: *model
+      columns:
+        - name: var
+          title: Variable
+          type: text
+        - name: role
+          title: Role
+          type: text
+        - name: status
+          title: Status
+          type: text
+        - name: details
+          title: Details
+          type: text
+
+    - name: samples
+      title: Data
+      type: Table
+      clearWith: *model
+      rows: 1
+      columns:
+        - name: n
+          title: N
+          type: integer
+        - name: events
+          title: Events
+          type: integer
+          visible: false
+        - name: pct
+          title: '%'
+          type: number
+          format: pc
+          visible: false
+        - name: mean
+          title: Mean
+          type: number
+          superTitle: Outcome
+          visible: false
+        - name: sd
+          title: SD
+          type: number
+          superTitle: Outcome
+          visible: false
+        - name: km
+          title: Risk by horizon (KM)
+          type: number
+          format: pc
+          visible: false
+        - name: excluded
+          title: Excluded (missing)
+          type: integer
+
+    - name: perf
+      title: Performance in the Data
+      type: Table
+      clearWith:
+        - modelFile
+        - family
+        - dep
+        - eventLevel
+        - time
+        - covs
+        - horizon
+        - ciWidth
+      columns:
+        - name: group
+          title: ''
+          type: text
+          combineBelow: true
+        - name: metric
+          title: Measure
+          type: text
+        - name: est
+          title: Estimate
+          type: number
+        - name: lower
+          title: Lower
+          type: number
+          superTitle: CI
+        - name: upper
+          title: Upper
+          type: number
+          superTitle: CI
+
+    - name: updTable
+      title: Model Updating
+      type: Table
+      visible: false
+      clearWith:
+        - modelFile
+        - family
+        - dep
+        - eventLevel
+        - updAlpha
+      columns:
+        - name: method
+          title: Method
+          type: text
+        - name: k
+          title: Parameters
+          type: integer
+        - name: a
+          title: Intercept
+          type: number
+        - name: b
+          title: Slope
+          type: number
+        - name: stat
+          title: χ²
+          type: number
+          superTitle: vs revision
+        - name: df
+          title: df
+          type: integer
+          superTitle: vs revision
+        - name: p
+          title: p
+          type: number
+          format: zto,pvalue
+          superTitle: vs revision
+        - name: chosen
+          title: Chosen
+          type: text
+        - name: auc
+          title: AUC
+          type: number
+          visible: false
+        - name: brier
+          title: Brier
+          type: number
+          visible: false
+        - name: ici
+          title: ICI
+          type: number
+          visible: false
+        - name: r2
+          title: R²
+          type: number
+          visible: false
+        - name: rmse
+          title: RMSE
+          type: number
+          visible: false
+
+    - name: confTable
+      title: Classification — Counts
+      type: Table
+      visible: false
+      rows: 1
+      clearWith: &classif
+        - modelFile
+        - family
+        - dep
+        - eventLevel
+        - thrMethod
+        - threshold
+        - ciWidth
+      columns:
+        - name: threshold
+          title: Threshold
+          type: number
+        - name: tp
+          title: TP
+          type: integer
+        - name: fp
+          title: FP
+          type: integer
+        - name: fn
+          title: FN
+          type: integer
+        - name: tn
+          title: TN
+          type: integer
+
+    - name: classTable
+      title: Classification — Accuracy
+      type: Table
+      visible: false
+      clearWith: *classif
+      columns:
+        - name: measure
+          title: Measure
+          type: text
+        - name: est
+          title: Estimate
+          type: number
+          format: pc
+        - name: lower
+          title: Lower
+          type: number
+          format: pc
+          superTitle: CI
+        - name: upper
+          title: Upper
+          type: number
+          format: pc
+          superTitle: CI
+
+    - name: nbTable
+      title: Net Benefit
+      type: Table
+      visible: false
+      clearWith:
+        - modelFile
+        - family
+        - dep
+        - eventLevel
+        - time
+        - covs
+        - horizon
+        - nbThresholds
+      columns:
+        - name: threshold
+          title: Threshold
+          type: number
+        - name: model
+          title: Model
+          type: number
+        - name: all
+          title: Treat all
+          type: number
+        - name: gain
+          title: Gain
+          type: number
+        - name: avoided
+          title: Interventions avoided per 100
+          type: number
+
+    - name: plots
+      title: Plots
+      type: Group
+      items:
+        - name: calibration
+          title: Calibration
+          type: Image
+          width: 500
+          height: 500
+          renderFun: .plotCal
+          visible: (calPlot)
+          clearWith:
+            - modelFile
+            - family
+            - dep
+            - eventLevel
+            - time
+            - covs
+            - horizon
+            - ciWidth
+            - calGroups
+
+        - name: roc
+          title: ROC Curve
+          type: Image
+          width: 500
+          height: 450
+          renderFun: .plotRoc
+          visible: false
+          clearWith: *model
+
+        - name: kmCurves
+          title: Kaplan–Meier by Risk Group
+          type: Image
+          width: 550
+          height: 420
+          renderFun: .plotKm
+          visible: false
+          clearWith:
+            - modelFile
+            - family
+            - dep
+            - eventLevel
+            - time
+            - covs
+            - horizon
+            - kmGroups
+
+        - name: dcaCurves
+          title: Decision Curve
+          type: Image
+          width: 550
+          height: 420
+          renderFun: .plotDca
+          visible: false
+          clearWith:
+            - modelFile
+            - family
+            - dep
+            - eventLevel
+            - time
+            - covs
+            - horizon
+            - dcaMax
+
+    - name: pred
+      title: Prediction
+      type: Output
+      varTitle: Prediction (published model)
+      varDescription: Predicted risk (binary, Cox at the horizon) or value (linear) from the published model
+      measureType: continuous
+      clearWith: *model
+
+    - name: predLP
+      title: Linear predictor
+      type: Output
+      varTitle: Linear predictor (published model)
+      varDescription: Linear predictor of the published model
+      measureType: continuous
+      clearWith: *model
+...

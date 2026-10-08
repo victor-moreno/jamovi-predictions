@@ -1,0 +1,213 @@
+---
+name: cpPublished
+title: Validate a Published Model
+menuGroup: Prediction
+version: '0.3.0'
+jas: '1.2'
+weightsSupport: none
+
+description:
+    main: >-
+        Validate a published prediction model, or one exported by clinpred, in
+        the current data: the model is read from a JSON file exported by
+        clinpred or from a table of coefficients (term, estimate, SE), applied
+        unchanged, and its discrimination, calibration, overall performance
+        and clinical utility are measured; the model can be updated
+        (recalibrated or revised) by the closed testing procedure.
+    R:
+        dontrun: true
+        usage: |
+            # coefs.csv: term,estimate / Intercept,-9.1 / glu,0.037 / bmi,0.08
+            cpPublished(data = MASS::Pima.te, modelFile = list(path = "coefs.csv",
+                        filename = "coefs.csv"), family = "binary", dep = "type",
+                        eventLevel = "Yes")
+
+options:
+    - name: data
+      type: Data
+      description:
+          R: the data as a data frame
+
+    - name: modelFile
+      title: Model file
+      type: File
+      extensions: [json, csv, tsv, txt, xlsx]
+      description:
+          R: >-
+              a model exported by clinpred (json), or a table of coefficients
+              (csv, tsv, txt or xlsx) with the columns term, estimate and,
+              optionally, SE
+
+    - name: family
+      title: Model type
+      type: List
+      options:
+        - name: binary
+          title: Binary outcome (logistic)
+        - name: gaussian
+          title: Continuous outcome (linear)
+        - name: cox
+          title: Time to event (Cox)
+      default: binary
+      description:
+          R: "`'binary'`, `'gaussian'` or `'cox'`"
+
+    - name: dep
+      title: Outcome / event
+      type: Variable
+      default: null
+      suggested:
+        - nominal
+        - continuous
+      permitted:
+        - factor
+        - numeric
+      description:
+          R: >-
+              the outcome (binary or continuous), or for a Cox model the event
+              indicator
+
+    - name: eventLevel
+      title: Event level
+      type: String
+      default: ''
+      description:
+          R: the level of the outcome that is the event; '' uses the second level
+
+    - name: time
+      title: Time
+      type: Variable
+      default: null
+      suggested:
+        - continuous
+      permitted:
+        - numeric
+      description:
+          R: the follow-up time (Cox models)
+
+    - name: covs
+      title: Predictor variables
+      type: Variables
+      default: []
+      suggested:
+        - continuous
+        - nominal
+        - ordinal
+      permitted:
+        - numeric
+        - factor
+      description:
+          R: >-
+              the variables the model uses (jamovi passes an analysis only the
+              variables in its boxes); terms are matched to them by name
+
+    - name: horizon
+      title: Prediction horizon
+      type: Number
+      min: 0
+      default: 0
+      description:
+          R: >-
+              Cox models: the time by which risks are assessed; 0 (default)
+              uses the model file's horizon, else the median follow-up
+
+    - name: ciWidth
+      title: Confidence level
+      type: Number
+      min: 50
+      max: 99.9
+      default: 95
+
+    - name: updating
+      title: Model updating (closed testing)
+      type: Bool
+      default: false
+
+    - name: updAlpha
+      title: α
+      type: Number
+      min: 0.0001
+      max: 0.5
+      default: 0.05
+
+    - name: classif
+      title: Classification at a threshold
+      type: Bool
+      default: false
+
+    - name: thrMethod
+      title: Threshold
+      type: List
+      options:
+        - name: value
+          title: Value
+        - name: prevalence
+          title: Outcome prevalence
+      default: value
+
+    - name: threshold
+      title: Risk threshold
+      type: Number
+      min: 0.001
+      max: 0.999
+      default: 0.5
+
+    - name: dca
+      title: Decision curve
+      type: Bool
+      default: false
+
+    - name: dcaMax
+      title: Maximum threshold
+      type: Number
+      min: 0.02
+      max: 0.99
+      default: 0.5
+
+    - name: nbThresholds
+      title: Net benefit at
+      type: String
+      default: '0.05, 0.1, 0.2'
+
+    - name: calPlot
+      title: Calibration plot
+      type: Bool
+      default: false
+
+    - name: calGroups
+      title: Risk groups
+      type: Integer
+      min: 2
+      max: 50
+      default: 10
+
+    - name: rocPlot
+      title: ROC curve
+      type: Bool
+      default: false
+
+    - name: kmPlot
+      title: Kaplan–Meier by risk group
+      type: Bool
+      default: false
+
+    - name: kmGroups
+      title: Groups
+      type: Integer
+      min: 2
+      max: 10
+      default: 4
+
+    - name: explain
+      title: Explanations
+      type: Bool
+      default: false
+
+    - name: pred
+      title: Prediction (risk or value)
+      type: Output
+
+    - name: predLP
+      title: Linear predictor
+      type: Output
+...

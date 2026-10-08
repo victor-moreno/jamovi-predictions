@@ -305,6 +305,27 @@
         if (o$shap) private$.fillShap(beta, spec, X, data)
         private$.plotStates(all, sets, iv)
         private$.saveOutputs(beta, spec, data)
+        # a failed export must not hide the results
+        if (private$.on("exportModel"))
+            tryCatch(private$.exportModel(beta, spec, y, lp, iv),
+                     error = function(e) .show_warning(self, "export", .("The model could not be exported.")))
+    },
+
+    # the fitted model as JSON, handed to the host (desktop: opened; cloud: downloaded)
+    .exportModel = function(beta, spec, y, lp, iv) {
+        fam <- private$.fam
+        app <- fam$metrics(y, lp)
+        dev <- list(n = NROW(y),
+                    events = if (is.matrix(y)) sum(y[, 2]) else if (fam$name == "binary") sum(y) else NULL,
+                    validation = if (is.null(iv)) "none" else iv$method,
+                    apparent = as.list(app), corrected = if (!is.null(iv)) as.list(iv$corrected))
+        json <- cp_model_json(spec, beta, fam$name, se = sqrt(pmax(0, diag(fam$vcov(beta)))),
+                              version = as.character(utils::packageVersion("clinpred")), development = dev)
+        file <- paste0("clinpred_", gsub("[^A-Za-z0-9_.-]", "_", spec$outcome$name), "_", fam$name, ".json")
+        self$options$option("exportModel")$perform(function(action) {
+            writeLines(json, action$params$fullPath, useBytes = TRUE)
+            list(filename = file)
+        })
     },
 
     .valSet = function(df, spec, beta, key) {
