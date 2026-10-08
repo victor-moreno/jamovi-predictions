@@ -41,6 +41,7 @@ module.exports = {
         this.updateRefLevels(ui);
         this.updateLevelControls(ui);
         this.updateScales(ui);
+        this.updateBaseline(ui);
     },
 
     predictors: function(ui) {
@@ -100,6 +101,12 @@ module.exports = {
             if (column === 1 && list[index])
                 item.setPropertyValue('variable', list[index].var);
         });
+    },
+
+    // one row per predictor, with its "baseline" tick kept
+    updateBaseline: function(ui) {
+        let current = utils.clone(ui.baseline.value(), []);
+        ui.baseline.setValue(this.syncList(current, this.predictors(ui), (v) => ({ var: v, forced: false })));
     },
 
     updateScales: function(ui) {

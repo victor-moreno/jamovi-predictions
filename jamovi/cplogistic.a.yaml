@@ -128,6 +128,61 @@ options:
               `'hundred'` or `'thousand'`; the covariate is divided by it before
               fitting, so predictions do not change
 
+    - name: baseline
+      title: Baseline covariates
+      type: Array
+      default:
+      template:
+          type: Group
+          elements:
+              - name: var
+                type: Variable
+              - name: forced
+                type: Bool
+                default: false
+      description:
+          R: >-
+              a list of lists `list(var = , forced = TRUE)`: the predictors that
+              are always in the model (never removed by selection, never
+              penalised); they form the baseline model of the incremental-value
+              comparison
+
+    - name: selMode
+      title: Selection of the other predictors
+      type: List
+      options:
+        - name: none
+          title: None (keep every predictor)
+        - name: backward
+          title: Backward elimination
+        - name: forward
+          title: Forward selection
+      default: none
+      description:
+          R: >-
+              `'none'`, `'backward'` or `'forward'`: selection of the predictors
+              that are not baseline covariates, repeated in every bootstrap or
+              cross-validation fit
+
+    - name: selCrit
+      title: Criterion
+      type: List
+      options:
+        - name: aic
+          title: AIC
+        - name: bic
+          title: BIC
+        - name: lrt
+          title: LR test
+      default: aic
+
+    - name: selAlpha
+      title: α
+      type: Number
+      min: 0.0001
+      max: 0.5
+      default: 0.05
+
     - name: interactions
       title: Interaction terms
       type: Terms

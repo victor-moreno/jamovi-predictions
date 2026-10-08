@@ -35,6 +35,9 @@ patients with smoking `unknown`, systolic pressures above the development range,
    - *Model*: descriptive table, odds ratios (crude and adjusted), likelihood ratio tests,
      coefficients, equation, sample size. *Covariate Scaling*: `sbp` per 10 units. *Reference
      Levels*: e.g. `smoking` = `current`.
+   - *Variable Selection*: tick `sex` and `centre` as baseline covariates (always in the model),
+     choose backward elimination (AIC, BIC or LR test); the selection table shows what was kept,
+     and with bootstrap validation how often each predictor was kept in the resampled fits.
    - *Interactions*: add `age × sex` (and a false one, e.g. `sbp × diabetes`), keep
      *Forward selection, LR test*: `age × sex` enters at step 1, and the table of effects within
      subgroups shows the sex odds ratio at each age quartile.

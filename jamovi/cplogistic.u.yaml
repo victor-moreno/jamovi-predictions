@@ -147,6 +147,45 @@ children:
               type: ComboBox
 
   - type: CollapseBox
+    label: Variable Selection
+    collapsed: true
+    stretchFactor: 1
+    children:
+      - type: ListBox
+        name: baseline
+        showColumnHeaders: true
+        fullRowSelect: true
+        stretchFactor: 1
+        height: large
+        columns:
+          - name: var
+            label: Predictor
+            selectable: false
+            stretchFactor: 1
+            maxWidth: 300
+            template:
+              type: VariableLabel
+          - name: forced
+            label: Baseline (always in)
+            selectable: false
+            stretchFactor: 0.5
+            template:
+              type: CheckBox
+              label: ''
+      - type: LayoutBox
+        margin: large
+        children:
+          - type: ComboBox
+            name: selMode
+          - type: ComboBox
+            name: selCrit
+            enable: (selMode:backward || selMode:forward)
+          - type: TextBox
+            name: selAlpha
+            format: number
+            enable: (selCrit:lrt)
+
+  - type: CollapseBox
     label: Interactions
     collapsed: true
     stretchFactor: 1

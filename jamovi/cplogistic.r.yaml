@@ -42,6 +42,10 @@ items:
         - intAllPairs
         - intMode
         - intAlpha
+        - baseline
+        - selMode
+        - selCrit
+        - selAlpha
         - splitVar
         - splitLevel
         - extFile
@@ -158,6 +162,10 @@ items:
         - intAllPairs
         - intMode
         - intAlpha
+        - baseline
+        - selMode
+        - selCrit
+        - selAlpha
         - splitVar
         - splitLevel
         - ciWidth
@@ -225,6 +233,10 @@ items:
         - intAllPairs
         - intMode
         - intAlpha
+        - baseline
+        - selMode
+        - selCrit
+        - selAlpha
         - splitVar
         - splitLevel
       columns:
@@ -259,6 +271,10 @@ items:
         - intAllPairs
         - intMode
         - intAlpha
+        - baseline
+        - selMode
+        - selCrit
+        - selAlpha
         - splitVar
         - splitLevel
         - validation
@@ -295,6 +311,63 @@ items:
           format: pc
           visible: false
 
+    - name: selTable
+      title: Predictor Selection
+      type: Table
+      visible: false
+      clearWith:
+        - dep
+        - eventLevel
+        - covs
+        - splineVars
+        - factors
+        - knots
+        - refLevels
+        - covScales
+        - interactions
+        - intAllPairs
+        - intMode
+        - intAlpha
+        - baseline
+        - selMode
+        - selCrit
+        - selAlpha
+        - splitVar
+        - splitLevel
+        - validation
+        - nBoot
+        - nFolds
+        - nRepeats
+        - seed
+      columns:
+        - name: var
+          title: Predictor
+          type: text
+        - name: status
+          title: Status
+          type: text
+        - name: step
+          title: Step
+          type: integer
+        - name: chisq
+          title: χ²
+          type: number
+          superTitle: vs final model
+        - name: df
+          title: df
+          type: integer
+          superTitle: vs final model
+        - name: p
+          title: p
+          type: number
+          format: zto,pvalue
+          superTitle: vs final model
+        - name: freq
+          title: Resampled fits
+          type: number
+          format: pc
+          visible: false
+
     - name: subTable
       title: Effects Within Subgroups
       type: Table
@@ -312,6 +385,10 @@ items:
         - intAllPairs
         - intMode
         - intAlpha
+        - baseline
+        - selMode
+        - selCrit
+        - selAlpha
         - splitVar
         - splitLevel
         - ciWidth
@@ -354,6 +431,10 @@ items:
         - intAllPairs
         - intMode
         - intAlpha
+        - baseline
+        - selMode
+        - selCrit
+        - selAlpha
         - splitVar
         - splitLevel
         - ciWidth
@@ -400,6 +481,10 @@ items:
         - intAllPairs
         - intMode
         - intAlpha
+        - baseline
+        - selMode
+        - selCrit
+        - selAlpha
         - splitVar
         - splitLevel
 
@@ -419,6 +504,10 @@ items:
         - intAllPairs
         - intMode
         - intAlpha
+        - baseline
+        - selMode
+        - selCrit
+        - selAlpha
         - splitVar
         - splitLevel
         - validation
@@ -472,6 +561,10 @@ items:
         - intAllPairs
         - intMode
         - intAlpha
+        - baseline
+        - selMode
+        - selCrit
+        - selAlpha
         - splitVar
         - splitLevel
         - extFile
@@ -517,6 +610,10 @@ items:
         - intAllPairs
         - intMode
         - intAlpha
+        - baseline
+        - selMode
+        - selCrit
+        - selAlpha
         - splitVar
         - splitLevel
         - extFile
@@ -581,6 +678,10 @@ items:
         - intAllPairs
         - intMode
         - intAlpha
+        - baseline
+        - selMode
+        - selCrit
+        - selAlpha
         - splitVar
         - splitLevel
         - validation
@@ -611,6 +712,10 @@ items:
         - intAllPairs
         - intMode
         - intAlpha
+        - baseline
+        - selMode
+        - selCrit
+        - selAlpha
         - splitVar
         - splitLevel
         - extFile
@@ -682,6 +787,10 @@ items:
         - intAllPairs
         - intMode
         - intAlpha
+        - baseline
+        - selMode
+        - selCrit
+        - selAlpha
         - splitVar
         - splitLevel
         - extFile
@@ -724,6 +833,10 @@ items:
         - intAllPairs
         - intMode
         - intAlpha
+        - baseline
+        - selMode
+        - selCrit
+        - selAlpha
         - splitVar
         - splitLevel
         - ssSource
@@ -759,6 +872,10 @@ items:
         - intAllPairs
         - intMode
         - intAlpha
+        - baseline
+        - selMode
+        - selCrit
+        - selAlpha
         - splitVar
         - splitLevel
         - shapleyMeasure
@@ -795,6 +912,10 @@ items:
         - intAllPairs
         - intMode
         - intAlpha
+        - baseline
+        - selMode
+        - selCrit
+        - selAlpha
         - splitVar
         - splitLevel
         - extFile
@@ -834,6 +955,10 @@ items:
         - intAllPairs
         - intMode
         - intAlpha
+        - baseline
+        - selMode
+        - selCrit
+        - selAlpha
         - splitVar
         - splitLevel
       columns:
@@ -881,6 +1006,10 @@ items:
             - intAllPairs
             - intMode
             - intAlpha
+            - baseline
+            - selMode
+            - selCrit
+            - selAlpha
             - splitVar
             - splitLevel
             - extFile
@@ -915,6 +1044,10 @@ items:
             - intAllPairs
             - intMode
             - intAlpha
+            - baseline
+            - selMode
+            - selCrit
+            - selAlpha
             - splitVar
             - splitLevel
             - extFile
@@ -940,6 +1073,10 @@ items:
             - intAllPairs
             - intMode
             - intAlpha
+            - baseline
+            - selMode
+            - selCrit
+            - selAlpha
             - splitVar
             - splitLevel
             - shapleyMeasure
@@ -965,6 +1102,10 @@ items:
             - intAllPairs
             - intMode
             - intAlpha
+            - baseline
+            - selMode
+            - selCrit
+            - selAlpha
             - splitVar
             - splitLevel
             - extFile
@@ -991,6 +1132,10 @@ items:
             - intAllPairs
             - intMode
             - intAlpha
+            - baseline
+            - selMode
+            - selCrit
+            - selAlpha
             - splitVar
             - splitLevel
 
@@ -1014,6 +1159,10 @@ items:
             - intAllPairs
             - intMode
             - intAlpha
+            - baseline
+            - selMode
+            - selCrit
+            - selAlpha
             - splitVar
             - splitLevel
             - shapRow
@@ -1038,6 +1187,10 @@ items:
             - intAllPairs
             - intMode
             - intAlpha
+            - baseline
+            - selMode
+            - selCrit
+            - selAlpha
             - splitVar
             - splitLevel
             - validation

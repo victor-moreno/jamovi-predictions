@@ -175,7 +175,7 @@ cpLogisticClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class(
             req <- max(ss$n)
             t$setRow(rowKey = "required", values = list(n = req, events = req * phi, epp = req * phi / p))
             t$setRow(rowKey = "actual", values = list(n = length(y), events = sum(y), epp = sum(y) / p))
-            t$setNote("in", sprintf(.("Parameters (excluding the intercept): %d; outcome proportion: %.3f; anticipated Cox–Snell R²: %.3f (%s)."),
+            t$setNote("in", sprintf(.("Candidate parameters (excluding the intercept): %d; outcome proportion: %.3f; anticipated Cox–Snell R²: %.3f (%s)."),
                                     p, phi, r2, if (o$ssSource == "value") .("entered") else if (!is.null(iv)) .("optimism-corrected, this model") else .("apparent, this model")))
             t$setNote("verdict", if (length(y) >= req) .("The development data meet the minimum sample size.")
                       else sprintf(.("The development data are %d short of the minimum sample size: expect overfitting; consider fewer parameters or penalisation."), req - length(y)))

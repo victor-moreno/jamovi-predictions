@@ -65,6 +65,20 @@
         Filter(function(t) length(t) == 2 && all(t %in% preds), ints)
     },
 
+    # the fitting procedure's options: baseline (forced) covariates, selection
+    # of the others, interaction selection
+    .selOpts = function() {
+        o <- self$options
+        forced <- character(0)
+        for (it in o$baseline) if (isTRUE(it$forced)) forced <- c(forced, it$var)
+        list(mode = o$selMode, crit = o$selCrit, alpha = o$selAlpha,
+             forced = intersect(forced, private$.preds()), intMode = o$intMode, intAlpha = o$intAlpha)
+    },
+    .selecting = function() {
+        s <- private$.selOpts()
+        s$mode != "none" || (length(private$.candidates()) > 0 && s$intMode != "all")
+    },
+
     # data sets: development, validation rows (split variable), external file
     .sets = function() {
         sets <- c(dev = "Development")
@@ -136,6 +150,14 @@
             r$subTable$setVisible(TRUE)
         }
         for (cn in c("lower", "upper")) r$subTable$getColumn(cn)$setSuperTitle(ciTitle)
+
+        if (self$options$selMode != "none") {
+            st <- r$selTable
+            st$setVisible(TRUE)
+            for (v in private$.preds()) st$addRow(rowKey = v, values = list(var = v))
+            st$getColumn("freq")$setVisible(val != "none")
+            st$getColumn("freq")$setTitle(if (val == "cv") .("CV fits") else .("Bootstrap fits"))
+        }
 
         if (val == "boot") {
             r$stabTable$setVisible(TRUE)
@@ -247,8 +269,11 @@
         # candidate interactions (specC, XC); the model keeps the selected ones
         specC <- prep$spec
         XC <- cp_design(specC, prep$data)
-        sel <- cp_select_interactions(XC, y, specC, fam, o$intMode, o$intAlpha)
-        spec <- cp_with_interactions(specC, attr(sel, "selected"))
+        sel <- cp_fit_procedure(XC, y, specC, fam, private$.selOpts())
+        if (!length(attr(sel, "vars")))
+            .fail("The selection removed every predictor. Mark baseline covariates under Variable Selection, ",
+                  "or use a less strict criterion.")
+        spec <- cp_with_terms(specC, attr(sel, "vars"), attr(sel, "ints"))
         X <- cp_design(spec, prep$data)
         beta <- fam$fit(X, y)
         if (anyNA(beta))
@@ -291,18 +316,22 @@
 
         iv <- private$.internal(XC, y, specC)
         if (length(cands)) private$.fillInt(XC, y, specC, sel, iv, conf, spec, beta)
+        if (o$selMode != "none") private$.fillSel(sel, iv)
         private$.fillPerfDev(y, lp, iv, conf)
         for (k in names(vsets)) private$.fillPerfVal(k, vsets[[k]], conf)
         if (length(vsets)) private$.fillCaseMix(prep, X, y, lp, vsets)
         if (private$.on("updating")) for (k in names(vsets)) private$.fillUpd(k, vsets[[k]])
-        if (!is.null(iv) && iv$method == "boot") private$.fillStab(iv, y, lp, X)
+        # shrinkage and sample size count the candidate parameters (selection included)
+        if (!is.null(iv) && iv$method == "boot") private$.fillStab(iv, y, lp, XC)
 
         all <- c(list(dev = list(X = X, y = y, lp = lp, p = p, df = prep$data)), vsets)
         private$.fillExtras(all, sets, conf)
-        if (o$sampleSize) private$.fillSampleSize(y, lp, spec, iv)
+        if (o$sampleSize) private$.fillSampleSize(y, lp, specC, iv)
         if (o$shapley) private$.fillShapley(X, y, spec)
         if (o$permImp) private$.fillPerm(beta, spec, all, sets)
         if (o$shap) private$.fillShap(beta, spec, X, data)
+        dropped <- setdiff(private$.preds(), names(spec$vars))
+        if (length(dropped)) private$.zeroImportance(dropped)
         private$.plotStates(all, sets, iv)
         private$.saveOutputs(beta, spec, data)
         # a failed export must not hide the results
@@ -373,15 +402,27 @@
         t <- self$results$orTable
         fam <- private$.fam
         adj <- cp_effects(spec, beta, fam$vcov(beta), conf, exp = fam$exp, df = fam$dfResid(beta))
-        cr <- if (self$options$crude) cp_crude(spec, prep$data, y, fam, conf) else NULL
+        # crude effects for every candidate predictor; adjusted ones for those in the model
+        cr <- if (self$options$crude) cp_crude(prep$spec, prep$data, y, fam, conf) else NULL
         pAdj <- stats::setNames(lrt$p, lrt$key)
         ref <- if (fam$exp) 1 else 0
-        for (info in spec$vars) {
+        for (info in prep$spec$vars) {
             v <- info$name
+            inModel <- v %in% names(spec$vars)
             if (info$role == "factor")
                 private$.putRow(t, paste0(v, " (ref)"), list(var = v, level = info$levels[1],
                     or_u = ref, lower_u = "", upper_u = "", p_u = if (!is.null(cr)) attr(cr, "pOverall")[[v]] else "",
-                    or = ref, lower = "", upper = "", p = pAdj[[v]]))
+                    or = if (inModel) ref else "", lower = "", upper = "", p = if (inModel) pAdj[[v]] else ""))
+            if (!inModel) {
+                for (d in cp_effect_defs(prep$spec, v)) {
+                    cc <- if (!is.null(cr)) cr[cr$key == d$key, ] else NULL
+                    private$.putRow(t, d$key, c(list(var = v, level = d$level, or = "", lower = "", upper = "", p = ""),
+                        if (!is.null(cc)) list(or_u = cc$est, lower_u = cc$lower, upper_u = cc$upper,
+                                               p_u = if (info$role == "spline") attr(cr, "pOverall")[[v]] else cc$p)))
+                }
+                t$setNote("drop", .("Predictors without adjusted effects were removed by the selection (see Predictor Selection)."))
+                next
+            }
             for (i in which(adj$var == v)) {
                 a <- adj[i, ]
                 vals <- list(var = v, level = a$level, or = a$est, lower = a$lower, upper = a$upper,
@@ -415,16 +456,21 @@
         o <- self$options
         fam <- private$.fam
         t <- self$results$intTable
+        # candidates are screened among the predictors the selection kept
+        specK <- cp_with_terms(specC, attr(sel, "vars"), names(specC$interactions))
         screen <- attr(sel, "screen") %||%
-            attr(cp_select_interactions(XC, y, specC, fam, "lrt", 0), "screen")
-        kept <- attr(sel, "selected")
+            attr(cp_select_interactions(XC[, specK$columns, drop = FALSE], y, specK, fam, "lrt", 0), "screen")
+        kept <- attr(sel, "ints")
+        for (k in setdiff(names(specC$interactions), names(specK$interactions)))
+            private$.putRow(t, k, list(chisq = "", df = "", p = "", daic = "", dbic = "", kept = .("main effect removed"),
+                                       freq = if (!is.null(iv$selection)) .sel_freq(iv$selection, k) else ""))
         for (i in seq_len(NROW(screen))) {
             k <- screen$term[i]
             step <- match(k, kept)
             private$.putRow(t, k, list(chisq = screen$chisq[i], df = screen$df[i], p = screen$p[i],
                 daic = screen$daic[i], dbic = screen$dbic[i],
                 kept = if (o$intMode == "all") .("yes") else if (is.na(step)) .("no") else sprintf(.("step %d"), step),
-                freq = if (!is.null(iv$selection)) iv$selection[[k]] %||% 0 else ""))
+                freq = if (!is.null(iv$selection)) .sel_freq(iv$selection, k) else ""))
         }
         t$setNote("ex", .("χ², ΔAIC and ΔBIC: the term added alone to the main-effects model (negative Δ: the term improves the criterion)."))
         if (o$intMode != "all") {
@@ -446,6 +492,32 @@
             private$.putRow(st, sub$key[i], list(effect = sub$effect[i], within = sub$within[i],
                 or = sub$est[i], lower = sub$lower[i], upper = sub$upper[i], p = sub$p[i]))
         st$setNote("ex", private$.text("subEx"))
+    },
+
+    # selection of the non-baseline predictors: decision, step, test against the
+    # final main-effects model, share of resampled fits that kept it
+    .fillSel = function(sel, iv) {
+        o <- self$options
+        t <- self$results$selTable
+        tt <- attr(sel, "mainTests")
+        forced <- private$.selOpts()$forced
+        for (v in forced) private$.putRow(t, v, list(var = v, status = .("baseline"), step = "", chisq = "", df = "", p = "",
+                                                     freq = if (!is.null(iv$selection)) 1 else ""))
+        for (i in seq_len(NROW(tt))) {
+            v <- tt$var[i]
+            st <- if (tt$kept[i]) { if (is.na(tt$step[i])) .("kept") else .("added") } else
+                { if (is.na(tt$step[i])) .("not added") else .("removed") }
+            private$.putRow(t, v, list(var = v, status = st, step = if (is.na(tt$step[i])) "" else tt$step[i],
+                chisq = tt$chisq[i], df = tt$df[i], p = tt$p[i],
+                freq = if (!is.null(iv$selection)) .sel_freq(iv$selection, v) else ""))
+        }
+        crit <- switch(o$selCrit, aic = "AIC", bic = "BIC", lrt = sprintf(.("LR test, α = %s"), .num(o$selAlpha)))
+        t$setNote("how", sprintf(if (o$selMode == "backward")
+            .("Backward elimination (%s): at each step the predictor whose removal improves the criterion most leaves. Baseline covariates are never removed.")
+            else .("Forward selection (%s): from the baseline covariates, at each step the predictor that improves the criterion most enters."), crit))
+        t$setNote("test", .("χ², df, p: each predictor dropped from (if kept) or added to (if not) the final main-effects model; a factor or a spline is one term."))
+        if (!is.null(iv))
+            t$setNote("res", .("The selection is repeated in every resampled fit, so the internal validation includes its optimism; the last column is the share of fits that kept the predictor."))
     },
 
     # how each predictor enters the equation (scaling, dummies, spline basis)
@@ -483,9 +555,9 @@
         iv <- self$results$perfDev$state
         if (is.null(iv)) {
             fam <- private$.fam
-            if (length(specC$interactions) && o$intMode != "all") {
-                base <- fam
-                fam$fit <- function(X, y) cp_select_interactions(X, y, specC, base, o$intMode, o$intAlpha)
+            if (private$.selecting()) {
+                base <- fam; so <- private$.selOpts()
+                fam$fit <- function(X, y) cp_fit_procedure(X, y, specC, base, so)
             }
             iv <- cp_internal(X, y, fam, o$validation, B = o$nBoot, k = o$nFolds,
                               R = o$nRepeats, seed = o$seed, stability = o$validation == "boot")
@@ -587,6 +659,21 @@
             t$setRow(rowKey = "maxape", values = list(value = iv$stability$maxape))
         }
         if (self$options$explain) t$setNote("ex", private$.text("stabEx"))
+    },
+
+    # a predictor the selection removed has no importance in the model: exactly 0
+    .zeroImportance = function(dropped) {
+        o <- self$options; r <- self$results
+        keys <- private$.fam$permKeys
+        note <- .("Predictors removed by the selection are not in the model: their importance is 0.")
+        for (v in dropped) {
+            if (o$shapley && v %in% r$shapleyTable$rowKeys) r$shapleyTable$setRow(rowKey = v, values = list(shapley = 0, share = 0, rank = ""))
+            if (o$permImp && v %in% r$permTable$rowKeys)
+                r$permTable$setRow(rowKey = v, values = as.list(stats::setNames(rep(0, 2 * length(keys)), c(paste0("d_", keys), paste0("sd_", keys)))))
+            if (o$shap && v %in% r$shapTable$rowKeys) r$shapTable$setRow(rowKey = v, values = list(meanAbs = 0, share = 0))
+        }
+        for (t in c("shapleyTable", "permTable", "shapTable")) if (o[[c(shapleyTable = "shapley", permTable = "permImp", shapTable = "shap")[[t]]]])
+            r[[t]]$setNote("drop", note)
     },
 
     .fillShapley = function(X, y, spec) {

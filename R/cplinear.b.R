@@ -123,7 +123,7 @@ cpLinearClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class(
             req <- max(ss$n)
             t$setRow(rowKey = "required", values = list(n = req, spp = req / p))
             t$setRow(rowKey = "actual", values = list(n = n, spp = n / p))
-            t$setNote("in", sprintf(.("Parameters (excluding the intercept): %d; anticipated adjusted R²: %.3f (%s); outcome mean %.4g, SD %.4g."),
+            t$setNote("in", sprintf(.("Candidate parameters (excluding the intercept): %d; anticipated adjusted R²: %.3f (%s); outcome mean %.4g, SD %.4g."),
                                     p, r2, if (o$ssSource == "value") .("entered") else if (!is.null(iv)) .("optimism-corrected, this model") else .("adjusted, this model"),
                                     mean(y), stats::sd(y)))
             t$setNote("verdict", if (n >= req) .("The development data meet the minimum sample size.")

@@ -168,7 +168,7 @@ cpCoxClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class(
             req <- max(ss$n)
             t$setRow(rowKey = "required", values = list(n = req, events = req * evRate, epp = req * evRate / p))
             t$setRow(rowKey = "actual", values = list(n = nrow(y), events = E, epp = E / p))
-            t$setNote("in", sprintf(.("Parameters: %d; event rate %.4g per unit of time, mean follow-up %.4g; anticipated Cox–Snell R²: %.3f (%s)."),
+            t$setNote("in", sprintf(.("Candidate parameters: %d; event rate %.4g per unit of time, mean follow-up %.4g; anticipated Cox–Snell R²: %.3f (%s)."),
                                     p, rate, fu, r2, if (o$ssSource == "value") .("entered") else if (!is.null(iv)) .("optimism-corrected, this model") else .("apparent, this model")))
             t$setNote("risk", sprintf(.("3. Overall risk by t = %s: %.3f (exponential), estimated within [%.3f, %.3f] with the minimum required size."),
                                       private$.hText(), ss$risk, ss$riskCI[1], ss$riskCI[2]))

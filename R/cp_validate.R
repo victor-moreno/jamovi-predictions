@@ -103,6 +103,9 @@ cp_internal <- function(X, y, fam, method = "boot", B = 200, k = 10, R = 1, seed
     stats::setNames(vapply(terms, function(t) mean(vapply(sel, function(s) t %in% s, TRUE)), 0), terms)
 }
 
+# The share of resampled fits that selected term k (0 when none did)
+.sel_freq <- function(freq, k) if (k %in% names(freq)) freq[[k]] else 0
+
 # Stability of individual risks across bootstrap models applied to the original
 # data: MAPE (mean absolute prediction error versus the original model's risk),
 # a sample of points for the instability plot, and calibration curves.

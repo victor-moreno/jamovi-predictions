@@ -15,6 +15,10 @@ cpCoxOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             factors = list(),
             refLevels = NULL,
             covScales = NULL,
+            baseline = NULL,
+            selMode = "none",
+            selCrit = "aic",
+            selAlpha = 0.05,
             interactions = NULL,
             intAllPairs = FALSE,
             intMode = "all",
@@ -145,6 +149,43 @@ cpCoxOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                                 "hundred",
                                 "thousand"),
                             default="unit"))))
+            private$..baseline <- jmvcore::OptionArray$new(
+                "baseline",
+                baseline,
+                default=NULL,
+                template=jmvcore::OptionGroup$new(
+                    "baseline",
+                    NULL,
+                    elements=list(
+                        jmvcore::OptionVariable$new(
+                            "var",
+                            NULL),
+                        jmvcore::OptionBool$new(
+                            "forced",
+                            NULL,
+                            default=FALSE))))
+            private$..selMode <- jmvcore::OptionList$new(
+                "selMode",
+                selMode,
+                options=list(
+                    "none",
+                    "backward",
+                    "forward"),
+                default="none")
+            private$..selCrit <- jmvcore::OptionList$new(
+                "selCrit",
+                selCrit,
+                options=list(
+                    "aic",
+                    "bic",
+                    "lrt"),
+                default="aic")
+            private$..selAlpha <- jmvcore::OptionNumber$new(
+                "selAlpha",
+                selAlpha,
+                min=0.0001,
+                max=0.5,
+                default=0.05)
             private$..interactions <- jmvcore::OptionTerms$new(
                 "interactions",
                 interactions,
@@ -370,6 +411,10 @@ cpCoxOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             self$.addOption(private$..factors)
             self$.addOption(private$..refLevels)
             self$.addOption(private$..covScales)
+            self$.addOption(private$..baseline)
+            self$.addOption(private$..selMode)
+            self$.addOption(private$..selCrit)
+            self$.addOption(private$..selAlpha)
             self$.addOption(private$..interactions)
             self$.addOption(private$..intAllPairs)
             self$.addOption(private$..intMode)
@@ -423,6 +468,10 @@ cpCoxOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
         factors = function() private$..factors$value,
         refLevels = function() private$..refLevels$value,
         covScales = function() private$..covScales$value,
+        baseline = function() private$..baseline$value,
+        selMode = function() private$..selMode$value,
+        selCrit = function() private$..selCrit$value,
+        selAlpha = function() private$..selAlpha$value,
         interactions = function() private$..interactions$value,
         intAllPairs = function() private$..intAllPairs$value,
         intMode = function() private$..intMode$value,
@@ -475,6 +524,10 @@ cpCoxOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
         ..factors = NA,
         ..refLevels = NA,
         ..covScales = NA,
+        ..baseline = NA,
+        ..selMode = NA,
+        ..selCrit = NA,
+        ..selAlpha = NA,
         ..interactions = NA,
         ..intAllPairs = NA,
         ..intMode = NA,
@@ -531,6 +584,7 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
         orTable = function() private$.items[["orTable"]],
         testTable = function() private$.items[["testTable"]],
         intTable = function() private$.items[["intTable"]],
+        selTable = function() private$.items[["selTable"]],
         subTable = function() private$.items[["subTable"]],
         coefTable = function() private$.items[["coefTable"]],
         equationText = function() private$.items[["equationText"]],
@@ -592,6 +646,10 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "intAllPairs",
                     "intMode",
                     "intAlpha",
+                    "baseline",
+                    "selMode",
+                    "selCrit",
+                    "selAlpha",
                     "splitVar",
                     "splitLevel",
                     "extFile"),
@@ -642,6 +700,10 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "intAllPairs",
                     "intMode",
                     "intAlpha",
+                    "baseline",
+                    "selMode",
+                    "selCrit",
+                    "selAlpha",
                     "splitVar",
                     "splitLevel",
                     "extFile"),
@@ -682,6 +744,10 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "intAllPairs",
                     "intMode",
                     "intAlpha",
+                    "baseline",
+                    "selMode",
+                    "selCrit",
+                    "selAlpha",
                     "splitVar",
                     "splitLevel",
                     "extFile"),
@@ -771,6 +837,10 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "intAllPairs",
                     "intMode",
                     "intAlpha",
+                    "baseline",
+                    "selMode",
+                    "selCrit",
+                    "selAlpha",
                     "splitVar",
                     "splitLevel",
                     "ciWidth"),
@@ -850,6 +920,10 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "intAllPairs",
                     "intMode",
                     "intAlpha",
+                    "baseline",
+                    "selMode",
+                    "selCrit",
+                    "selAlpha",
                     "splitVar",
                     "splitLevel"),
                 columns=list(
@@ -890,6 +964,10 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "intAllPairs",
                     "intMode",
                     "intAlpha",
+                    "baseline",
+                    "selMode",
+                    "selCrit",
+                    "selAlpha",
                     "splitVar",
                     "splitLevel",
                     "validation",
@@ -935,6 +1013,72 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                         `visible`=FALSE))))
             self$add(jmvcore::Table$new(
                 options=options,
+                name="selTable",
+                title="Predictor Selection",
+                visible=FALSE,
+                clearWith=list(
+                    "time",
+                    "status",
+                    "eventLevel",
+                    "horizon",
+                    "covs",
+                    "splineVars",
+                    "factors",
+                    "knots",
+                    "refLevels",
+                    "covScales",
+                    "interactions",
+                    "intAllPairs",
+                    "intMode",
+                    "intAlpha",
+                    "baseline",
+                    "selMode",
+                    "selCrit",
+                    "selAlpha",
+                    "splitVar",
+                    "splitLevel",
+                    "validation",
+                    "nBoot",
+                    "nFolds",
+                    "nRepeats",
+                    "seed"),
+                columns=list(
+                    list(
+                        `name`="var", 
+                        `title`="Predictor", 
+                        `type`="text"),
+                    list(
+                        `name`="status", 
+                        `title`="Status", 
+                        `type`="text"),
+                    list(
+                        `name`="step", 
+                        `title`="Step", 
+                        `type`="integer"),
+                    list(
+                        `name`="chisq", 
+                        `title`="\u03C7\u00B2", 
+                        `type`="number", 
+                        `superTitle`="vs final model"),
+                    list(
+                        `name`="df", 
+                        `title`="df", 
+                        `type`="integer", 
+                        `superTitle`="vs final model"),
+                    list(
+                        `name`="p", 
+                        `title`="p", 
+                        `type`="number", 
+                        `format`="zto,pvalue", 
+                        `superTitle`="vs final model"),
+                    list(
+                        `name`="freq", 
+                        `title`="Resampled fits", 
+                        `type`="number", 
+                        `format`="pc", 
+                        `visible`=FALSE))))
+            self$add(jmvcore::Table$new(
+                options=options,
                 name="subTable",
                 title="Effects Within Subgroups",
                 visible=FALSE,
@@ -953,6 +1097,10 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "intAllPairs",
                     "intMode",
                     "intAlpha",
+                    "baseline",
+                    "selMode",
+                    "selCrit",
+                    "selAlpha",
                     "splitVar",
                     "splitLevel",
                     "ciWidth"),
@@ -1003,6 +1151,10 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "intAllPairs",
                     "intMode",
                     "intAlpha",
+                    "baseline",
+                    "selMode",
+                    "selCrit",
+                    "selAlpha",
                     "splitVar",
                     "splitLevel",
                     "ciWidth"),
@@ -1058,6 +1210,10 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "intAllPairs",
                     "intMode",
                     "intAlpha",
+                    "baseline",
+                    "selMode",
+                    "selCrit",
+                    "selAlpha",
                     "splitVar",
                     "splitLevel")))
             self$add(jmvcore::Table$new(
@@ -1079,6 +1235,10 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "intAllPairs",
                     "intMode",
                     "intAlpha",
+                    "baseline",
+                    "selMode",
+                    "selCrit",
+                    "selAlpha",
                     "splitVar",
                     "splitLevel",
                     "validation",
@@ -1141,6 +1301,10 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "intAllPairs",
                     "intMode",
                     "intAlpha",
+                    "baseline",
+                    "selMode",
+                    "selCrit",
+                    "selAlpha",
                     "splitVar",
                     "splitLevel",
                     "extFile",
@@ -1194,6 +1358,10 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "intAllPairs",
                     "intMode",
                     "intAlpha",
+                    "baseline",
+                    "selMode",
+                    "selCrit",
+                    "selAlpha",
                     "splitVar",
                     "splitLevel",
                     "validation",
@@ -1228,6 +1396,10 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "intAllPairs",
                     "intMode",
                     "intAlpha",
+                    "baseline",
+                    "selMode",
+                    "selCrit",
+                    "selAlpha",
                     "splitVar",
                     "splitLevel",
                     "extFile",
@@ -1278,6 +1450,10 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "intAllPairs",
                     "intMode",
                     "intAlpha",
+                    "baseline",
+                    "selMode",
+                    "selCrit",
+                    "selAlpha",
                     "splitVar",
                     "splitLevel",
                     "validation",
@@ -1324,6 +1500,10 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "intAllPairs",
                     "intMode",
                     "intAlpha",
+                    "baseline",
+                    "selMode",
+                    "selCrit",
+                    "selAlpha",
                     "splitVar",
                     "splitLevel",
                     "shapleyMeasure",
@@ -1366,6 +1546,10 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "intAllPairs",
                     "intMode",
                     "intAlpha",
+                    "baseline",
+                    "selMode",
+                    "selCrit",
+                    "selAlpha",
                     "splitVar",
                     "splitLevel",
                     "extFile",
@@ -1412,6 +1596,10 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "intAllPairs",
                     "intMode",
                     "intAlpha",
+                    "baseline",
+                    "selMode",
+                    "selCrit",
+                    "selAlpha",
                     "splitVar",
                     "splitLevel"),
                 columns=list(
@@ -1470,6 +1658,10 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                                 "intAllPairs",
                                 "intMode",
                                 "intAlpha",
+                                "baseline",
+                                "selMode",
+                                "selCrit",
+                                "selAlpha",
                                 "splitVar",
                                 "splitLevel",
                                 "extFile",
@@ -1498,6 +1690,10 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                                 "intAllPairs",
                                 "intMode",
                                 "intAlpha",
+                                "baseline",
+                                "selMode",
+                                "selCrit",
+                                "selAlpha",
                                 "splitVar",
                                 "splitLevel",
                                 "extFile",
@@ -1525,6 +1721,10 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                                 "intAllPairs",
                                 "intMode",
                                 "intAlpha",
+                                "baseline",
+                                "selMode",
+                                "selCrit",
+                                "selAlpha",
                                 "splitVar",
                                 "splitLevel",
                                 "extFile",
@@ -1552,6 +1752,10 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                                 "intAllPairs",
                                 "intMode",
                                 "intAlpha",
+                                "baseline",
+                                "selMode",
+                                "selCrit",
+                                "selAlpha",
                                 "splitVar",
                                 "splitLevel",
                                 "shapleyMeasure",
@@ -1579,6 +1783,10 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                                 "intAllPairs",
                                 "intMode",
                                 "intAlpha",
+                                "baseline",
+                                "selMode",
+                                "selCrit",
+                                "selAlpha",
                                 "splitVar",
                                 "splitLevel",
                                 "extFile",
@@ -1607,6 +1815,10 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                                 "intAllPairs",
                                 "intMode",
                                 "intAlpha",
+                                "baseline",
+                                "selMode",
+                                "selCrit",
+                                "selAlpha",
                                 "splitVar",
                                 "splitLevel")))
                         self$add(jmvcore::Image$new(
@@ -1632,6 +1844,10 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                                 "intAllPairs",
                                 "intMode",
                                 "intAlpha",
+                                "baseline",
+                                "selMode",
+                                "selCrit",
+                                "selAlpha",
                                 "splitVar",
                                 "splitLevel",
                                 "shapRow")))
@@ -1658,6 +1874,10 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                                 "intAllPairs",
                                 "intMode",
                                 "intAlpha",
+                                "baseline",
+                                "selMode",
+                                "selCrit",
+                                "selAlpha",
                                 "splitVar",
                                 "splitLevel",
                                 "validation",
@@ -1686,6 +1906,10 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                                 "intAllPairs",
                                 "intMode",
                                 "intAlpha",
+                                "baseline",
+                                "selMode",
+                                "selCrit",
+                                "selAlpha",
                                 "splitVar",
                                 "splitLevel",
                                 "validation",
@@ -1713,6 +1937,10 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "intAllPairs",
                     "intMode",
                     "intAlpha",
+                    "baseline",
+                    "selMode",
+                    "selCrit",
+                    "selAlpha",
                     "splitVar",
                     "splitLevel",
                     "extFile")))
@@ -1738,6 +1966,10 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "intAllPairs",
                     "intMode",
                     "intAlpha",
+                    "baseline",
+                    "selMode",
+                    "selCrit",
+                    "selAlpha",
                     "splitVar",
                     "splitLevel",
                     "extFile")))}))
@@ -1796,6 +2028,15 @@ cpCoxBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
 #'   the hazard ratio of each linear covariate, \code{'unit'} (default),
 #'   \code{'sd'}, \code{'ten'}, \code{'hundred'} or \code{'thousand'}; the
 #'   covariate is divided by it before fitting, so predictions do not change
+#' @param baseline a list of lists \code{list(var = , forced = TRUE)}: the
+#'   predictors that are always in the model (never removed by selection, never
+#'   penalised); they form the baseline model of the incremental-value
+#'   comparison
+#' @param selMode \code{'none'}, \code{'backward'} or \code{'forward'}:
+#'   selection of the predictors that are not baseline covariates, repeated in
+#'   every bootstrap or cross-validation fit
+#' @param selCrit .
+#' @param selAlpha .
 #' @param interactions a list of pairs of predictors, the candidate
 #'   interaction terms
 #' @param intAllPairs .
@@ -1855,6 +2096,7 @@ cpCoxBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
 #'   \code{results$orTable} \tab \tab \tab \tab \tab a table \cr
 #'   \code{results$testTable} \tab \tab \tab \tab \tab a table \cr
 #'   \code{results$intTable} \tab \tab \tab \tab \tab a table \cr
+#'   \code{results$selTable} \tab \tab \tab \tab \tab a table \cr
 #'   \code{results$subTable} \tab \tab \tab \tab \tab a table \cr
 #'   \code{results$coefTable} \tab \tab \tab \tab \tab a table \cr
 #'   \code{results$equationText} \tab \tab \tab \tab \tab a preformatted \cr
@@ -1897,6 +2139,10 @@ cpCox <- function(
     factors = list(),
     refLevels = NULL,
     covScales = NULL,
+    baseline = NULL,
+    selMode = "none",
+    selCrit = "aic",
+    selAlpha = 0.05,
     interactions = NULL,
     intAllPairs = FALSE,
     intMode = "all",
@@ -1972,6 +2218,10 @@ cpCox <- function(
         factors = factors,
         refLevels = refLevels,
         covScales = covScales,
+        baseline = baseline,
+        selMode = selMode,
+        selCrit = selCrit,
+        selAlpha = selAlpha,
         interactions = interactions,
         intAllPairs = intAllPairs,
         intMode = intMode,
