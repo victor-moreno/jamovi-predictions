@@ -1,0 +1,8 @@
+"term","estimate","SE"
+"Intercept",17.8879,2.39
+"sbp",0.693645,0.01508
+"age",0.0953604,0.02407
+"bmi",0.546388,0.05155
+"smoking = former",-0.679191,0.5249
+"smoking = current",2.55811,0.6132
+"diabetes = yes",4.96804,0.8472

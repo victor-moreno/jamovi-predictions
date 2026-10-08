@@ -1,0 +1,11 @@
+"term","estimate","SE"
+"age",0.01564008,0.005376
+"sex = male",0.3165957,0.1028
+"smoking = former",0.2211325,0.1235
+"smoking = current",0.8022482,0.1209
+"sbp/10",0.2144755,0.03262
+"log(chol)",0.9711869,0.2873
+"diabetes = yes",0.6725734,0.1523
+"baseline survival",0.8506465,
+"horizon",5,
+"centre",5.594725,

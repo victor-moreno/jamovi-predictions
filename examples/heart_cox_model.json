@@ -1,0 +1,111 @@
+{
+  "format": "clinpred-model",
+  "formatVersion": 1,
+  "clinpred": "0.3.0",
+  "family": "cox",
+  "created": "2026-10-08",
+  "outcome": {
+    "name": "status",
+    "event": "event",
+    "levels": ["censored", "event"],
+    "time": "time"
+  },
+  "predictors": [
+    {
+      "name": "sbp",
+      "role": "numeric",
+      "range": [90, 183],
+      "mean": 120.317200784827,
+      "sd": 15.7349853142574,
+      "quartiles": [109, 121, 131],
+      "scale": 10,
+      "scaleLabel": "per 10 units"
+    },
+    {
+      "name": "chol",
+      "role": "numeric",
+      "range": [3.2, 10.34],
+      "mean": 5.50392413342054,
+      "sd": 0.998564760357549,
+      "quartiles": [4.81, 5.42, 6.11],
+      "scale": 1,
+      "scaleLabel": "per unit"
+    },
+    {
+      "name": "age",
+      "role": "spline",
+      "range": [35, 85],
+      "mean": 60.0130804447351,
+      "sd": 9.87539310606998,
+      "quartiles": [53, 60, 66],
+      "knots": [44, 56, 64, 77]
+    },
+    {
+      "name": "sex",
+      "role": "factor",
+      "levels": ["female", "male"]
+    },
+    {
+      "name": "smoking",
+      "role": "factor",
+      "levels": ["never", "former", "current"]
+    },
+    {
+      "name": "diabetes",
+      "role": "factor",
+      "levels": ["no", "yes"]
+    }
+  ],
+  "interactions": [],
+  "baseline": {
+    "horizon": 5,
+    "survival": 0.99289192690956
+  },
+  "coefficients": [
+    {
+      "term": "sbp",
+      "estimate": 0.214827760428764,
+      "se": 0.0325485094453831
+    },
+    {
+      "term": "chol",
+      "estimate": 0.172204036416536,
+      "se": 0.0498678764751514
+    },
+    {
+      "term": "age",
+      "estimate": -0.0194369065905428,
+      "se": 0.0207406058338625
+    },
+    {
+      "term": "age'",
+      "estimate": 0.0559617805488466,
+      "se": 0.0605893446393489
+    },
+    {
+      "term": "age''",
+      "estimate": -0.09781637696728,
+      "se": 0.221142405810777
+    },
+    {
+      "term": "sex: male",
+      "estimate": 0.318113129886296,
+      "se": 0.102921698746912
+    },
+    {
+      "term": "smoking: former",
+      "estimate": 0.21851548918937,
+      "se": 0.123835750121587
+    },
+    {
+      "term": "smoking: current",
+      "estimate": 0.799602225636012,
+      "se": 0.121121133412275
+    },
+    {
+      "term": "diabetes: yes",
+      "estimate": 0.697448554266476,
+      "se": 0.1528225223443
+    }
+  ]
+}

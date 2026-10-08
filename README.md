@@ -105,7 +105,9 @@ the data (discrimination and calibration slope are still valid; calibration-in-t
 Put the variables the model uses in **Predictor variables** (jamovi gives an analysis only the
 variables in its boxes).
 
-Example data in jamovi's Data Library:
+Example data: [`examples/README.md`](examples/README.md) gives a tour of every feature on a
+simulated heart cohort (in jamovi's Data Library), with an external file and published model files
+to open from the analyses. In the Data Library too:
 
 - Pima diabetes (`MASS::Pima.tr`), and Pima.tr and Pima.te stacked with a `sample` variable for
   split validation; for external validation load

@@ -71,6 +71,11 @@ analyses:
       are measured; the model can be updated (recalibrated or revised) by the
       closed testing procedure.
 datasets:
+  - name: Heart cohort (simulated)
+    path: heart_cohort.omv
+    description: >-
+      2,400 patients, three outcomes (10-year event, blood pressure, time to
+      event), splines, interaction, missing values, period split.
   - name: Pima diabetes (development)
     path: pima_development.omv
     description: >-
@@ -84,15 +89,13 @@ datasets:
   - name: Breast cancer, Rotterdam (development)
     path: rotterdam_development.omv
     description: >-
-      Node-positive breast cancer, Rotterdam tumour bank (survival::rotterdam):
-      1546 women, recurrence-free survival in years (years, rfs) and eight
-      predictors. Develop a Cox model here.
+      Node-positive breast cancer (survival::rotterdam): 1546 women,
+      recurrence-free survival in years (years, rfs), eight predictors.
   - name: Breast cancer, Rotterdam + GBSG (development + validation)
     path: breast_split.omv
     description: >-
-      The Rotterdam women and 686 women of the German Breast Cancer Study Group
-      trial (survival::gbsg) stacked; 'cohort' marks the GBSG rows, for the
-      Validation split box (Royston & Altman 2013).
+      Rotterdam and 686 GBSG trial women (survival::gbsg) stacked; 'cohort'
+      marks the GBSG rows for the Validation split box.
 usesNative: false
 minApp: 28.4.0
 

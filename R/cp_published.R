@@ -163,7 +163,8 @@ cp_model_read <- function(path, filename = path) {
         if (!(is.factor(x) || is.character(x)) || !startsWith(tolower(s), tolower(v))) next
         rest <- substring(s, nchar(v) + 1)
         lev <- if (is.factor(x)) levels(x) else unique(as.character(x))
-        if (rest %in% lev) return(list(type = "level", var = v, level = rest, name = v))
+        hit <- lev[tolower(lev) == tolower(rest)]
+        if (length(hit)) return(list(type = "level", var = v, level = hit[1], name = v))
     }
     list(type = "missing", var = NA_character_, name = s)
 }
@@ -203,12 +204,21 @@ cp_terms_design <- function(model, data) {
         notes <- character(0); status <- "OK"
         cs <- Filter(function(c) identical(c$var, v), unlist(comps, recursive = FALSE))
         if (any(vapply(cs, function(c) c$name != v, TRUE))) notes <- c(notes, paste0("column '", v, "'"))
-        for (c in Filter(function(c) c$type == "level", cs)) {
+        lv <- Filter(function(c) c$type == "level", cs)
+        if (length(lv)) {
             xs <- as.character(data[[v]])
-            if (is.na(.match_levels(c$level, unique(xs[!is.na(xs)])))) {
-                status <- "Warning"
-                notes <- c(notes, paste0("level '", c$level, "' not in the data (its indicator is always 0)"))
+            inData <- unique(xs[!is.na(xs)])
+            used <- character(0)
+            for (c in lv) {
+                m <- .match_levels(c$level, inData)
+                if (is.na(m)) {
+                    status <- "Warning"
+                    notes <- c(notes, paste0("level '", c$level, "' not in the data (its indicator is always 0)"))
+                } else used <- c(used, m)
             }
+            # data levels the model does not name get every indicator 0: the reference
+            ref <- setdiff(inData, used)
+            if (length(ref)) notes <- c(notes, paste0("as reference: ", paste(sort(ref), collapse = ", ")))
         }
         mis <- mean(is.na(data[[v]]))
         if (mis > 0) notes <- c(notes, paste0(.pct(mis), " missing"))
@@ -230,8 +240,8 @@ cp_model_design <- function(model, data) {
               ": add ", if (length(miss) > 1) "them" else "it", " to Predictor variables.")
     h <- cp_harmonise(data, model$spec, character(0), "Data")
     X <- matrix(NA_real_, nrow(data), length(model$spec$columns), dimnames = list(NULL, model$spec$columns))
-    ok <- stats::complete.cases(h$data)
-    if (any(ok)) X[ok, ] <- cp_design(model$spec, h$data[ok, , drop = FALSE])
+    # cp_harmonise keeps the complete rows only, named by their row number
+    if (nrow(h$data)) X[as.integer(rownames(h$data)), ] <- cp_design(model$spec, h$data)
     list(X = X, check = h$check)
 }
 
