@@ -169,7 +169,8 @@ cpPublishedClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class
 
             mt <- fam$metrics(y, lp); ci <- fam$ci(y, lp, conf)
             for (k in r$perf$rowKeys)
-                r$perf$setRow(rowKey = k, values = list(est = mt[[k]], lower = ci[[k]][1] %||% "", upper = ci[[k]][2] %||% ""))
+                # rounding noise (e.g. validating in the development data) printed as 0
+                r$perf$setRow(rowKey = k, values = list(est = if (isTRUE(abs(mt[[k]]) < 1e-8)) 0 else mt[[k]], lower = ci[[k]][1] %||% "", upper = ci[[k]][2] %||% ""))
             r$perf$setNote("ex", .("The published model is applied unchanged. Calibration-in-the-large (or O/E) far from its ideal means that the overall risk differs from the population where the model was developed; a calibration slope below 1, that its predictions are too extreme here."))
 
             if (o$updating && famName != "cox") private$.fillUpd(fam, X, y, lp)

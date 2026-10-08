@@ -26,3 +26,10 @@ f <- survival::coxph(survival::Surv(rfstime, status == "1") ~ age + nodes, g)
 stopifnot(isTRUE(all.equal(r$coefTable$asDF$est, unname(coef(f)), tolerance = 1e-6)))
 stopifnot(isTRUE(all.equal(r$perfDev$asDF$apparent[1], unname(survival::concordance(f)$concordance), tolerance = 1e-8)))
 cat(sprintf("   smoke test passed: Cox C = %.4f\n", r$perfDev$asDF$apparent[1]))
+
+f <- tempfile(fileext = ".csv")
+utils::write.csv(data.frame(term = c("Intercept", "glu", "bmi", "ped"), estimate = coef(fit)), f, row.names = FALSE)
+r <- clinpred::cpPublished(data = d, modelFile = list(path = f, filename = "m.csv"), family = "binary",
+                           dep = "type", eventLevel = "Yes", covs = c("glu", "bmi", "ped"))
+stopifnot(isTRUE(all.equal(r$perf$asDF$est[1], auc, tolerance = 1e-8)))
+cat(sprintf("   smoke test passed: published model AUC = %.4f\n", r$perf$asDF$est[1]))

@@ -3,14 +3,15 @@
 A [jamovi](https://www.jamovi.org) module to **develop and validate** clinical prediction models,
 following the clinical-epidemiology workflow (Steyerberg; TRIPOD+AI 2024; Riley et al.). A
 clinician can fit a model, see how optimistic its apparent performance is, validate it in new
-patients, update it, and see which predictors drive the predictions. Three analyses share the
-same options, results and validation engine:
+patients, update it, and see which predictors drive the predictions. Three development analyses
+share the same options, results and validation engine, and a fourth validates published models:
 
 | menu: **Prediction ▸** | outcome | model | effects |
 | --- | --- | --- | --- |
 | **Binary Outcome (Logistic)** | event / no event | logistic regression | odds ratios |
 | **Continuous Outcome (Linear)** | a measurement | linear regression | differences (β) |
 | **Time to Event (Cox)** | time + event, risk by a **horizon** | Cox regression | hazard ratios |
+| **Validate a Published Model** | any of the three | read from a file | as published |
 
 Needs **jamovi 28.4 or later**.
 
@@ -77,6 +78,32 @@ Needs **jamovi 28.4 or later**.
   by risk group (Cox), decision curves.
 - Saves the predictions to the spreadsheet (risk and linear predictor; predicted value; risk by
   the horizon and prognostic index), for every row with complete predictors.
+- **Export model (JSON)**: the fitted model (predictors, coding, spline knots, interactions,
+  coefficients with SE, and for Cox the baseline survival at the horizon) as a file that
+  *Validate a Published Model* reads, or that can accompany a publication.
+
+## Validating a published model
+
+*Validate a Published Model* applies a model, unchanged, to the current data and reports the same
+performance measures, model updating (logistic and linear), classification, net benefit and plots
+as the development analyses. The model comes from a clinpred JSON export, or from a table (csv, tsv,
+txt or xlsx) with the columns **term**, **estimate** and, optionally, **SE** (also `EE`), e.g.
+
+| term | estimate | SE |
+| --- | --- | --- |
+| Intercept | −9.10 | 1.37 |
+| glu | 0.037 | 0.006 |
+| log(bmi) | 2.31 | 0.98 |
+| sex = male | 0.42 | 0.20 |
+| age * sex = male | 0.011 | 0.005 |
+
+Terms name variables of the data: `age`, `sex = male` (or `sex: male`, or R's `sexmale`),
+`log(x)`, `sqrt(x)`, `exp(x)`, `x^2`, `x/10`, and products with `*`. They are parsed, never run as
+code. A Cox model adds the rows `baseline survival` (at the horizon), `horizon` and, when the
+published prognostic index is centred, `centre`; without a baseline survival, it is estimated from
+the data (discrimination and calibration slope are still valid; calibration-in-the-large is not).
+Put the variables the model uses in **Predictor variables** (jamovi gives an analysis only the
+variables in its boxes).
 
 Example data in jamovi's Data Library:
 
@@ -89,9 +116,8 @@ Example data in jamovi's Data Library:
   (`survival::gbsg`) as in Royston & Altman (2013); for external validation load
   [`examples/gbsg_external.csv`](examples/gbsg_external.csv).
 
-Planned: validation of published models and model export, model updating for Cox, penalised
-regression and machine-learning learners through the same validation pipeline, and Spanish and
-Catalan translations.
+Planned: model updating for Cox, penalised regression and machine-learning learners through the
+same validation pipeline, and Spanish and Catalan translations.
 
 ## Install
 
