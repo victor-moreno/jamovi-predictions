@@ -16,6 +16,20 @@ test_that("with two predictors Shapley is the average of the two entry orders", 
     expect_equal(sh$shapley, c((a + full - b) / 2, (b + full - a) / 2), tolerance = 1e-10)
 })
 
+test_that("over a baseline, Shapley shares the gain among the other predictors, exactly and by Monte Carlo", {
+    prep <- cp_binary_outcome(cp_prepare(pima_dev(), "type", covs = c("glu", "bmi", "bp")), "Yes")
+    X <- cp_design(prep$spec, prep$data); fam <- cp_family("binary"); y <- prep$y
+    r2 <- function(cols) { Xs <- X[, cols, drop = FALSE]; fam$r2(y, fam$lp(fam$fit(Xs, y), Xs), "r2mf") }
+    full <- r2(1:3); b0 <- r2(3); a <- r2(c(1, 3)); b <- r2(c(2, 3))
+    sh <- cp_shapley_r2(X, y, prep$spec, fam, "r2mf", base = "bp")
+    expect_equal(sh$var, c("glu", "bmi"))
+    expect_equal(sh$shapley, c((a - b0 + full - b) / 2, (b - b0 + full - a) / 2), tolerance = 1e-10)
+    expect_equal(attr(sh, "baseline"), b0, tolerance = 1e-10)
+    expect_equal(sum(sh$share), 1, tolerance = 1e-10)
+    mc <- cp_shapley_r2(X, y, prep$spec, fam, "r2mf", base = "bp", maxExact = 1, nPerm = 50)
+    expect_equal(sum(mc$shapley), full - b0, tolerance = 1e-10)
+})
+
 test_that("Monte Carlo Shapley approximates the exact values", {
     prep <- pima_prep()
     X <- cp_design(prep$spec, prep$data); fam <- cp_family("binary")

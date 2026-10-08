@@ -61,9 +61,15 @@ test_that("the analyses select predictors with baseline covariates and report it
                     shapley = TRUE, permImp = TRUE, nPerm = 2, shap = TRUE, sampleSize = TRUE)
     expect_null(r$get("problem"))
     st <- r$selTable$asDF
-    expect_equal(st$status[st$var == "sex"], "baseline")
+    expect_false(any(c("sex", "centre") %in% st$var))
+    expect_match(r$selTable$notes$base$note, "sex, centre")
     expect_equal(st$status[st$var == "noise"], "removed")
-    expect_true(all(st$freq[st$var %in% c("sex", "centre")] == 1))
+    sh <- r$shapleyTable$asDF
+    expect_equal(tail(sh$var, 3), c("Baseline covariates", "sex", "centre"))
+    expect_true(all(is.na(sh$shapley_b[sh$var %in% c("sex", "centre")])))
+    expect_equal(sum(sh$share_b, na.rm = TRUE), 1, tolerance = 1e-8)
+    expect_true(r$shapleyTable$getColumn("share_b")$visible)
+    expect_match(r$shapleyTable$notes$base$note, "Over the baseline model")
     orr <- r$orTable$asDF
     # removed by the selection: blank in the selected model, estimated in the full and crude models
     expect_true(is.na(orr$or_s[orr$var == "noise"]) && is.finite(orr$or[orr$var == "noise"]) &&
@@ -106,7 +112,7 @@ test_that("the relaxed lasso is the unpenalised refit of the kept terms; bootstr
                     validation = "boot", nBoot = 10, bootCoefs = TRUE, coefs = TRUE, oddsRatios = TRUE)
     expect_null(r$get("problem"))
     ct <- r$coefTable$asDF
-    kept <- r$selTable$asDF$var[r$selTable$asDF$status %in% c("kept", "baseline")]
+    kept <- c(r$selTable$asDF$var[r$selTable$asDF$status == "kept"], "sex")
     dd <- d[stats::complete.cases(d[, c("event10", "sbp", "chol", "noise", "sex", "smoking")]), ]
     g <- glm(stats::reformulate(kept, "event10"), binomial, dd)
     expect_equal(sort(unname(ct$est)), sort(unname(coef(g))), tolerance = 1e-6)

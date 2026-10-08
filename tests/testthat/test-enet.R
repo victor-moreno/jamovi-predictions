@@ -87,8 +87,12 @@ test_that("the three analyses fit an elastic net with baseline covariates, valid
         an <- runs[[nm]]; an$init(); an$run()
         r <- an$results
         expect_null(r$get("problem"), label = nm)
-        expect_equal(r$selTable$asDF$status[r$selTable$asDF$var == "sex"], "baseline", label = nm)
+        expect_false("sex" %in% r$selTable$asDF$var, label = nm)
         expect_true(all(is.na(r$coefTable$asDF$se)), label = nm)
+        expect_false(r$testTable$visible || r$shapleyTable$visible || r$plots$shapleyBar$visible, label = nm)
+        expect_false(r$coefTable$getColumn("se")$visible || r$coefTable$getColumn("p")$visible, label = nm)
+        expect_false("heur" %in% r$stabTable$rowKeys, label = nm)
+        expect_equal(tail(unlist(r$permTable$rowKeys), 2), c(".baseline", "sex"), label = nm)
         expect_true(all(is.finite(r$perfDev$asDF$corrected)), label = nm)
         expect_equal(heading_problems(r), character(0), label = nm)
         grDevices::png(file.path(tempdir(), "enetcv.png"))

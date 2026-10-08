@@ -10,7 +10,8 @@ test_that("effects table: baseline covariates last below a line, adjusted = full
     t <- an$results$orTable
     keys <- unlist(t$rowKeys)
     expect_equal(keys[1:3], c("sbp", "chol", "noise"))
-    expect_equal(tail(keys, 5), c("sex (ref)", "sex: male", "centre (ref)", "centre: B", "centre: C"))
+    expect_equal(tail(keys, 6), c(".baseline", "sex (ref)", "sex: male", "centre (ref)", "centre: B", "centre: C"))
+    expect_equal(t$getCell(col = 1, rowKey = ".baseline")$value, "Baseline covariates")
     expect_true(match("sex (ref)", keys) > match("smoking: current", keys))
     vis <- vapply(t$columns, function(cl) cl$visible, TRUE); names(vis) <- vapply(t$columns, function(cl) cl$name, "")
     expect_false(any(vis[c("lower", "upper", "lower_u", "upper_s")]))
@@ -19,7 +20,8 @@ test_that("effects table: baseline covariates last below a line, adjusted = full
     full <- glm(event10 ~ sbp + chol + noise + sex + smoking + centre, binomial, dd)
     df <- t$asDF
     expect_equal(df$or[keys == "noise"], unname(exp(coef(full)[["noise"]])), tolerance = 1e-8)
-    kept <- an$results$selTable$asDF$var[an$results$selTable$asDF$status %in% c("kept", "baseline")]
+    expect_false(any(c("sex", "centre") %in% an$results$selTable$asDF$var))
+    kept <- c(an$results$selTable$asDF$var[an$results$selTable$asDF$status == "kept"], "sex", "centre")
     red <- glm(stats::reformulate(kept, "event10"), binomial, dd)
     expect_equal(df$or_s[keys == "smoking: current"], unname(exp(coef(red)[["smokingcurrent"]])), tolerance = 1e-8)
     expect_true(is.na(df$or_s[keys == "noise"]))

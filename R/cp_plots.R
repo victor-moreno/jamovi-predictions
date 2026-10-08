@@ -113,7 +113,15 @@ cp_plot_dca <- function(sets, ggtheme) {
     if (!is.null(lo))
         p <- p + ggplot2::geom_errorbar(ggplot2::aes(xmin = .data[[lo]], xmax = .data[[hi]]),
                                         width = 0.25, orientation = "y")
-    p + ggplot2::labs(x = xlab, y = NULL) + .base_theme(ggtheme)
+    .baseline_panel(p + ggplot2::labs(x = xlab, y = NULL) + .base_theme(ggtheme), df)
+}
+
+# baseline covariates (column forced) in a panel of their own, below the
+# other predictors, as in the forest plot
+.baseline_panel <- function(p, df) {
+    if (is.null(df$forced) || all(df$forced) || !any(df$forced)) return(p)
+    p$data$group <- factor(ifelse(df$forced, "Baseline covariates", "Predictors"), c("Predictors", "Baseline covariates"))
+    p + ggplot2::facet_grid(group ~ ., scales = "free_y", space = "free_y")
 }
 
 cp_plot_shapley <- function(df, measureLabel, ggtheme)
@@ -128,7 +136,10 @@ cp_plot_perm <- function(df, ggtheme, key = "auc", xlab = "Loss in AUC when perm
 # Beeswarm: one row per predictor, points spread vertically by local density,
 # coloured by the predictor's value (low to high)
 cp_plot_shap_summary <- function(d, ggtheme, xlab = "SHAP value (contribution to the log-odds)") {
-    ord <- names(sort(tapply(abs(d$phi), d$var, mean)))
+    imp <- tapply(abs(d$phi), d$var, mean)
+    # baseline covariates at the bottom, in their own panel
+    fv <- if (is.null(d$forced)) character(0) else unique(d$var[d$forced])
+    ord <- names(imp)[order(!names(imp) %in% fv, imp)]
     d$var <- factor(d$var, ord)
     d$offset <- 0
     for (v in ord) {
@@ -142,7 +153,7 @@ cp_plot_shap_summary <- function(d, ggtheme, xlab = "SHAP value (contribution to
         }
     }
     d$y <- as.integer(d$var) + d$offset
-    ggplot2::ggplot(d, ggplot2::aes(.data$phi, .data$y, colour = .data$value)) +
+    p <- ggplot2::ggplot(d, ggplot2::aes(.data$phi, .data$y, colour = .data$value)) +
         ggplot2::geom_vline(xintercept = 0, colour = "grey60") +
         ggplot2::geom_point(size = 1.2, alpha = 0.8) +
         ggplot2::scale_colour_gradient(low = "#0072B2", high = "#D55E00", limits = c(0, 1),
@@ -153,6 +164,7 @@ cp_plot_shap_summary <- function(d, ggtheme, xlab = "SHAP value (contribution to
         ggplot2::guides(colour = ggplot2::guide_colourbar(title.position = "top", title.hjust = 0.5, barheight = ggplot2::unit(0.5, "lines"),
                                                           barwidth = ggplot2::unit(10, "lines"))) +
         .jtheme(ggtheme) + ggplot2::theme(legend.position = "bottom")
+    .baseline_panel(p, d)
 }
 
 # Waterfall: from the mean log-odds of the development data to this person's

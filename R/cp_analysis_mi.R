@@ -265,9 +265,8 @@
             vs <- vsets[[k]]
             fillSet(k, vs$y, lapply(vs$Xs, function(X) fam$lp(bB, X[, specB$columns, drop = FALSE])), vs$lps)
         }
-        if (is.null(pool)) {
-            private$.putRow(t, "dev lr", list(measure = .("Test of the added predictors: not for a penalised model")))
-        } else {
+        # a penalised model: no test row
+        if (!is.null(pool)) {
             added <- which(!(spec$colTerm %in% forced)) + 1
             d <- cp_d1(pool, added)
             private$.putRow(t, "dev lr", list(measure = sprintf(.("Pooled Wald test of the added predictors (D1, df = %d, %.1f)"), d[["df1"]], d[["df2"]]),

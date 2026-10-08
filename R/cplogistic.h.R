@@ -2361,7 +2361,20 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     list(
                         `name`="rank", 
                         `title`="Rank", 
-                        `type`="integer"))))
+                        `type`="integer"),
+                    list(
+                        `name`="shapley_b", 
+                        `title`="R\u00B2 gain share", 
+                        `superTitle`="Over the baseline model", 
+                        `type`="number", 
+                        `visible`=FALSE),
+                    list(
+                        `name`="share_b", 
+                        `title`="% of gain", 
+                        `superTitle`="Over the baseline model", 
+                        `type`="number", 
+                        `format`="pc", 
+                        `visible`=FALSE))))
             self$add(jmvcore::Table$new(
                 options=options,
                 name="permTable",

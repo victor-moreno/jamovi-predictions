@@ -156,7 +156,8 @@
         if (self$options$selMode != "none") {
             st <- r$selTable
             st$setVisible(TRUE)
-            for (v in private$.preds()) st$addRow(rowKey = v, values = list(var = v))
+            # baseline covariates are not selected: named in a note, not listed
+            for (v in setdiff(private$.preds(), private$.selOpts()$forced)) st$addRow(rowKey = v, values = list(var = v))
             st$getColumn("freq")$setVisible(val != "none")
             st$getColumn("freq")$setTitle(if (val == "cv") .("CV fits") else .("Bootstrap fits"))
             r$plots$enetCv$setVisible(self$options$selMode == "enet")
@@ -165,7 +166,8 @@
 
         if (val == "boot") {
             r$stabTable$setVisible(TRUE)
-            keys <- c("shrink", "heur", if (self$options$stability) c("mape", "maxape"))
+            # the heuristic shrinkage counts unpenalised parameters
+            keys <- c("shrink", if (!private$.penalized()) "heur", if (self$options$stability) c("mape", "maxape"))
             labs <- c(shrink = .("Uniform shrinkage factor (mean bootstrap calibration slope)"),
                       heur = .("Heuristic shrinkage factor (van Houwelingen)"),
                       mape = .("Mean absolute prediction error (MAPE)"),
@@ -183,8 +185,15 @@
             for (k in names(crit)) r$ssTable$addRow(rowKey = k, values = list(criterion = crit[[k]]))
         }
         impTables <- c(shapley = "shapleyTable", permImp = "permTable", shap = "shapTable")
-        for (opt in names(impTables)) if (self$options[[opt]])
-            for (v in private$.preds()) r[[impTables[[opt]]]]$addRow(rowKey = v, values = list(var = v))
+        for (opt in names(impTables)) if (self$options[[opt]]) private$.addPredRows(r[[impTables[[opt]]]], private$.preds())
+        if (self$options$shapley) {
+            # the decomposition over the baseline model, when there is one
+            forced <- private$.selOpts()$forced
+            ob <- length(forced) > 0 && length(setdiff(private$.preds(), forced)) > 0
+            for (cn in c("shapley_b", "share_b")) r$shapleyTable$getColumn(cn)$setVisible(ob)
+            if (ob) for (cn in c("shapley", "share", "rank")) r$shapleyTable$getColumn(cn)$setSuperTitle(.("All predictors"))
+        }
+        private$.initPenalized()
         r$plots$shapPatient$setVisible(self$options$shap && self$options$shapRow > 0)
 
         # one facet per data set
@@ -220,6 +229,41 @@
         c(setdiff(private$.preds(), f), intersect(private$.preds(), f))
     },
 
+    # an elastic net that is not refitted (relaxed): no likelihood-based inference
+    .penalized = function() self$options$selMode == "enet" && !isTRUE(self$options$enetRelax),
+
+    # jamovi tables draw no rule lines (BEGIN_GROUP is only a small gap), so a
+    # labelled row heads the baseline covariates; every heading cell gets a
+    # value (" ") and every other cell a blank, else jamovi shifts or dots them
+    .baselineRow = function(t) {
+        vals <- list()
+        for (cl in t$columns) vals[[cl$name]] <- if (cl$title == "" && cl$type == "text") " " else ""
+        vals[[1]] <- .("Baseline covariates")
+        t$addRow(rowKey = ".baseline", values = vals)
+        t$addFormat(rowKey = ".baseline", col = 1, format = jmvcore::Cell.BEGIN_GROUP)
+    },
+
+    # a penalised model has no likelihood-based inference: the tables and
+    # columns that need one are hidden, and the selection table says so
+    .initPenalized = function() {
+        if (!private$.penalized()) return()
+        r <- self$results
+        for (it in c("testTable", "shapleyTable")) r[[it]]$setVisible(FALSE)
+        r$plots$shapleyBar$setVisible(FALSE)
+        for (cn in c("se", "lower", "upper", "p")) r$coefTable$getColumn(cn)$setVisible(FALSE)
+        for (cn in c("lower", "upper", "p")) r$subTable$getColumn(cn)$setVisible(FALSE)
+        r$selTable$setNote("pen", .("Not shown for a penalised model: standard errors, CIs and p values, likelihood ratio tests, the Shapley decomposition and the heuristic shrinkage factor (a relaxed lasso has them)."))
+    },
+
+    # rows of a predictor table in table order, the baseline covariates below their label
+    .addPredRows = function(t, vars, values = function(v) list(var = v)) {
+        forced <- private$.selOpts()$forced
+        free <- setdiff(vars, forced)
+        for (v in free) t$addRow(rowKey = v, values = values(v))
+        if (length(free) && any(vars %in% forced)) private$.baselineRow(t)
+        for (v in intersect(vars, forced)) t$addRow(rowKey = v, values = values(v))
+    },
+
     # effects table: one row per covariate, reference + one per level of a factor;
     # baseline covariates last, below a line; crude, adjusted and (after a
     # selection) selected-model blocks; CI and p columns optional
@@ -233,24 +277,23 @@
         forced <- private$.selOpts()$forced
         first <- TRUE; nEff <- 0
         for (v in private$.orderedPreds()) {
-            keys <- character(0)
-            if (v %in% o$covs) { t$addRow(rowKey = v, values = list(var = v, level = labs[[sc[[v]] %||% "unit"]])); keys <- v; nEff <- nEff + 1 }
-            else if (v %in% o$splineVars) { t$addRow(rowKey = v, values = list(var = v, level = .("Q3 vs Q1"))); keys <- v; nEff <- nEff + 1 }
+            if (v %in% forced && first) {
+                if (length(setdiff(private$.preds(), forced))) private$.baselineRow(t)
+                first <- FALSE
+            }
+            if (v %in% o$covs) { t$addRow(rowKey = v, values = list(var = v, level = labs[[sc[[v]] %||% "unit"]])); nEff <- nEff + 1 }
+            else if (v %in% o$splineVars) { t$addRow(rowKey = v, values = list(var = v, level = .("Q3 vs Q1"))); nEff <- nEff + 1 }
             else {
                 ref <- private$.refOf(v)
                 lev <- private$.levelsOf(v)
-                t$addRow(rowKey = paste0(v, " (ref)"), values = list(var = v, level = ref)); keys <- paste0(v, " (ref)")
+                t$addRow(rowKey = paste0(v, " (ref)"), values = list(var = v, level = ref))
                 for (l in setdiff(lev, ref)) t$addRow(rowKey = paste0(v, ": ", l), values = list(var = v, level = l))
                 nEff <- nEff + max(1, length(lev) - 1)
             }
-            if (v %in% forced && first) {
-                if (length(setdiff(private$.preds(), forced))) t$addFormat(rowKey = keys[1], col = 1, format = jmvcore::Cell.BEGIN_GROUP)
-                first <- FALSE
-            }
         }
-        if (length(forced)) t$setNote("forced", .("Below the line: baseline covariates (always in the model)."))
+        if (length(forced)) t$setNote("forced", .("Baseline covariates: always in the model."))
         sel <- private$.selecting()
-        penal <- o$selMode == "enet" && !isTRUE(o$enetRelax)
+        penal <- private$.penalized()
         vis <- function(cn, on) t$getColumn(cn)$setVisible(on)
         for (b in c("_u", "", "_s")) {
             on <- switch(b, `_u` = o$crude, `_s` = sel, TRUE)
@@ -545,13 +588,16 @@
 
     .fillTests = function(lrt) {
         t <- self$results$testTable
-        if (is.null(lrt)) {
-            t$setNote("ex", .("Likelihood ratio tests do not apply to a penalised (elastic net) model."))
-            return()
-        }
-        for (i in seq_len(nrow(lrt)))
+        # a penalised model: the table is hidden
+        if (is.null(lrt)) return()
+        # baseline covariates (with their non-linear terms) last, below their label
+        isB <- sub(" nonlinear$", "", lrt$key) %in% private$.selOpts()$forced
+        lrt <- lrt[order(isB), , drop = FALSE]
+        for (i in seq_len(nrow(lrt))) {
+            if (i == sum(!isB) + 1 && i > 1 && !(".baseline" %in% t$rowKeys)) private$.baselineRow(t)
             private$.putRow(t, lrt$key[i], list(term = lrt$term[i], chisq = lrt$chisq[i],
                                                 df = lrt$df[i], df2 = lrt$df2[i], p = lrt$p[i]))
+        }
         t$setNote("ex", .("Each test drops the term from the model (a predictor with its non-linear and interaction terms)."))
     },
 
@@ -606,8 +652,7 @@
         t <- self$results$selTable
         tt <- attr(sel, "mainTests")
         forced <- private$.selOpts()$forced
-        for (v in forced) private$.putRow(t, v, list(var = v, status = .("baseline"), step = "", chisq = "", df = "", p = "",
-                                                     freq = if (!is.null(iv$selection)) 1 else ""))
+        if (length(forced)) t$setNote("base", sprintf(.("Baseline covariates, always in the model and not selected: %s."), paste(forced, collapse = ", ")))
         for (i in seq_len(NROW(tt))) {
             v <- tt$var[i]
             st <- if (o$selMode == "enet") { if (tt$kept[i]) .("kept") else .("shrunk to 0") } else
@@ -836,7 +881,7 @@
         t <- self$results$stabTable
         lr <- 2 * (fam$nullLoss(y) - fam$loss(y, lp))
         t$setRow(rowKey = "shrink", values = list(value = iv$shrinkage))
-        t$setRow(rowKey = "heur", values = list(value = (lr - ncol(X)) / lr))
+        if ("heur" %in% t$rowKeys) t$setRow(rowKey = "heur", values = list(value = (lr - ncol(X)) / lr))
         if (!is.null(iv$stability) && "mape" %in% t$rowKeys) {
             t$setRow(rowKey = "mape", values = list(value = iv$stability$mape))
             t$setRow(rowKey = "maxape", values = list(value = iv$stability$maxape))
@@ -850,7 +895,7 @@
         keys <- private$.fam$permKeys
         note <- .("Predictors removed by the selection are not in the model: their importance is 0.")
         for (v in dropped) {
-            if (o$shapley && v %in% r$shapleyTable$rowKeys) r$shapleyTable$setRow(rowKey = v, values = list(shapley = 0, share = 0, rank = ""))
+            if (o$shapley && v %in% r$shapleyTable$rowKeys) r$shapleyTable$setRow(rowKey = v, values = list(shapley = 0, share = 0, rank = "", shapley_b = 0, share_b = 0))
             if (o$permImp && v %in% r$permTable$rowKeys)
                 r$permTable$setRow(rowKey = v, values = as.list(stats::setNames(rep(0, 2 * length(keys)), c(paste0("d_", keys), paste0("sd_", keys)))))
             if (o$shap && v %in% r$shapTable$rowKeys) r$shapTable$setRow(rowKey = v, values = list(meanAbs = 0, share = 0))
@@ -884,7 +929,7 @@
             }
             for (x in private$.incThresholds())
                 t$addRow(rowKey = paste(k, "nb", x), values = list(set = sets[[k]], measure = sprintf(.("Net benefit at %s"), .num(x))))
-            if (k == "dev") t$addRow(rowKey = "dev lr", values = list(set = sets[[k]], measure = .("Test of the added predictors")))
+            if (k == "dev" && !private$.penalized()) t$addRow(rowKey = "dev lr", values = list(set = sets[[k]], measure = .("Test of the added predictors")))
         }
         if (self$options$validation != "none")
             for (cn in c("baseCorr", "fullCorr", "deltaCorr")) t$getColumn(cn)$setVisible(TRUE)
@@ -939,10 +984,8 @@
         fillSet("dev", y, lpB, lp)
         for (k in names(vsets)) fillSet(k, vsets[[k]]$y, fam$lp(bB, cp_design(specB, vsets[[k]]$df)), vsets[[k]]$lp)
 
-        # nested test of the added predictors (not for a penalised model)
-        if (isTRUE(attr(beta, "penalized"))) {
-            private$.putRow(t, "dev lr", list(measure = .("Test of the added predictors: not for a penalised model")))
-        } else {
+        # nested test of the added predictors (not for a penalised model: no row)
+        if (!isTRUE(attr(beta, "penalized"))) {
             kF <- sum(beta != 0 & !is.na(beta)); kB <- sum(bB != 0 & !is.na(bB))
             n <- NROW(y)
             tst <- .nested_test(fam, fam$loss(y, lpB), fam$loss(y, lp), kF - kB, n, n - kF)
@@ -1116,35 +1159,51 @@
     .vcov = function(beta) if (isTRUE(attr(beta, "penalized"))) NULL else
         if (!is.null(attr(beta, "pool"))) attr(beta, "pool")$vcov else private$.fam$vcov(beta),
 
-    # Xs: design matrices of the imputed data sets (the decomposition is averaged)
+    # Xs: design matrices of the imputed data sets (the decomposition is averaged).
+    # With baseline covariates a second decomposition shares the gain over the
+    # baseline model among the other predictors, the baseline covariates being
+    # in every model.
     .fillShapley = function(X, y, spec, penalized = FALSE, Xs = NULL) {
+        # a penalised model: the table is hidden
+        if (penalized) return()
         t <- self$results$shapleyTable
-        if (penalized) {
-            t$setNote("tot", .("The Shapley decomposition refits unpenalised models for every subset of predictors, so it does not describe a penalised (elastic net) model; use SHAP or permutation importance."))
-            return()
-        }
-        sh <- t$state
         # the linear analysis has a single R² (no shapleyMeasure option)
         measure <- if (self$options$has("shapleyMeasure")) self$options$shapleyMeasure else "r2"
-        if (is.null(sh)) {
-            sh <- if (is.null(Xs)) cp_shapley_r2(X, y, spec, private$.fam, measure, seed = self$options$seed) else {
-                shs <- lapply(Xs, function(Xm) cp_shapley_r2(Xm, y, spec, private$.fam, measure, seed = self$options$seed))
+        forced <- intersect(private$.selOpts()$forced, names(spec$vars))
+        st <- t$state
+        # (a data frame: the state of a version before the baseline decomposition)
+        if (is.null(st) || is.data.frame(st)) {
+            run <- function(base) {
+                one <- function(Xm) cp_shapley_r2(Xm, y, spec, private$.fam, measure, seed = self$options$seed, base = base)
+                if (is.null(Xs)) return(one(X))
+                shs <- lapply(Xs, one)
                 out <- shs[[1]]
                 out$shapley <- rowMeans(vapply(shs, `[[`, numeric(nrow(out)), "shapley"))
                 tot <- mean(vapply(shs, function(z) attr(z, "total"), 0))
-                out$share <- out$shapley / tot; out$rank <- rank(-out$shapley, ties.method = "min")
-                attr(out, "total") <- tot
+                b0 <- mean(vapply(shs, function(z) attr(z, "baseline"), 0))
+                out$share <- out$shapley / (tot - b0); out$rank <- rank(-out$shapley, ties.method = "min")
+                attr(out, "total") <- tot; attr(out, "baseline") <- b0
                 out
             }
-            t$setState(sh)
+            st <- list(full = run(character(0)),
+                       base = if (length(forced) && length(setdiff(names(spec$vars), forced))) run(forced))
+            t$setState(st)
         }
+        sh <- st$full
         for (i in seq_len(nrow(sh)))
-            private$.putRow(t, sh$var[i], list(var = sh$var[i], shapley = sh$shapley[i], share = sh$share[i], rank = sh$rank[i]))
+            private$.putRow(t, sh$var[i], list(var = sh$var[i], shapley = sh$shapley[i], share = sh$share[i], rank = sh$rank[i],
+                                               shapley_b = "", share_b = ""))
         lab <- switch(measure, r2mf = "McFadden R²", r2n = "Nagelkerke R²", "R²")
         t$setNote("tot", sprintf(.("%s of the full model: %.4f, shared among the predictors by their average gain over all orders of entry (Shapley / LMG)%s."),
                                  lab, attr(sh, "total"), if (isTRUE(attr(sh, "exact"))) "" else .("; estimated from 200 random orders")))
+        b <- st$base
+        if (!is.null(b)) {
+            for (i in seq_len(nrow(b))) private$.putRow(t, b$var[i], list(shapley_b = b$shapley[i], share_b = b$share[i]))
+            t$setNote("base", sprintf(.("Over the baseline model: the gain in %s from %.4f (baseline covariates only) to %.4f, shared among the other predictors with the baseline covariates in every model."),
+                                      lab, attr(b, "baseline"), attr(b, "total")))
+        }
         img <- self$results$plots$shapleyBar
-        if (is.null(img$state)) img$setState(list(df = sh[, c("var", "shapley")], label = lab))
+        if (is.null(img$state)) img$setState(list(df = data.frame(sh[, c("var", "shapley")], forced = sh$var %in% forced), label = lab))
     },
 
     .fillPerm = function(beta, spec, all, sets) {
@@ -1161,7 +1220,7 @@
         t$setNote("data", sprintf(.("Computed in: %s. Each predictor is shuffled %d times; larger losses mean the model relies more on it."),
                                   sets[[key]], self$options$nPerm))
         img <- self$results$plots$permBar
-        if (is.null(img$state)) img$setState(pi)
+        if (is.null(img$state)) img$setState(cbind(pi, forced = pi$var %in% private$.selOpts()$forced))
     },
 
     .fillShap = function(beta, spec, X, data) {
@@ -1180,7 +1239,7 @@
                 x <- df[[v]][idx]
                 val <- if (is.factor(x)) (as.integer(x) - 1) / max(1, nlevels(x) - 1) else
                     (rank(x) - 1) / max(1, length(x) - 1)
-                data.frame(var = v, phi = round(phi[idx, v], 4), value = round(val, 3))
+                data.frame(var = v, phi = round(phi[idx, v], 4), value = round(val, 3), forced = v %in% private$.selOpts()$forced)
             }))
             img$setState(long)
         }

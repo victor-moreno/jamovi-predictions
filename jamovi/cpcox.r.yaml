@@ -1129,6 +1129,17 @@ items:
         - name: rank
           title: Rank
           type: integer
+        - name: shapley_b
+          title: R² gain share
+          superTitle: Over the baseline model
+          type: number
+          visible: false
+        - name: share_b
+          title: '% of gain'
+          superTitle: Over the baseline model
+          type: number
+          format: pc
+          visible: false
 
     - name: permTable
       title: Importance — Permutation

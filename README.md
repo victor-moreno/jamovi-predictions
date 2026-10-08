@@ -31,7 +31,10 @@ Needs **jamovi 28.4 or later**.
   the coefficient tables warn that their CIs ignore the selection, and a **bootstrap coefficient
   table** (Heinze, Wallisch & Dunkler 2018) gives each coefficient's inclusion frequency, bootstrap
   median and percentile interval, RMSD ratio and relative conditional bias, with the most frequent
-  selected models.
+  selected models. Every predictor table and importance plot lists the baseline covariates last,
+  under their own heading. A penalised (not relaxed) elastic net hides what needs an unpenalised
+  likelihood: standard errors, CIs and p values, likelihood ratio tests, the Shapley decomposition
+  and the heuristic shrinkage factor.
 - **Incremental value** of the other predictors over the baseline model: Δ of every performance
   measure (apparent, optimism-corrected on the same resamples, and in validation data), ΔAUC
   (paired DeLong) or ΔC with confidence intervals, LR or F test of the added predictors, NRI and
@@ -87,7 +90,8 @@ Needs **jamovi 28.4 or later**.
   Kaplan–Meier risks).
 - **Sample size adequacy**: Riley et al. criteria for each outcome type (2019, 2020).
 - **Variable importance**:
-  - **Shapley decomposition of R²** (LMG / general dominance; exact up to 10 predictors).
+  - **Shapley decomposition of R²** (LMG / general dominance; exact up to 10 predictors); with
+    baseline covariates, also the gain over the baseline model shared among the other predictors.
   - **Permutation importance** (loss in AUC, R² or C; increase in Brier score or RMSE),
     computed in the validation data when there is any.
   - Exact **SHAP** values on the model's linear scale: summary (beeswarm) plot, mean |SHAP|,

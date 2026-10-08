@@ -5,32 +5,33 @@
 # general dominance, Azen & Traxel 2009): each variable's average gain in R2
 # over all orders of entry. Exact up to maxExact variables, otherwise estimated
 # from nPerm random orders (a Monte Carlo Shapley value).
+# base: variables in every model (baseline covariates); the others then share
+# the gain over the baseline model, R2(full) - R2(base).
 cp_shapley_r2 <- function(X, y, spec, fam, measure = "r2mf", maxExact = 10, nPerm = 200,
-                          seed = 1) {
-    vars <- names(spec$vars)
+                          seed = 1, base = character(0)) {
+    vars <- setdiff(names(spec$vars), base)
     m <- length(vars)
     cache <- new.env(hash = TRUE)
+    # a column enters when all its variables are in the model (an interaction
+    # joins once both of its variables have)
+    fitR2 <- function(set) {
+        cols <- vapply(spec$colVars, function(vs) all(vs %in% c(base, vars[set])), TRUE)
+        Xs <- X[, cols, drop = FALSE]
+        fam$r2(y, fam$lp(fam$fit(Xs, y), Xs), measure)
+    }
+    v0 <- if (length(base)) fitR2(integer(0)) else 0
     value <- function(set) {
-        if (!length(set)) return(0)
+        if (!length(set)) return(v0)
         key <- paste(sort(set), collapse = ",")
         if (!is.null(cache[[key]])) return(cache[[key]])
-        # a column enters when all its variables are in the coalition (an
-        # interaction joins once both of its variables have)
-        cols <- vapply(spec$colVars, function(vs) all(vs %in% vars[set]), TRUE)
-        Xs <- X[, cols, drop = FALSE]
-        beta <- fam$fit(Xs, y)
-        v <- fam$r2(y, fam$lp(beta, Xs), measure)
+        v <- fitR2(set)
         assign(key, v, envir = cache)
         v
     }
     if (m <= maxExact) {
         # every subset model fitted first (possibly on several cores), then combined
         subsets <- unlist(lapply(seq_len(m), function(s) utils::combn(m, s, simplify = FALSE)), recursive = FALSE)
-        vals <- .cp_lapply(subsets, function(S) {
-            cols <- vapply(spec$colVars, function(vs) all(vs %in% vars[S]), TRUE)
-            Xs <- X[, cols, drop = FALSE]
-            fam$r2(y, fam$lp(fam$fit(Xs, y), Xs), measure)
-        })
+        vals <- .cp_lapply(subsets, fitR2)
         for (i in seq_along(subsets)) assign(paste(sort(subsets[[i]]), collapse = ","), vals[[i]], envir = cache)
         phi <- numeric(m)
         w <- factorial(0:(m - 1)) * factorial((m - 1):0) / factorial(m)
@@ -48,7 +49,7 @@ cp_shapley_r2 <- function(X, y, spec, fam, measure = "r2mf", maxExact = 10, nPer
         .with_seed(seed, {
             for (r in seq_len(nPerm)) {
                 ord <- sample.int(m)
-                prev <- 0
+                prev <- v0
                 for (i in seq_len(m)) {
                     cur <- value(ord[seq_len(i)])
                     phi[ord[i]] <- phi[ord[i]] + cur - prev
@@ -60,9 +61,9 @@ cp_shapley_r2 <- function(X, y, spec, fam, measure = "r2mf", maxExact = 10, nPer
         exact <- FALSE
     }
     total <- value(seq_len(m))
-    out <- data.frame(var = vars, shapley = phi, share = phi / total,
+    out <- data.frame(var = vars, shapley = phi, share = phi / (total - v0),
                       rank = rank(-phi, ties.method = "min"), stringsAsFactors = FALSE)
-    structure(out, total = total, exact = exact, nFits = length(ls(cache)))
+    structure(out, total = total, baseline = v0, exact = exact, nFits = length(ls(cache)))
 }
 
 # Permutation importance: loss of performance of the fitted model when one
