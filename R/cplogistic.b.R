@@ -53,6 +53,7 @@ cpLogisticClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class(
             shapEx = .("SHAP: the contribution of each predictor to an individual's log-odds, relative to the average individual of the development data (exact for this additive model)."),
             shapDown = .("Lowers risk"),
             shapUp = .("Raises risk"),
+            forestAxis = .("Odds ratio (log scale)"),
             permAxis = .("Loss in AUC when permuted (mean ± SD)"),
             shapAxis = .("SHAP value (contribution to the log-odds)"),
             instabX = .("Risk from the developed model"),

@@ -51,7 +51,9 @@ Needs **jamovi 28.4 or later**.
 - **Explaining the model**:
   - A **descriptive table** (by outcome group, or with each predictor's association with a
     continuous outcome), with missing values.
-  - **Crude and adjusted effects** (OR, β or HR) with reference rows; splines as Q3 vs Q1.
+  - **Crude and adjusted effects** (OR, β or HR) with reference rows; splines as Q3 vs Q1;
+    after a selection, the model with all predictors next to the selected model; baseline
+    covariates last; CI and p columns optional; a **forest plot** of any of the three.
   - **Likelihood ratio tests** (F tests for the linear model) per predictor, for the
     non-linear part of each spline and for each interaction.
   - **Effects within subgroups** for each interaction kept.

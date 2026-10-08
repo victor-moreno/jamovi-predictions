@@ -50,6 +50,7 @@ cpLinearClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class(
             shapEx = .("SHAP: the contribution of each predictor to an individual's predicted outcome, relative to the average individual of the development data (exact for this additive model), in the units of the outcome."),
             shapDown = .("Lowers the prediction"),
             shapUp = .("Raises the prediction"),
+            forestAxis = .("Difference in the mean outcome"),
             permAxis = .("Loss in R² when permuted (mean ± SD)"),
             shapAxis = .("SHAP value (contribution to the predicted outcome)"),
             instabX = .("Prediction from the developed model"),

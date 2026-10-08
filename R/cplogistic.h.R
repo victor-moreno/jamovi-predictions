@@ -48,6 +48,12 @@ cpLogisticOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             descStat = "meanSD",
             oddsRatios = TRUE,
             crude = TRUE,
+            orCI = TRUE,
+            orP = TRUE,
+            forest = FALSE,
+            forestCrude = FALSE,
+            forestAdj = TRUE,
+            forestSel = TRUE,
             predTests = FALSE,
             coefs = FALSE,
             equation = FALSE,
@@ -365,6 +371,30 @@ cpLogisticOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                 "crude",
                 crude,
                 default=TRUE)
+            private$..orCI <- jmvcore::OptionBool$new(
+                "orCI",
+                orCI,
+                default=TRUE)
+            private$..orP <- jmvcore::OptionBool$new(
+                "orP",
+                orP,
+                default=TRUE)
+            private$..forest <- jmvcore::OptionBool$new(
+                "forest",
+                forest,
+                default=FALSE)
+            private$..forestCrude <- jmvcore::OptionBool$new(
+                "forestCrude",
+                forestCrude,
+                default=FALSE)
+            private$..forestAdj <- jmvcore::OptionBool$new(
+                "forestAdj",
+                forestAdj,
+                default=TRUE)
+            private$..forestSel <- jmvcore::OptionBool$new(
+                "forestSel",
+                forestSel,
+                default=TRUE)
             private$..predTests <- jmvcore::OptionBool$new(
                 "predTests",
                 predTests,
@@ -533,6 +563,12 @@ cpLogisticOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             self$.addOption(private$..descStat)
             self$.addOption(private$..oddsRatios)
             self$.addOption(private$..crude)
+            self$.addOption(private$..orCI)
+            self$.addOption(private$..orP)
+            self$.addOption(private$..forest)
+            self$.addOption(private$..forestCrude)
+            self$.addOption(private$..forestAdj)
+            self$.addOption(private$..forestSel)
             self$.addOption(private$..predTests)
             self$.addOption(private$..coefs)
             self$.addOption(private$..equation)
@@ -604,6 +640,12 @@ cpLogisticOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
         descStat = function() private$..descStat$value,
         oddsRatios = function() private$..oddsRatios$value,
         crude = function() private$..crude$value,
+        orCI = function() private$..orCI$value,
+        orP = function() private$..orP$value,
+        forest = function() private$..forest$value,
+        forestCrude = function() private$..forestCrude$value,
+        forestAdj = function() private$..forestAdj$value,
+        forestSel = function() private$..forestSel$value,
         predTests = function() private$..predTests$value,
         coefs = function() private$..coefs$value,
         equation = function() private$..equation$value,
@@ -674,6 +716,12 @@ cpLogisticOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
         ..descStat = NA,
         ..oddsRatios = NA,
         ..crude = NA,
+        ..orCI = NA,
+        ..orP = NA,
+        ..forest = NA,
+        ..forestCrude = NA,
+        ..forestAdj = NA,
+        ..forestSel = NA,
         ..predTests = NA,
         ..coefs = NA,
         ..equation = NA,
@@ -1107,27 +1155,23 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                         `name`="or_u", 
                         `title`="OR", 
                         `superTitle`="Crude", 
-                        `type`="number", 
-                        `visible`="(crude)"),
+                        `type`="number"),
                     list(
                         `name`="lower_u", 
                         `title`="Lower", 
                         `superTitle`="Crude", 
-                        `type`="number", 
-                        `visible`="(crude)"),
+                        `type`="number"),
                     list(
                         `name`="upper_u", 
                         `title`="Upper", 
                         `superTitle`="Crude", 
-                        `type`="number", 
-                        `visible`="(crude)"),
+                        `type`="number"),
                     list(
                         `name`="p_u", 
                         `title`="p", 
                         `superTitle`="Crude", 
                         `type`="number", 
-                        `format`="zto,pvalue", 
-                        `visible`="(crude)"),
+                        `format`="zto,pvalue"),
                     list(
                         `name`="or", 
                         `title`="OR", 
@@ -1148,7 +1192,32 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                         `title`="p", 
                         `superTitle`="Adjusted", 
                         `type`="number", 
-                        `format`="zto,pvalue"))))
+                        `format`="zto,pvalue"),
+                    list(
+                        `name`="or_s", 
+                        `title`="OR", 
+                        `superTitle`="Selected model", 
+                        `type`="number", 
+                        `visible`=FALSE),
+                    list(
+                        `name`="lower_s", 
+                        `title`="Lower", 
+                        `superTitle`="Selected model", 
+                        `type`="number", 
+                        `visible`=FALSE),
+                    list(
+                        `name`="upper_s", 
+                        `title`="Upper", 
+                        `superTitle`="Selected model", 
+                        `type`="number", 
+                        `visible`=FALSE),
+                    list(
+                        `name`="p_s", 
+                        `title`="p", 
+                        `superTitle`="Selected model", 
+                        `type`="number", 
+                        `format`="zto,pvalue", 
+                        `visible`=FALSE))))
             self$add(jmvcore::Table$new(
                 options=options,
                 name="testTable",
@@ -2388,6 +2457,7 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             self$add(R6::R6Class(
                 inherit = jmvcore::Group,
                 active = list(
+                    forestPlot = function() private$.items[["forestPlot"]],
                     roc = function() private$.items[["roc"]],
                     calibration = function() private$.items[["calibration"]],
                     riskDist = function() private$.items[["riskDist"]],
@@ -2407,6 +2477,47 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                             options=options,
                             name="plots",
                             title="Plots")
+                        self$add(jmvcore::Image$new(
+                            options=options,
+                            name="forestPlot",
+                            title="Forest Plot",
+                            width=600,
+                            height=450,
+                            renderFun=".plotForest",
+                            visible="(forest && oddsRatios)",
+                            clearWith=list(
+                                "dep",
+                                "eventLevel",
+                                "covs",
+                                "splineVars",
+                                "factors",
+                                "knots",
+                                "refLevels",
+                                "covScales",
+                                "interactions",
+                                "intAllPairs",
+                                "intMode",
+                                "intAlpha",
+                                "baseline",
+                                "selMode",
+                                "selCrit",
+                                "selAlpha",
+                                "enetAlpha",
+                                "enetRule",
+                                "enetFolds",
+                                "enetTune",
+                                "enetRelax",
+                                "missMethod",
+                                "miM",
+                                "miIter",
+                                "splitVar",
+                                "splitLevel",
+                                "ciWidth",
+                                "crude",
+                                "forestCrude",
+                                "forestAdj",
+                                "forestSel",
+                                "oddsRatios")))
                         self$add(jmvcore::Image$new(
                             options=options,
                             name="roc",
@@ -2939,7 +3050,7 @@ cpLogisticBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             super$initialize(
                 package = "clinpred",
                 name = "cpLogistic",
-                version = c(0,4,1),
+                version = c(0,4,2),
                 options = options,
                 results = cpLogisticResults$new(options=options),
                 data = data,
@@ -3041,6 +3152,12 @@ cpLogisticBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
 #' @param descStat .
 #' @param oddsRatios .
 #' @param crude .
+#' @param orCI .
+#' @param orP .
+#' @param forest .
+#' @param forestCrude .
+#' @param forestAdj .
+#' @param forestSel .
 #' @param predTests .
 #' @param coefs .
 #' @param equation .
@@ -3098,6 +3215,7 @@ cpLogisticBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
 #'   \code{results$shapleyTable} \tab \tab \tab \tab \tab a table \cr
 #'   \code{results$permTable} \tab \tab \tab \tab \tab a table \cr
 #'   \code{results$shapTable} \tab \tab \tab \tab \tab a table \cr
+#'   \code{results$plots$forestPlot} \tab \tab \tab \tab \tab an image \cr
 #'   \code{results$plots$roc} \tab \tab \tab \tab \tab an image \cr
 #'   \code{results$plots$calibration} \tab \tab \tab \tab \tab an image \cr
 #'   \code{results$plots$riskDist} \tab \tab \tab \tab \tab an image \cr
@@ -3165,6 +3283,12 @@ cpLogistic <- function(
     descStat = "meanSD",
     oddsRatios = TRUE,
     crude = TRUE,
+    orCI = TRUE,
+    orP = TRUE,
+    forest = FALSE,
+    forestCrude = FALSE,
+    forestAdj = TRUE,
+    forestSel = TRUE,
     predTests = FALSE,
     coefs = FALSE,
     equation = FALSE,
@@ -3256,6 +3380,12 @@ cpLogistic <- function(
         descStat = descStat,
         oddsRatios = oddsRatios,
         crude = crude,
+        orCI = orCI,
+        orP = orP,
+        forest = forest,
+        forestCrude = forestCrude,
+        forestAdj = forestAdj,
+        forestSel = forestSel,
         predTests = predTests,
         coefs = coefs,
         equation = equation,

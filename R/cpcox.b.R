@@ -72,6 +72,7 @@ cpCoxClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class(
             shapEx = .("SHAP: the contribution of each predictor to an individual's log cumulative hazard at the horizon (equivalently, log relative hazard), relative to the average individual of the development data (exact for this additive model)."),
             shapDown = .("Lowers risk"),
             shapUp = .("Raises risk"),
+            forestAxis = .("Hazard ratio (log scale)"),
             permAxis = .("Loss in Harrell's C when permuted (mean ± SD)"),
             shapAxis = .("SHAP value (contribution to the log hazard)"),
             instabX = .("Risk from the developed model"),

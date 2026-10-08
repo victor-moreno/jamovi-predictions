@@ -281,3 +281,30 @@ cp_plot_enet_cv <- function(st, ggtheme) {
         ggplot2::labs(x = "log(λ)", y = st$ylab, subtitle = "Numbers: non-zero coefficients") +
         .jtheme(ggtheme)
 }
+
+# Forest plot of the effects table: estimates with CIs, one colour per model
+# (crude, adjusted, selected), baseline covariates in their own panel below
+cp_plot_forest <- function(st, blocks, ggtheme) {
+    df <- st$rows[st$rows$block %in% blocks, , drop = FALSE]
+    if (!nrow(df)) return(NULL)
+    lev <- intersect(c("Crude", "Adjusted", "Adjusted (all predictors)", "Selected model"), unique(df$block))
+    df$block <- factor(df$block, lev)
+    k <- length(lev); off <- if (k > 1) (seq_len(k) - (k + 1) / 2) * 0.22 else 0
+    # one row per label, top to bottom in table order; a gap between the panels
+    df$y <- match(df$label, rev(st$order)) + off[as.integer(df$block)]
+    df$group <- factor(ifelse(df$forced, "Baseline covariates", "Predictors"), c("Predictors", "Baseline covariates"))
+    br <- unique(match(df$label, rev(st$order)))
+    cols <- c(Crude = "grey45", Adjusted = "#0072B2", `Adjusted (all predictors)` = "#0072B2", `Selected model` = "#D55E00")
+    p <- ggplot2::ggplot(df, ggplot2::aes(.data$est, .data$y, colour = .data$block)) +
+        ggplot2::geom_vline(xintercept = if (st$exp) 1 else 0, linetype = "dashed", colour = "grey60") +
+        ggplot2::geom_errorbar(ggplot2::aes(xmin = .data$lower, xmax = .data$upper), width = 0.15, orientation = "y", na.rm = TRUE) +
+        ggplot2::geom_point(size = 2.2) +
+        ggplot2::scale_colour_manual(values = cols[lev]) +
+        ggplot2::scale_y_continuous(breaks = br, labels = rev(st$order)[br], expand = ggplot2::expansion(add = 0.6)) +
+        ggplot2::labs(x = st$xlab, y = NULL) +
+        .base_theme(ggtheme)
+    if (st$exp) p <- p + ggplot2::scale_x_log10()
+    if (any(df$forced) && !all(df$forced))
+        p <- p + ggplot2::facet_grid(group ~ ., scales = "free_y", space = "free_y")
+    p
+}

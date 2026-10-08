@@ -291,23 +291,19 @@ items:
           title: HR
           superTitle: Crude
           type: number
-          visible: (crude)
         - name: lower_u
           title: Lower
           superTitle: Crude
           type: number
-          visible: (crude)
         - name: upper_u
           title: Upper
           superTitle: Crude
           type: number
-          visible: (crude)
         - name: p_u
           title: p
           superTitle: Crude
           type: number
           format: zto,pvalue
-          visible: (crude)
         - name: or
           title: HR
           superTitle: Adjusted
@@ -325,6 +321,27 @@ items:
           superTitle: Adjusted
           type: number
           format: zto,pvalue
+        - name: or_s
+          title: HR
+          superTitle: Selected model
+          type: number
+          visible: false
+        - name: lower_s
+          title: Lower
+          superTitle: Selected model
+          type: number
+          visible: false
+        - name: upper_s
+          title: Upper
+          superTitle: Selected model
+          type: number
+          visible: false
+        - name: p_s
+          title: p
+          superTitle: Selected model
+          type: number
+          format: zto,pvalue
+          visible: false
 
     - name: testTable
       title: Likelihood Ratio Tests
@@ -1187,6 +1204,49 @@ items:
       title: Plots
       type: Group
       items:
+        - name: forestPlot
+          title: Forest Plot
+          type: Image
+          width: 600
+          height: 450
+          renderFun: .plotForest
+          visible: (forest && oddsRatios)
+          clearWith:
+            - time
+            - status
+            - eventLevel
+            - horizon
+            - covs
+            - splineVars
+            - factors
+            - knots
+            - refLevels
+            - covScales
+            - interactions
+            - intAllPairs
+            - intMode
+            - intAlpha
+            - baseline
+            - selMode
+            - selCrit
+            - selAlpha
+            - enetAlpha
+            - enetRule
+            - enetFolds
+            - enetTune
+            - enetRelax
+            - missMethod
+            - miM
+            - miIter
+            - splitVar
+            - splitLevel
+            - ciWidth
+            - crude
+            - forestCrude
+            - forestAdj
+            - forestSel
+            - oddsRatios
+
         - name: calibration
           title: Calibration
           type: Image

@@ -76,6 +76,25 @@ children:
               - type: CheckBox
                 name: crude
                 enable: (oddsRatios)
+              - type: CheckBox
+                name: orCI
+                enable: (oddsRatios)
+              - type: CheckBox
+                name: orP
+                enable: (oddsRatios)
+              - type: CheckBox
+                name: forest
+                enable: (oddsRatios)
+                children:
+                  - type: CheckBox
+                    name: forestCrude
+                    enable: (oddsRatios && forest)
+                  - type: CheckBox
+                    name: forestAdj
+                    enable: (oddsRatios && forest)
+                  - type: CheckBox
+                    name: forestSel
+                    enable: (oddsRatios && forest)
           - type: CheckBox
             name: predTests
           - type: CheckBox

@@ -110,8 +110,18 @@
         lrt <- if ((o$oddsRatios || o$predTests) && !penalized) cp_lr_tests_mi(spec, pool) else NULL
         if (o$oddsRatios) {
             prepD <- prep; prepD$data <- Ds[[1]]
+            fullMI <- NULL
+            if (private$.selecting()) {
+                fs <- tryCatch(lapply(XCs, function(X) fam$fit(X, y)), error = function(e) NULL)
+                if (!is.null(fs) && !any(vapply(fs, anyNA, TRUE))) {
+                    pf <- cp_rubin(lapply(fs, function(b) stats::setNames(as.numeric(b), names(b))), lapply(fs, fam$vcov))
+                    bF <- pf$est; attr(bF, "converged") <- TRUE
+                    fullMI <- list(spec = specC, beta = bF, V = pf$vcov, lrt = cp_lr_tests_mi(specC, pf))
+                }
+            }
             private$.fillOR(spec, beta, prepD, y, lrt, conf,
-                            crude = if (o$crude) private$.crudeMI(specC, Ds, y, conf) else NULL)
+                            crude = if (o$crude || (o$forest && o$forestCrude)) private$.crudeMI(specC, Ds, y, conf) else NULL,
+                            full = fullMI)
         }
         if (o$predTests) {
             private$.fillTests(lrt)

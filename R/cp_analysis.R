@@ -214,21 +214,55 @@
     },
 
     # effects table: one row per covariate, reference + one per level of a factor
+    # predictors in table order: baseline covariates last
+    .orderedPreds = function() {
+        f <- private$.selOpts()$forced
+        c(setdiff(private$.preds(), f), intersect(private$.preds(), f))
+    },
+
+    # effects table: one row per covariate, reference + one per level of a factor;
+    # baseline covariates last, below a line; crude, adjusted and (after a
+    # selection) selected-model blocks; CI and p columns optional
     .initOR = function() {
-        if (!self$options$oddsRatios) return()
+        o <- self$options
+        if (!o$oddsRatios) return()
         t <- self$results$orTable
         sc <- private$.scales()
         labs <- c(unit = .("per unit"), sd = .("per 1 SD"), ten = .("per 10 units"),
                   hundred = .("per 100 units"), thousand = .("per 1000 units"))
-        for (v in self$options$covs) t$addRow(rowKey = v, values = list(var = v, level = labs[[sc[[v]] %||% "unit"]]))
-        for (v in self$options$splineVars) t$addRow(rowKey = v, values = list(var = v, level = .("Q3 vs Q1")))
-        for (v in self$options$factors) {
-            ref <- private$.refOf(v)
-            lev <- private$.levelsOf(v)
-            t$addRow(rowKey = paste0(v, " (ref)"), values = list(var = v, level = ref))
-            for (l in setdiff(lev, ref)) t$addRow(rowKey = paste0(v, ": ", l), values = list(var = v, level = l))
+        forced <- private$.selOpts()$forced
+        first <- TRUE; nEff <- 0
+        for (v in private$.orderedPreds()) {
+            keys <- character(0)
+            if (v %in% o$covs) { t$addRow(rowKey = v, values = list(var = v, level = labs[[sc[[v]] %||% "unit"]])); keys <- v; nEff <- nEff + 1 }
+            else if (v %in% o$splineVars) { t$addRow(rowKey = v, values = list(var = v, level = .("Q3 vs Q1"))); keys <- v; nEff <- nEff + 1 }
+            else {
+                ref <- private$.refOf(v)
+                lev <- private$.levelsOf(v)
+                t$addRow(rowKey = paste0(v, " (ref)"), values = list(var = v, level = ref)); keys <- paste0(v, " (ref)")
+                for (l in setdiff(lev, ref)) t$addRow(rowKey = paste0(v, ": ", l), values = list(var = v, level = l))
+                nEff <- nEff + max(1, length(lev) - 1)
+            }
+            if (v %in% forced && first) {
+                if (length(setdiff(private$.preds(), forced))) t$addFormat(rowKey = keys[1], col = 1, format = jmvcore::Cell.BEGIN_GROUP)
+                first <- FALSE
+            }
         }
+        if (length(forced)) t$setNote("forced", .("Below the line: baseline covariates (always in the model)."))
+        sel <- private$.selecting()
+        penal <- o$selMode == "enet" && !isTRUE(o$enetRelax)
+        vis <- function(cn, on) t$getColumn(cn)$setVisible(on)
+        for (b in c("_u", "", "_s")) {
+            on <- switch(b, `_u` = o$crude, `_s` = sel, TRUE)
+            vis(paste0("or", b), on)
+            vis(paste0("lower", b), on && o$orCI && !(b == "_s" && penal))
+            vis(paste0("upper", b), on && o$orCI && !(b == "_s" && penal))
+            vis(paste0("p", b), on && o$orP && !(b == "_s" && penal))
+        }
+        if (sel) for (cn in c("or", "lower", "upper", "p")) t$getColumn(cn)$setSuperTitle(.("Adjusted (all predictors)"))
+        if (o$forest) self$results$plots$forestPlot$setSize(620, max(300, 120 + 26 * nEff * (1 + sel)))
     },
+
 
     # write a row by key, adding it when .init could not know it
     .putRow = function(tab, key, values) {
@@ -344,7 +378,8 @@
         private$.fillCoefs(beta, spec, conf)
         if (o$equation) r$equationText$setContent(private$.equation(beta, spec))
         lrt <- if ((o$oddsRatios || o$predTests) && !penalized) cp_lr_tests(spec, X, y, fam) else NULL
-        if (o$oddsRatios) private$.fillOR(spec, beta, prep, y, lrt, conf)
+        if (o$oddsRatios) private$.fillOR(spec, beta, prep, y, lrt, conf,
+                                          full = if (private$.selecting()) private$.fullModel(XC, y, specC) else NULL)
         if (o$predTests) private$.fillTests(lrt)
 
         iv <- private$.internal(XC, y, specC, attr(sel, "lambda"))
@@ -434,49 +469,74 @@
         if (is.null(V)) t$setNote("pen", .("Penalised (elastic net) estimates: they have no standard errors, confidence intervals or p values; their uncertainty is in the internal validation."))
     },
 
-    .fillOR = function(spec, beta, prep, y, lrt, conf, crude = NULL) {
+    # full: list(spec, beta, V, lrt) of the model with every candidate predictor,
+    # when a selection made the final model (spec, beta, lrt) a reduced one
+    .fillOR = function(spec, beta, prep, y, lrt, conf, crude = NULL, full = NULL) {
+        o <- self$options
         t <- self$results$orTable
         fam <- private$.fam
-        adj <- cp_effects(spec, beta, private$.vcov(beta), conf, exp = fam$exp, df = fam$dfResid(beta))
-        # crude effects for every candidate predictor; adjusted ones for those in the model
-        cr <- if (self$options$crude) crude %||% cp_crude(prep$spec, prep$data, y, fam, conf) else NULL
-        pAdj <- if (is.null(lrt)) list() else as.list(stats::setNames(lrt$p, lrt$key))
         ref <- if (fam$exp) 1 else 0
-        for (info in prep$spec$vars) {
+        cr <- if (o$crude || (o$forest && o$forestCrude)) crude %||% cp_crude(prep$spec, prep$data, y, fam, conf) else NULL
+        blockEff <- function(sp, b, V, lr) list(eff = cp_effects(sp, b, V, conf, exp = fam$exp, df = fam$dfResid(b)),
+                                                p = if (is.null(lr)) list() else as.list(stats::setNames(lr$p, lr$key)), vars = names(sp$vars))
+        sel <- private$.selecting()
+        fin <- blockEff(spec, beta, private$.vcov(beta), lrt)
+        adj <- if (sel && !is.null(full)) blockEff(full$spec, full$beta, full$V, full$lrt) else if (sel) NULL else fin
+        forced <- private$.selOpts()$forced
+        rows <- list()
+        put <- function(key, vals) private$.putRow(t, key, vals)
+        # table order: baseline covariates last (each panel of the forest plot then holds its own rows)
+        ord <- c(setdiff(names(prep$spec$vars), forced), intersect(names(prep$spec$vars), forced))
+        for (info in prep$spec$vars[ord]) {
             v <- info$name
-            inModel <- v %in% names(spec$vars)
             if (info$role == "factor")
-                private$.putRow(t, paste0(v, " (ref)"), list(var = v, level = info$levels[1],
+                put(paste0(v, " (ref)"), list(var = v, level = info$levels[1],
                     or_u = ref, lower_u = "", upper_u = "", p_u = if (!is.null(cr)) attr(cr, "pOverall")[[v]] else "",
-                    or = if (inModel) ref else "", lower = "", upper = "", p = if (inModel) pAdj[[v]] %||% "" else ""))
-            if (!inModel) {
-                for (d in cp_effect_defs(prep$spec, v)) {
-                    cc <- if (!is.null(cr)) cr[cr$key == d$key, ] else NULL
-                    private$.putRow(t, d$key, c(list(var = v, level = d$level, or = "", lower = "", upper = "", p = ""),
-                        if (!is.null(cc)) list(or_u = cc$est, lower_u = cc$lower, upper_u = cc$upper,
-                                               p_u = if (info$role == "spline") attr(cr, "pOverall")[[v]] else cc$p)))
+                    or = if (!is.null(adj) && v %in% adj$vars) ref else "", lower = "", upper = "", p = if (!is.null(adj)) adj$p[[v]] %||% "" else "",
+                    or_s = if (sel && v %in% fin$vars) ref else "", lower_s = "", upper_s = "", p_s = if (sel && v %in% fin$vars) fin$p[[v]] %||% "" else ""))
+            for (d in cp_effect_defs(prep$spec, v)) {
+                vals <- list(var = v, level = d$level)
+                pick <- function(bl, suffix) {
+                    if (is.null(bl) || !(v %in% bl$vars)) return(stats::setNames(list("", "", "", ""), paste0(c("or", "lower", "upper", "p"), suffix)))
+                    a <- bl$eff[bl$eff$key == d$key, ]
+                    stats::setNames(list(a$est, a$lower, a$upper, if (info$role == "spline") bl$p[[v]] %||% "" else a$p),
+                                    paste0(c("or", "lower", "upper", "p"), suffix))
                 }
-                t$setNote("drop", .("Predictors without adjusted effects were removed by the selection (see Predictor Selection)."))
-                next
-            }
-            for (i in which(adj$var == v)) {
-                a <- adj[i, ]
-                vals <- list(var = v, level = a$level, or = a$est, lower = a$lower, upper = a$upper,
-                             p = if (info$role == "spline") pAdj[[v]] %||% "" else a$p)
+                vals <- c(vals, pick(adj, ""), if (sel) pick(fin, "_s"))
                 if (!is.null(cr)) {
-                    cc <- cr[cr$key == a$key, ]
+                    cc <- cr[cr$key == d$key, ]
                     vals <- c(vals, list(or_u = cc$est, lower_u = cc$lower, upper_u = cc$upper,
                                          p_u = if (info$role == "spline") attr(cr, "pOverall")[[v]] else cc$p))
                 }
-                private$.putRow(t, a$key, vals)
+                put(d$key, vals)
+                # rows of the forest plot
+                lab <- if (info$role == "factor") sprintf("%s: %s (vs %s)", v, d$level, info$levels[1]) else sprintf("%s (%s)", v, d$level)
+                add <- function(block, est, lo, hi) if (length(est) && !identical(est, "") && is.finite(as.numeric(est)))
+                    rows[[length(rows) + 1]] <<- data.frame(label = lab, block = block, est = as.numeric(est),
+                        lower = suppressWarnings(as.numeric(lo)), upper = suppressWarnings(as.numeric(hi)),
+                        forced = v %in% forced, stringsAsFactors = FALSE)
+                if (!is.null(cr)) add("Crude", vals$or_u, vals$lower_u, vals$upper_u)
+                add(if (sel) "Adjusted (all predictors)" else "Adjusted", vals$or, vals$lower, vals$upper)
+                if (sel) add("Selected model", vals$or_s, vals$lower_s, vals$upper_s)
             }
         }
-        if (self$options$crude)
+        if (o$crude)
             t$setNote("crude", .("Crude: each predictor alone, on the same rows. Adjusted: in the prediction model."))
+        if (sel) {
+            t$setNote("crude", .("Crude: each predictor alone. Adjusted (all predictors): the model with every candidate predictor, before selection. Selected model: the prediction model."))
+            if (is.null(full)) t$setNote("full", .("The model with all predictors could not be fitted (e.g. separation)."))
+        }
         if (length(self$options$splineVars)) t$setNote("spl", private$.text("orSpline"))
         if (length(self$options$factors)) t$setNote("ref", private$.text("orRef"))
         if (length(spec$interactions)) t$setNote("int", private$.text("orInt"))
+        img <- self$results$plots$forestPlot
+        if (o$forest && length(rows) && is.null(img$state)) {
+            df <- do.call(rbind, rows)
+            img$setState(list(rows = df, exp = fam$exp, order = unique(df$label),
+                              xlab = private$.text("forestAxis")))
+        }
     },
+
 
     .fillTests = function(lrt) {
         t <- self$results$testTable
@@ -823,8 +883,9 @@
         }
         if (self$options$validation != "none")
             for (cn in c("baseCorr", "fullCorr", "deltaCorr")) t$getColumn(cn)$setVisible(TRUE)
-        t$getColumn("lower")$setSuperTitle(paste0("Δ ", self$options$ciWidth, "% CI"))
-        if (!is.null(self$results$plots[["incDca"]])) self$results$plots[["incDca"]]$setVisible(TRUE)
+        for (cn in c("lower", "upper")) t$getColumn(cn)$setSuperTitle(paste0("Δ ", self$options$ciWidth, "% CI"))
+        # the decision curves of both models only when decision curves are asked for
+        if (!is.null(self$results$plots[["incDca"]])) self$results$plots[["incDca"]]$setVisible(isTRUE(self$options$dca))
     },
 
     .fillInc = function(prep, specC, spec, y, lp, iv, vsets, conf, beta) {
@@ -907,7 +968,7 @@
             t$setNote("nri", .("NRI and IDI are reported for completeness; they can favour miscalibrated models (Pepe et al. 2015) and say less than ΔAUC, the LR test and Δ net benefit."))
 
         img <- self$results$plots[["incDca"]]
-        if (!is.null(img) && is.null(img$state) && fam$name != "gaussian") {
+        if (!is.null(img) && isTRUE(o$dca) && is.null(img$state) && fam$name != "gaussian") {
             grid <- seq(0.01, o$dcaMax, by = 0.01)
             nbg <- function(yy, p) if (fam$name == "cox") cp_net_benefit_surv(yy, p, grid, fam$horizon) else cp_net_benefit(yy, p, grid)
             mk <- function(label, yy, lb, lf) { f <- nbg(yy, fam$risk(lf)); f$base <- nbg(yy, fam$risk(lb))$model; list(label = label, nb = f) }
@@ -1026,6 +1087,24 @@
             private$.putRow(tp, paste0("p", i), list(pattern = if (pt$pattern[i] == "(complete)") .("none (complete)") else pt$pattern[i],
                                                      nvars = pt$nvars[i], n = pt$n[i], pct = pt$pct[i]))
         tp$setNote("ex", .("The most frequent combinations of missing variables in the development rows (at most 10)."))
+    },
+
+    # the model with every candidate predictor (unpenalised), for the effects table
+    .fullModel = function(XC, y, specC) {
+        fam <- private$.fam
+        b <- tryCatch(fam$fit(XC, y), error = function(e) NULL)
+        if (is.null(b) || anyNA(b) || !isTRUE(attr(b, "converged"))) return(NULL)
+        list(spec = specC, beta = b, V = fam$vcov(b), lrt = cp_lr_tests(specC, XC, y, fam))
+    },
+
+    .plotForest = function(image, ggtheme, theme, ...) {
+        if (is.null(image$state)) return(FALSE)
+        o <- self$options
+        blocks <- c(if (o$forestCrude) "Crude", if (o$forestAdj) c("Adjusted", "Adjusted (all predictors)"),
+                    if (o$forestSel) "Selected model")
+        p <- cp_plot_forest(image$state, blocks, ggtheme)
+        if (is.null(p)) return(FALSE)
+        print(p); TRUE
     },
 
     # the covariance of the coefficients; none for a penalised model

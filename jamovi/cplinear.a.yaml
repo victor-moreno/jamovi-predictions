@@ -2,7 +2,7 @@
 name: cpLinear
 title: Continuous Outcome (Linear)
 menuGroup: Prediction
-version: '0.4.1'
+version: '0.4.2'
 jas: '1.2'
 weightsSupport: none
 
@@ -450,6 +450,36 @@ options:
 
     - name: crude
       title: Crude and adjusted
+      type: Bool
+      default: true
+
+    - name: orCI
+      title: Confidence intervals
+      type: Bool
+      default: true
+
+    - name: orP
+      title: p values
+      type: Bool
+      default: true
+
+    - name: forest
+      title: Forest plot
+      type: Bool
+      default: false
+
+    - name: forestCrude
+      title: Crude
+      type: Bool
+      default: false
+
+    - name: forestAdj
+      title: Adjusted
+      type: Bool
+      default: true
+
+    - name: forestSel
+      title: Selected model
       type: Bool
       default: true
 

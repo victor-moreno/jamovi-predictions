@@ -65,7 +65,9 @@ test_that("the analyses select predictors with baseline covariates and report it
     expect_equal(st$status[st$var == "noise"], "removed")
     expect_true(all(st$freq[st$var %in% c("sex", "centre")] == 1))
     orr <- r$orTable$asDF
-    expect_true(is.na(orr$or[orr$var == "noise"]) && is.finite(orr$or_u[orr$var == "noise"]))
+    # removed by the selection: blank in the selected model, estimated in the full and crude models
+    expect_true(is.na(orr$or_s[orr$var == "noise"]) && is.finite(orr$or[orr$var == "noise"]) &&
+                is.finite(orr$or_u[orr$var == "noise"]))
     expect_match(r$intTable$asDF$kept[r$intTable$asDF$term == "noise × sex"], "main effect removed")
     expect_equal(r$shapleyTable$asDF$shapley[r$shapleyTable$asDF$var == "noise"], 0)
     src <- readLines(test_path("test-render.R"))
