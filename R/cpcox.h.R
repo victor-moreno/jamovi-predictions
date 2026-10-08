@@ -23,6 +23,8 @@ cpCoxOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             enetRule = "min",
             enetFolds = 10,
             enetTune = TRUE,
+            enetRelax = FALSE,
+            bootCoefs = FALSE,
             incremental = FALSE,
             missExplore = FALSE,
             missMethod = "cc",
@@ -219,6 +221,14 @@ cpCoxOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                 "enetTune",
                 enetTune,
                 default=TRUE)
+            private$..enetRelax <- jmvcore::OptionBool$new(
+                "enetRelax",
+                enetRelax,
+                default=FALSE)
+            private$..bootCoefs <- jmvcore::OptionBool$new(
+                "bootCoefs",
+                bootCoefs,
+                default=FALSE)
             private$..incremental <- jmvcore::OptionBool$new(
                 "incremental",
                 incremental,
@@ -481,6 +491,8 @@ cpCoxOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             self$.addOption(private$..enetRule)
             self$.addOption(private$..enetFolds)
             self$.addOption(private$..enetTune)
+            self$.addOption(private$..enetRelax)
+            self$.addOption(private$..bootCoefs)
             self$.addOption(private$..incremental)
             self$.addOption(private$..missExplore)
             self$.addOption(private$..missMethod)
@@ -547,6 +559,8 @@ cpCoxOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
         enetRule = function() private$..enetRule$value,
         enetFolds = function() private$..enetFolds$value,
         enetTune = function() private$..enetTune$value,
+        enetRelax = function() private$..enetRelax$value,
+        bootCoefs = function() private$..bootCoefs$value,
         incremental = function() private$..incremental$value,
         missExplore = function() private$..missExplore$value,
         missMethod = function() private$..missMethod$value,
@@ -612,6 +626,8 @@ cpCoxOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
         ..enetRule = NA,
         ..enetFolds = NA,
         ..enetTune = NA,
+        ..enetRelax = NA,
+        ..bootCoefs = NA,
         ..incremental = NA,
         ..missExplore = NA,
         ..missMethod = NA,
@@ -677,6 +693,8 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
         intTable = function() private$.items[["intTable"]],
         selTable = function() private$.items[["selTable"]],
         incTable = function() private$.items[["incTable"]],
+        bootCoefTable = function() private$.items[["bootCoefTable"]],
+        modelFreqTable = function() private$.items[["modelFreqTable"]],
         subTable = function() private$.items[["subTable"]],
         coefTable = function() private$.items[["coefTable"]],
         equationText = function() private$.items[["equationText"]],
@@ -746,6 +764,7 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "enetRule",
                     "enetFolds",
                     "enetTune",
+                    "enetRelax",
                     "missMethod",
                     "miM",
                     "miIter",
@@ -807,6 +826,7 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "enetRule",
                     "enetFolds",
                     "enetTune",
+                    "enetRelax",
                     "missMethod",
                     "miM",
                     "miIter",
@@ -858,6 +878,7 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "enetRule",
                     "enetFolds",
                     "enetTune",
+                    "enetRelax",
                     "missMethod",
                     "miM",
                     "miIter",
@@ -1055,6 +1076,7 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "enetRule",
                     "enetFolds",
                     "enetTune",
+                    "enetRelax",
                     "missMethod",
                     "miM",
                     "miIter",
@@ -1145,6 +1167,7 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "enetRule",
                     "enetFolds",
                     "enetTune",
+                    "enetRelax",
                     "missMethod",
                     "miM",
                     "miIter",
@@ -1196,6 +1219,7 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "enetRule",
                     "enetFolds",
                     "enetTune",
+                    "enetRelax",
                     "missMethod",
                     "miM",
                     "miIter",
@@ -1270,6 +1294,7 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "enetRule",
                     "enetFolds",
                     "enetTune",
+                    "enetRelax",
                     "missMethod",
                     "miM",
                     "miIter",
@@ -1343,6 +1368,7 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "enetRule",
                     "enetFolds",
                     "enetTune",
+                    "enetRelax",
                     "missMethod",
                     "miM",
                     "miIter",
@@ -1415,6 +1441,142 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                         `visible`=FALSE))))
             self$add(jmvcore::Table$new(
                 options=options,
+                name="bootCoefTable",
+                title="Bootstrap Coefficients (Selection Repeated)",
+                visible=FALSE,
+                clearWith=list(
+                    "time",
+                    "status",
+                    "eventLevel",
+                    "horizon",
+                    "covs",
+                    "splineVars",
+                    "factors",
+                    "knots",
+                    "refLevels",
+                    "covScales",
+                    "interactions",
+                    "intAllPairs",
+                    "intMode",
+                    "intAlpha",
+                    "baseline",
+                    "selMode",
+                    "selCrit",
+                    "selAlpha",
+                    "enetAlpha",
+                    "enetRule",
+                    "enetFolds",
+                    "enetTune",
+                    "enetRelax",
+                    "missMethod",
+                    "miM",
+                    "miIter",
+                    "splitVar",
+                    "splitLevel",
+                    "validation",
+                    "nBoot",
+                    "nFolds",
+                    "nRepeats",
+                    "seed",
+                    "bootCoefs"),
+                columns=list(
+                    list(
+                        `name`="term", 
+                        `title`="Coefficient", 
+                        `type`="text"),
+                    list(
+                        `name`="est", 
+                        `title`="Estimate", 
+                        `type`="number"),
+                    list(
+                        `name`="median", 
+                        `title`="Median", 
+                        `type`="number", 
+                        `superTitle`="Bootstrap"),
+                    list(
+                        `name`="lower", 
+                        `title`="2.5%", 
+                        `type`="number", 
+                        `superTitle`="Bootstrap"),
+                    list(
+                        `name`="upper", 
+                        `title`="97.5%", 
+                        `type`="number", 
+                        `superTitle`="Bootstrap"),
+                    list(
+                        `name`="incl", 
+                        `title`="Inclusion", 
+                        `type`="number", 
+                        `format`="pc"),
+                    list(
+                        `name`="rmsd", 
+                        `title`="RMSD ratio", 
+                        `type`="number"),
+                    list(
+                        `name`="relbias", 
+                        `title`="Rel. cond. bias", 
+                        `type`="number"))))
+            self$add(jmvcore::Table$new(
+                options=options,
+                name="modelFreqTable",
+                title="Most Frequent Selected Models (Bootstrap)",
+                visible=FALSE,
+                clearWith=list(
+                    "time",
+                    "status",
+                    "eventLevel",
+                    "horizon",
+                    "covs",
+                    "splineVars",
+                    "factors",
+                    "knots",
+                    "refLevels",
+                    "covScales",
+                    "interactions",
+                    "intAllPairs",
+                    "intMode",
+                    "intAlpha",
+                    "baseline",
+                    "selMode",
+                    "selCrit",
+                    "selAlpha",
+                    "enetAlpha",
+                    "enetRule",
+                    "enetFolds",
+                    "enetTune",
+                    "enetRelax",
+                    "missMethod",
+                    "miM",
+                    "miIter",
+                    "splitVar",
+                    "splitLevel",
+                    "validation",
+                    "nBoot",
+                    "nFolds",
+                    "nRepeats",
+                    "seed",
+                    "bootCoefs"),
+                columns=list(
+                    list(
+                        `name`="model", 
+                        `title`="Terms selected", 
+                        `type`="text"),
+                    list(
+                        `name`="n", 
+                        `title`="Fits", 
+                        `type`="integer"),
+                    list(
+                        `name`="pct", 
+                        `title`="%", 
+                        `type`="number", 
+                        `format`="pc"),
+                    list(
+                        `name`="cum", 
+                        `title`="Cumulative", 
+                        `type`="number", 
+                        `format`="pc"))))
+            self$add(jmvcore::Table$new(
+                options=options,
                 name="subTable",
                 title="Effects Within Subgroups",
                 visible=FALSE,
@@ -1441,6 +1603,7 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "enetRule",
                     "enetFolds",
                     "enetTune",
+                    "enetRelax",
                     "missMethod",
                     "miM",
                     "miIter",
@@ -1502,6 +1665,7 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "enetRule",
                     "enetFolds",
                     "enetTune",
+                    "enetRelax",
                     "missMethod",
                     "miM",
                     "miIter",
@@ -1568,6 +1732,7 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "enetRule",
                     "enetFolds",
                     "enetTune",
+                    "enetRelax",
                     "missMethod",
                     "miM",
                     "miIter",
@@ -1600,6 +1765,7 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "enetRule",
                     "enetFolds",
                     "enetTune",
+                    "enetRelax",
                     "missMethod",
                     "miM",
                     "miIter",
@@ -1673,6 +1839,7 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "enetRule",
                     "enetFolds",
                     "enetTune",
+                    "enetRelax",
                     "missMethod",
                     "miM",
                     "miIter",
@@ -1737,6 +1904,7 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "enetRule",
                     "enetFolds",
                     "enetTune",
+                    "enetRelax",
                     "missMethod",
                     "miM",
                     "miIter",
@@ -1782,6 +1950,7 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "enetRule",
                     "enetFolds",
                     "enetTune",
+                    "enetRelax",
                     "missMethod",
                     "miM",
                     "miIter",
@@ -1843,6 +2012,7 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "enetRule",
                     "enetFolds",
                     "enetTune",
+                    "enetRelax",
                     "missMethod",
                     "miM",
                     "miIter",
@@ -1900,6 +2070,7 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "enetRule",
                     "enetFolds",
                     "enetTune",
+                    "enetRelax",
                     "missMethod",
                     "miM",
                     "miIter",
@@ -1953,6 +2124,7 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "enetRule",
                     "enetFolds",
                     "enetTune",
+                    "enetRelax",
                     "missMethod",
                     "miM",
                     "miIter",
@@ -2010,6 +2182,7 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "enetRule",
                     "enetFolds",
                     "enetTune",
+                    "enetRelax",
                     "missMethod",
                     "miM",
                     "miIter",
@@ -2081,6 +2254,7 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                                 "enetRule",
                                 "enetFolds",
                                 "enetTune",
+                                "enetRelax",
                                 "missMethod",
                                 "miM",
                                 "miIter",
@@ -2120,6 +2294,7 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                                 "enetRule",
                                 "enetFolds",
                                 "enetTune",
+                                "enetRelax",
                                 "missMethod",
                                 "miM",
                                 "miIter",
@@ -2158,6 +2333,7 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                                 "enetRule",
                                 "enetFolds",
                                 "enetTune",
+                                "enetRelax",
                                 "missMethod",
                                 "miM",
                                 "miIter",
@@ -2196,6 +2372,7 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                                 "enetRule",
                                 "enetFolds",
                                 "enetTune",
+                                "enetRelax",
                                 "missMethod",
                                 "miM",
                                 "miIter",
@@ -2234,6 +2411,7 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                                 "enetRule",
                                 "enetFolds",
                                 "enetTune",
+                                "enetRelax",
                                 "missMethod",
                                 "miM",
                                 "miIter",
@@ -2273,6 +2451,7 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                                 "enetRule",
                                 "enetFolds",
                                 "enetTune",
+                                "enetRelax",
                                 "missMethod",
                                 "miM",
                                 "miIter",
@@ -2309,6 +2488,7 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                                 "enetRule",
                                 "enetFolds",
                                 "enetTune",
+                                "enetRelax",
                                 "missMethod",
                                 "miM",
                                 "miIter",
@@ -2346,6 +2526,7 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                                 "enetRule",
                                 "enetFolds",
                                 "enetTune",
+                                "enetRelax",
                                 "missMethod",
                                 "miM",
                                 "miIter",
@@ -2387,6 +2568,7 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                                 "enetRule",
                                 "enetFolds",
                                 "enetTune",
+                                "enetRelax",
                                 "missMethod",
                                 "miM",
                                 "miIter",
@@ -2433,6 +2615,7 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                                 "enetRule",
                                 "enetFolds",
                                 "enetTune",
+                                "enetRelax",
                                 "missMethod",
                                 "miM",
                                 "miIter",
@@ -2472,6 +2655,7 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                                 "enetRule",
                                 "enetFolds",
                                 "enetTune",
+                                "enetRelax",
                                 "missMethod",
                                 "miM",
                                 "miIter",
@@ -2510,6 +2694,7 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "enetRule",
                     "enetFolds",
                     "enetTune",
+                    "enetRelax",
                     "missMethod",
                     "miM",
                     "miIter",
@@ -2546,6 +2731,7 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "enetRule",
                     "enetFolds",
                     "enetTune",
+                    "enetRelax",
                     "missMethod",
                     "miM",
                     "miIter",
@@ -2561,7 +2747,7 @@ cpCoxBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             super$initialize(
                 package = "clinpred",
                 name = "cpCox",
-                version = c(0,4,0),
+                version = c(0,4,1),
                 options = options,
                 results = cpCoxResults$new(options=options),
                 data = data,
@@ -2621,6 +2807,13 @@ cpCoxBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
 #' @param enetFolds .
 #' @param enetTune in bootstrap and cross-validation fits, choose λ again by
 #'   cross-validation (honest, slower) instead of using the λ of the final model
+#' @param enetRelax the elastic net selects the predictors and an unpenalised
+#'   model refitted on them is the prediction model (repeated in every resampled
+#'   fit); its CIs do not account for the selection
+#' @param bootCoefs with bootstrap validation: inclusion frequency, bootstrap
+#'   median and percentile interval, RMSD ratio and relative conditional bias of
+#'   each coefficient, and the most frequent selected models (Heinze, Wallisch &
+#'   Dunkler 2018)
 #' @param incremental compare the baseline model (baseline covariates only)
 #'   with the full model: differences in performance (apparent,
 #'   optimism-corrected and in validation data), LR test of the added
@@ -2695,6 +2888,8 @@ cpCoxBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
 #'   \code{results$intTable} \tab \tab \tab \tab \tab a table \cr
 #'   \code{results$selTable} \tab \tab \tab \tab \tab a table \cr
 #'   \code{results$incTable} \tab \tab \tab \tab \tab a table \cr
+#'   \code{results$bootCoefTable} \tab \tab \tab \tab \tab a table \cr
+#'   \code{results$modelFreqTable} \tab \tab \tab \tab \tab a table \cr
 #'   \code{results$subTable} \tab \tab \tab \tab \tab a table \cr
 #'   \code{results$coefTable} \tab \tab \tab \tab \tab a table \cr
 #'   \code{results$equationText} \tab \tab \tab \tab \tab a preformatted \cr
@@ -2747,6 +2942,8 @@ cpCox <- function(
     enetRule = "min",
     enetFolds = 10,
     enetTune = TRUE,
+    enetRelax = FALSE,
+    bootCoefs = FALSE,
     incremental = FALSE,
     missExplore = FALSE,
     missMethod = "cc",
@@ -2835,6 +3032,8 @@ cpCox <- function(
         enetRule = enetRule,
         enetFolds = enetFolds,
         enetTune = enetTune,
+        enetRelax = enetRelax,
+        bootCoefs = bootCoefs,
         incremental = incremental,
         missExplore = missExplore,
         missMethod = missMethod,

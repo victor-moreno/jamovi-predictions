@@ -110,6 +110,21 @@ cp_fit_procedure <- function(X, y, spec, fam, sel) {
     b <- cp_enet_fit(X, y, fam, alpha = sel$enetAlpha %||% 0.5, pf = pf, rule = sel$enetRule %||% "min",
                      nfolds = sel$enetFolds %||% 10, seed = sel$seed %||% 1, lambda = sel$lambda)
     nz <- spec$colTerm[b[-1] != 0]
+    # relaxed lasso (Meinshausen 2007, with the unpenalised refit): the
+    # selected terms refitted without penalty; this refit is the model
+    if (isTRUE(sel$relax)) {
+        keep <- b[-1] != 0 | spec$colTerm %in% forced
+        rf <- fam$fit(X[, keep, drop = FALSE], y)
+        full <- stats::setNames(numeric(ncol(X)), colnames(X))
+        rr <- rf; rr[is.na(rr)] <- 0
+        full[keep] <- rr[-1]
+        out <- c(`(Intercept)` = unname(rr[1]), full)
+        attr(out, "converged") <- attr(rf, "converged")
+        attr(out, "separation") <- attr(rf, "separation")
+        attr(out, "lambda") <- attr(b, "lambda"); attr(out, "cv") <- attr(b, "cv")
+        attr(out, "relaxed") <- TRUE
+        b <- out
+    }
     ints <- intersect(names(spec$interactions), nz)
     vars <- names(spec$vars)[names(spec$vars) %in% c(forced, nz, unlist(spec$interactions[ints]))]
     free <- setdiff(names(spec$vars), forced)

@@ -199,6 +199,12 @@ children:
             name: enetTune
             enable: (selMode:enet)
           - type: CheckBox
+            name: enetRelax
+            enable: (selMode:enet)
+          - type: CheckBox
+            name: bootCoefs
+            enable: (validation:boot)
+          - type: CheckBox
             name: incremental
 
   - type: CollapseBox

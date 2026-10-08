@@ -131,6 +131,7 @@
             r$selTable$setNote("mi", sprintf(.("Kept: selected in at least half of the %d imputations (tests from the first). Selected in each imputation: %s."),
                                              M, paste(sprintf("%s %.0f%%", names(kept), 100 * as.numeric(kept)), collapse = ", ")))
         }
+        private$.postSelection(penalized, iv, beta, spec)
         app <- rowMeans(vapply(lps, function(l) fam$metrics(y, l), fam$metrics(y, lps[[1]])))
         private$.fillPerfDev(y, lps[[1]], iv, conf, app = app)
         r$perfDev$setNote("mi", .("Averaged over the imputations (no confidence intervals); internal validation within each imputation."))
@@ -183,6 +184,8 @@
         iv$corrected <- iv$apparent - iv$optimism
         iv$B <- Bm * M; iv$nOk <- sum(vapply(ivs, function(z) z$nOk, 0))
         if (!is.null(iv$shrinkage)) iv$shrinkage <- mean(vapply(ivs, function(z) z$shrinkage, 0), na.rm = TRUE)
+        iv$coefs <- do.call(rbind, lapply(ivs, function(z) z$coefs))
+        iv$sets <- unlist(lapply(ivs, function(z) z$sets))
         sels <- lapply(ivs, function(z) z$selection)
         if (!all(vapply(sels, is.null, TRUE))) {
             terms <- unique(unlist(lapply(sels, names)))

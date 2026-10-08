@@ -26,7 +26,12 @@ Needs **jamovi 28.4 or later**.
 - **Baseline covariates and selection**: predictors marked as baseline (e.g. institution, age,
   sex) are always in the model; the others are kept, selected backward or forward (AIC, BIC or LR
   test), or penalised by an **elastic net** (λ by cross-validation; checked against glmnet), the
-  selection or tuning repeated in every bootstrap or cross-validation fit.
+  selection or tuning repeated in every bootstrap or cross-validation fit. Optionally a **relaxed
+  lasso** (the unpenalised refit of the predictors the elastic net keeps). After any selection,
+  the coefficient tables warn that their CIs ignore the selection, and a **bootstrap coefficient
+  table** (Heinze, Wallisch & Dunkler 2018) gives each coefficient's inclusion frequency, bootstrap
+  median and percentile interval, RMSD ratio and relative conditional bias, with the most frequent
+  selected models.
 - **Incremental value** of the other predictors over the baseline model: Δ of every performance
   measure (apparent, optimism-corrected on the same resamples, and in validation data), ΔAUC
   (paired DeLong) or ΔC with confidence intervals, LR or F test of the added predictors, NRI and

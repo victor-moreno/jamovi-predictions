@@ -36,6 +36,9 @@ cp_internal <- function(X, y, fam, method = "boot", B = 200, k = 10, R = 1, seed
             opt <- matrix(NA_real_, B, length(apparent), dimnames = list(NULL, names(apparent)))
             testSlope <- rep(NA_real_, B)
             selected <- vector("list", B)
+            # coefficients and selected terms of each bootstrap fit (Heinze et al. 2018)
+            coefs <- matrix(NA_real_, B, length(beta), dimnames = list(NULL, names(beta)))
+            sets <- rep(NA_character_, B)
             fitted <- rep(FALSE, B)
             risk <- if (stability) matrix(NA_real_, n, B) else NULL
             for (b in seq_len(B)) {
@@ -51,6 +54,9 @@ cp_internal <- function(X, y, fam, method = "boot", B = 200, k = 10, R = 1, seed
                 opt[b, ] <- mApp - mTest
                 fitted[b] <- TRUE
                 selected[[b]] <- attr(fb, "selected")
+                coefs[b, ] <- fb
+                if (!is.null(attr(fb, "vars")))
+                    sets[b] <- paste(c(sort(attr(fb, "vars")), sort(attr(fb, "ints"))), collapse = ", ")
                 testSlope[b] <- mTest[["slope"]]
                 if (stability) risk[, b] <- fam$risk(lpTest)
             }
@@ -59,7 +65,8 @@ cp_internal <- function(X, y, fam, method = "boot", B = 200, k = 10, R = 1, seed
             optimism <- colMeans(opt[ok, , drop = FALSE], na.rm = TRUE)
             out <- list(method = "boot", B = B, nOk = sum(ok),
                         shrinkage = mean(testSlope[ok], na.rm = TRUE),
-                        selection = .selection_freq(selected[ok]))
+                        selection = .selection_freq(selected[ok]),
+                        coefs = coefs[ok, , drop = FALSE], sets = sets[ok])
             if (stability && sum(ok) > 1)
                 out$stability <- .stability(y, fam$risk(lp0), risk[, ok, drop = FALSE],
                                             maxCurves, maxIndiv, fam$smooth %||% .cal_smooth,
@@ -127,4 +134,36 @@ cp_internal <- function(X, y, fam, method = "boot", B = 200, k = 10, R = 1, seed
          p0 = enc(p0[ind]), pts = matrix(as.integer(enc(risk[ind, bs])), length(ind)),
          lo = enc(q[1, ind]), hi = enc(q[2, ind]),
          grid = grid, curves = if (bounded) round(curves, 4) else signif(curves, 5))
+}
+
+# Bootstrap summaries of a model built with selection (Heinze, Wallisch &
+# Dunkler 2018): for each coefficient the share of fits in which it is not 0
+# (inclusion frequency), the bootstrap median and 2.5th-97.5th percentiles
+# (zeros of the fits that left it out included), the RMSD ratio (root mean
+# squared difference of the bootstrap estimates from the final one, over its
+# model-based SE) and the relative conditional bias (mean of the bootstrap
+# estimates where selected, over the final estimate, minus 1).
+# final: full-length coefficients (0 for terms left out); se: their SEs or NULL.
+cp_boot_coefs <- function(coefs, final, se = NULL) {
+    cols <- intersect(colnames(coefs), names(final))
+    do.call(rbind, lapply(cols, function(cn) {
+        b <- coefs[, cn]; b[is.na(b)] <- 0
+        est <- final[[cn]]
+        sel <- b != 0
+        q <- stats::quantile(b, c(0.5, 0.025, 0.975), names = FALSE)
+        data.frame(term = cn, est = est, median = q[1], lower = q[2], upper = q[3], incl = mean(sel),
+                   rmsd = if (!is.null(se) && is.finite(se[[cn]]) && se[[cn]] > 0) sqrt(mean((b - est)^2)) / se[[cn]] else NA_real_,
+                   relbias = if (any(sel) && est != 0) mean(b[sel]) / est - 1 else NA_real_,
+                   stringsAsFactors = FALSE)
+    }))
+}
+
+# The most frequent sets of selected terms among the bootstrap fits
+cp_model_freq <- function(sets, top = 10) {
+    sets <- sets[!is.na(sets)]
+    if (!length(sets)) return(NULL)
+    tab <- sort(table(sets), decreasing = TRUE)
+    k <- utils::head(names(tab), top)
+    data.frame(model = k, n = as.integer(tab[k]), pct = as.numeric(tab[k]) / length(sets),
+               cum = cumsum(as.numeric(tab[k])) / length(sets), stringsAsFactors = FALSE)
 }

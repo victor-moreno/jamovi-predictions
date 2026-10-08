@@ -97,12 +97,14 @@ cp_enet_path <- function(X, y, family, alpha = 0.5, pf = rep(1, ncol(X)), lambda
             eta <- b0 + drop(Z %*% b)
             wk <- .enet_work(family, y, eta)
             w <- wk$w / n
+            ZW <- Z * w
+            H <- crossprod(ZW, Z); g <- drop(crossprod(ZW, wk$z))
             if (intercept) {
-                # centre on the weighted means: the intercept is not penalised
-                zw <- sum(w * wk$z) / sum(w); xw <- colSums(Z * w) / sum(w)
-                Zc <- sweep(Z, 2, xw); zc <- wk$z - zw
-            } else { Zc <- Z; zc <- wk$z }
-            H <- crossprod(Zc * w, Zc); g <- drop(crossprod(Zc, w * zc))
+                # centred on the weighted means (the intercept is not penalised),
+                # algebraically: Z'WZ - sw xw xw', Z'Wz - sw xw zw
+                sw <- sum(w); xw <- colSums(ZW) / sw; zw <- sum(w * wk$z) / sw
+                H <- H - sw * tcrossprod(xw); g <- g - sw * xw * zw
+            }
             bNew <- .enet_cd(H, g, b, lam * alpha * pf, lam * (1 - alpha) * pf * ridgeScale)
             b0New <- if (intercept) zw - sum(xw * bNew) else 0
             done <- max(abs(bNew - b)) < tol && abs(b0New - b0) < tol
@@ -113,6 +115,7 @@ cp_enet_path <- function(X, y, family, alpha = 0.5, pf = rep(1, ncol(X)), lambda
     }
     # the largest useful lambda: every penalised column at 0 (unpenalised ones fitted)
     st <- fitStep(rep(0, p), if (family == "binary") stats::qlogis(mean(y)) else if (family == "gaussian") mean(y) else 0, 1e10)
+    stopEarly <- is.null(lambda)
     if (is.null(lambda)) {
         eta <- st$b0 + drop(Z %*% st$b)
         wk <- .enet_work(family, y, eta)
@@ -124,12 +127,21 @@ cp_enet_path <- function(X, y, family, alpha = 0.5, pf = rep(1, ncol(X)), lambda
     }
     B <- matrix(0, p, length(lambda)); B0 <- numeric(length(lambda))
     b <- st$b; b0 <- st$b0
+    devPrev <- NA_real_; last <- length(lambda)
     for (k in seq_along(lambda)) {
         f <- fitStep(b, b0, lambda[k])
         b <- f$b; b0 <- f$b0
         B[, k] <- b / sdv
         B0[k] <- b0 - sum(mu * b / sdv)
+        # a path computed here (not given) stops once the deviance hardly moves (as glmnet)
+        if (stopEarly) {
+            dev <- .enet_loss(family, y, b0 + drop(Z %*% b))
+            if (k >= 5 && is.finite(devPrev) && abs(devPrev - dev) < 1e-5 * abs(devPrev)) { last <- k; break }
+            devPrev <- dev
+        }
     }
+    keep <- seq_len(last)
+    B <- B[, keep, drop = FALSE]; B0 <- B0[keep]; lambda <- lambda[keep]
     dimnames(B) <- list(colnames(X), NULL)
     list(beta = B, a0 = B0, lambda = lambda)
 }

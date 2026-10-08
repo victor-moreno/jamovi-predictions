@@ -2,7 +2,7 @@
 name: cpLinear
 title: Continuous Outcome (Linear)
 menuGroup: Prediction
-version: '0.4.0'
+version: '0.4.1'
 jas: '1.2'
 weightsSupport: none
 
@@ -211,6 +211,27 @@ options:
               in bootstrap and cross-validation fits, choose λ again by
               cross-validation (honest, slower) instead of using the λ of the
               final model
+
+    - name: enetRelax
+      title: Refit the selected predictors without penalty (relaxed lasso)
+      type: Bool
+      default: false
+      description:
+          R: >-
+              the elastic net selects the predictors and an unpenalised model
+              refitted on them is the prediction model (repeated in every
+              resampled fit); its CIs do not account for the selection
+
+    - name: bootCoefs
+      title: Bootstrap inclusion and coefficients
+      type: Bool
+      default: false
+      description:
+          R: >-
+              with bootstrap validation: inclusion frequency, bootstrap median
+              and percentile interval, RMSD ratio and relative conditional bias of
+              each coefficient, and the most frequent selected models (Heinze,
+              Wallisch & Dunkler 2018)
 
     - name: incremental
       title: Incremental value over the baseline model

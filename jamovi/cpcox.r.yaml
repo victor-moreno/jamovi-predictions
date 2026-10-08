@@ -52,6 +52,7 @@ items:
         - enetRule
         - enetFolds
         - enetTune
+        - enetRelax
         - missMethod
         - miM
         - miIter
@@ -271,6 +272,7 @@ items:
         - enetRule
         - enetFolds
         - enetTune
+        - enetRelax
         - missMethod
         - miM
         - miIter
@@ -351,6 +353,7 @@ items:
         - enetRule
         - enetFolds
         - enetTune
+        - enetRelax
         - missMethod
         - miM
         - miIter
@@ -398,6 +401,7 @@ items:
         - enetRule
         - enetFolds
         - enetTune
+        - enetRelax
         - missMethod
         - miM
         - miIter
@@ -464,6 +468,7 @@ items:
         - enetRule
         - enetFolds
         - enetTune
+        - enetRelax
         - missMethod
         - miM
         - miIter
@@ -530,6 +535,7 @@ items:
         - enetRule
         - enetFolds
         - enetTune
+        - enetRelax
         - missMethod
         - miM
         - miIter
@@ -589,6 +595,130 @@ items:
           type: number
           superTitle: Optimism-corrected
           visible: false
+
+    - name: bootCoefTable
+      title: Bootstrap Coefficients (Selection Repeated)
+      type: Table
+      visible: false
+      clearWith:
+        - time
+        - status
+        - eventLevel
+        - horizon
+        - covs
+        - splineVars
+        - factors
+        - knots
+        - refLevels
+        - covScales
+        - interactions
+        - intAllPairs
+        - intMode
+        - intAlpha
+        - baseline
+        - selMode
+        - selCrit
+        - selAlpha
+        - enetAlpha
+        - enetRule
+        - enetFolds
+        - enetTune
+        - enetRelax
+        - missMethod
+        - miM
+        - miIter
+        - splitVar
+        - splitLevel
+        - validation
+        - nBoot
+        - nFolds
+        - nRepeats
+        - seed
+        - bootCoefs
+      columns:
+        - name: term
+          title: Coefficient
+          type: text
+        - name: est
+          title: Estimate
+          type: number
+        - name: median
+          title: Median
+          type: number
+          superTitle: Bootstrap
+        - name: lower
+          title: 2.5%
+          type: number
+          superTitle: Bootstrap
+        - name: upper
+          title: 97.5%
+          type: number
+          superTitle: Bootstrap
+        - name: incl
+          title: Inclusion
+          type: number
+          format: pc
+        - name: rmsd
+          title: RMSD ratio
+          type: number
+        - name: relbias
+          title: Rel. cond. bias
+          type: number
+
+    - name: modelFreqTable
+      title: Most Frequent Selected Models (Bootstrap)
+      type: Table
+      visible: false
+      clearWith:
+        - time
+        - status
+        - eventLevel
+        - horizon
+        - covs
+        - splineVars
+        - factors
+        - knots
+        - refLevels
+        - covScales
+        - interactions
+        - intAllPairs
+        - intMode
+        - intAlpha
+        - baseline
+        - selMode
+        - selCrit
+        - selAlpha
+        - enetAlpha
+        - enetRule
+        - enetFolds
+        - enetTune
+        - enetRelax
+        - missMethod
+        - miM
+        - miIter
+        - splitVar
+        - splitLevel
+        - validation
+        - nBoot
+        - nFolds
+        - nRepeats
+        - seed
+        - bootCoefs
+      columns:
+        - name: model
+          title: Terms selected
+          type: text
+        - name: n
+          title: Fits
+          type: integer
+        - name: pct
+          title: '%'
+          type: number
+          format: pc
+        - name: cum
+          title: Cumulative
+          type: number
+          format: pc
 
     - name: subTable
       title: Effects Within Subgroups
@@ -680,6 +810,7 @@ items:
         - enetRule
         - enetFolds
         - enetTune
+        - enetRelax
         - missMethod
         - miM
         - miIter
@@ -746,6 +877,7 @@ items:
         - enetRule
         - enetFolds
         - enetTune
+        - enetRelax
         - missMethod
         - miM
         - miIter
@@ -804,6 +936,7 @@ items:
         - enetRule
         - enetFolds
         - enetTune
+        - enetRelax
         - missMethod
         - miM
         - miIter
@@ -847,6 +980,7 @@ items:
         - enetRule
         - enetFolds
         - enetTune
+        - enetRelax
         - missMethod
         - miM
         - miIter
@@ -902,6 +1036,7 @@ items:
         - enetRule
         - enetFolds
         - enetTune
+        - enetRelax
         - missMethod
         - miM
         - miIter
@@ -955,6 +1090,7 @@ items:
         - enetRule
         - enetFolds
         - enetTune
+        - enetRelax
         - missMethod
         - miM
         - miIter
@@ -1004,6 +1140,7 @@ items:
         - enetRule
         - enetFolds
         - enetTune
+        - enetRelax
         - missMethod
         - miM
         - miIter
@@ -1080,6 +1217,7 @@ items:
             - enetRule
             - enetFolds
             - enetTune
+            - enetRelax
             - missMethod
             - miM
             - miIter
@@ -1119,6 +1257,7 @@ items:
             - enetRule
             - enetFolds
             - enetTune
+            - enetRelax
             - missMethod
             - miM
             - miIter
@@ -1157,6 +1296,7 @@ items:
             - enetRule
             - enetFolds
             - enetTune
+            - enetRelax
             - missMethod
             - miM
             - miIter
@@ -1222,6 +1362,7 @@ items:
             - enetRule
             - enetFolds
             - enetTune
+            - enetRelax
             - missMethod
             - miM
             - miIter
@@ -1259,6 +1400,7 @@ items:
             - enetRule
             - enetFolds
             - enetTune
+            - enetRelax
             - missMethod
             - miM
             - miIter
@@ -1300,6 +1442,7 @@ items:
             - enetRule
             - enetFolds
             - enetTune
+            - enetRelax
             - missMethod
             - miM
             - miIter

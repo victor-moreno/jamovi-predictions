@@ -79,3 +79,46 @@ test_that("the analyses select predictors with baseline covariates and report it
     rl <- cpLinear(data = d, dep = "sbp1y", covs = c("sbp", "bmi", "noise"), factors = "smoking", selMode = "backward")
     expect_null(rl$get("problem"))
 })
+
+test_that("bootstrap coefficient summaries are computed as Heinze et al. define them", {
+    coefs <- cbind(`(Intercept)` = c(1, 1.2, 0.8, 1), a = c(0.5, 0, 0.7, 0.6), b = c(0, 0, 0.2, 0))
+    final <- c(`(Intercept)` = 1, a = 0.6, b = 0); se <- c(`(Intercept)` = 0.1, a = 0.2, b = NA)
+    bc <- cp_boot_coefs(coefs, final, se)
+    expect_equal(bc$incl, c(1, 0.75, 0.25))
+    expect_equal(bc$median[2], median(c(0.5, 0, 0.7, 0.6)))
+    expect_equal(bc$lower[2], unname(quantile(c(0.5, 0, 0.7, 0.6), 0.025)))
+    expect_equal(bc$rmsd[2], sqrt(mean((c(0.5, 0, 0.7, 0.6) - 0.6)^2)) / 0.2)
+    expect_equal(bc$relbias[2], mean(c(0.5, 0.7, 0.6)) / 0.6 - 1)
+    expect_true(is.na(bc$relbias[3]) && is.na(bc$rmsd[3]))
+    mf <- cp_model_freq(c("a, b", "a", "a", NA))
+    expect_equal(mf$model[1], "a"); expect_equal(mf$pct[1], 2 / 3)
+})
+
+test_that("the relaxed lasso is the unpenalised refit of the kept terms; bootstrap tables and cautions appear", {
+    f <- test_path("..", "..", "data", "heart_cohort.omv"); skip_if_not(file.exists(f))
+    d <- jmvReadWrite::read_omv(f); set.seed(3); d$noise <- stats::rnorm(nrow(d))
+    src <- readLines(test_path("test-render.R"))
+    eval(parse(text = src[seq_len(grep("^test_that", src)[1] - 1)]))
+    r <- cpLogistic(data = d, dep = "event10", eventLevel = "yes", covs = c("sbp", "chol", "noise"), factors = c("sex", "smoking"),
+                    baseline = list(list(var = "sex", forced = TRUE)), selMode = "enet", enetRelax = TRUE, enetFolds = 5,
+                    validation = "boot", nBoot = 10, bootCoefs = TRUE, coefs = TRUE, oddsRatios = TRUE)
+    expect_null(r$get("problem"))
+    ct <- r$coefTable$asDF
+    kept <- r$selTable$asDF$var[r$selTable$asDF$status %in% c("kept", "baseline")]
+    dd <- d[stats::complete.cases(d[, c("event10", "sbp", "chol", "noise", "sex", "smoking")]), ]
+    g <- glm(stats::reformulate(kept, "event10"), binomial, dd)
+    expect_equal(sort(unname(ct$est)), sort(unname(coef(g))), tolerance = 1e-6)
+    expect_true(all(is.finite(ct$se)))
+    expect_match(r$coefTable$notes$post$note, "too narrow")
+    expect_match(r$selTable$notes$relax$note, "Relaxed lasso")
+    expect_gt(nrow(r$bootCoefTable$asDF), 3)
+    expect_gt(nrow(r$modelFreqTable$asDF), 0)
+    expect_equal(heading_problems(r), character(0))
+    rn <- cpLogistic(data = d, dep = "event10", eventLevel = "yes", covs = c("sbp", "noise"), selMode = "backward", bootCoefs = TRUE)
+    expect_match(rn$bootCoefTable$notes$need$note, "Bootstrap")
+    rm <- cpCox(data = d, time = "time", status = "status", eventLevel = "event", horizon = 5, covs = c("sbp", "chol", "noise"),
+                factors = "sex", selMode = "backward", missMethod = "mi", miM = 2, miIter = 2, validation = "boot", nBoot = 20,
+                bootCoefs = TRUE)
+    expect_null(rm$get("problem"))
+    expect_false("Intercept" %in% rm$bootCoefTable$asDF$term)
+})

@@ -73,7 +73,8 @@
         for (it in o$baseline) if (isTRUE(it$forced)) forced <- c(forced, it$var)
         list(mode = o$selMode, crit = o$selCrit, alpha = o$selAlpha,
              forced = intersect(forced, private$.preds()), intMode = o$intMode, intAlpha = o$intAlpha,
-             enetAlpha = o$enetAlpha, enetRule = o$enetRule, enetFolds = o$enetFolds, seed = o$seed)
+             enetAlpha = o$enetAlpha, enetRule = o$enetRule, enetFolds = o$enetFolds, seed = o$seed,
+             relax = isTRUE(o$enetRelax))
     },
     .selecting = function() {
         s <- private$.selOpts()
@@ -349,6 +350,7 @@
         iv <- private$.internal(XC, y, specC, attr(sel, "lambda"))
         if (length(cands)) private$.fillInt(XC, y, specC, sel, iv, conf, spec, beta)
         if (o$selMode != "none") private$.fillSel(sel, iv)
+        private$.postSelection(penalized, iv, beta, spec)
         private$.fillPerfDev(y, lp, iv, conf)
         for (k in names(vsets)) private$.fillPerfVal(k, vsets[[k]], conf)
         if (length(vsets)) private$.fillCaseMix(prep, X, y, lp, vsets)
@@ -552,6 +554,8 @@
         }
         if (o$selMode == "enet") {
             lam <- attr(sel, "lambda"); cv <- attr(sel, "cv")
+            if (isTRUE(attr(sel, "relaxed")))
+                t$setNote("relax", .("Relaxed lasso: the model is the unpenalised refit of the terms the elastic net kept (also in every resampled fit)."))
             t$setNote("how", sprintf(.("Elastic net, mixing α = %s, λ = %s (%s, %d-fold cross-validation); baseline covariates are not penalised. A predictor is kept when any of its coefficients is not shrunk to 0; all candidate interactions enter the penalised model."),
                                      .num(o$enetAlpha), .num(lam, 4),
                                      if (o$enetRule == "1se") .("largest within 1 SE of the minimum deviance") else .("minimum deviance"),
@@ -559,7 +563,7 @@
             if (identical(private$.famName, "cox"))
                 t$setNote("ties", .("The penalised Cox model uses Breslow's handling of tied times (the unpenalised one, Efron's)."))
             if (!is.null(iv)) t$setNote("res", if (o$enetTune)
-                .("λ is tuned again by cross-validation in every resampled fit, so the internal validation includes the tuning; the last column is the share of fits that kept the predictor.")
+                .("λ is tuned again by cross-validation in every resampled fit, so the internal validation includes the tuning (slow: untick it for a quick look); the last column is the share of fits that kept the predictor.")
                 else .("Resampled fits use the λ of the final model (the tuning itself is not validated); the last column is the share of fits that kept the predictor."))
             img <- self$results$plots$enetCv
             if (!is.null(cv) && is.null(img$state))
@@ -576,6 +580,51 @@
         t$setNote("test", .("χ², df, p: each predictor dropped from (if kept) or added to (if not) the final main-effects model; a factor or a spline is one term."))
         if (!is.null(iv))
             t$setNote("res", .("The selection is repeated in every resampled fit, so the internal validation includes its optimism; the last column is the share of fits that kept the predictor."))
+    },
+
+    # inference after selection: cautions, and the bootstrap coefficient tables
+    # (Heinze, Wallisch & Dunkler 2018) from the internal-validation bootstrap
+    .postSelection = function(penalized, iv, beta, spec) {
+        o <- self$options; r <- self$results
+        if (private$.selecting() && !penalized) {
+            txt <- .("The model was selected in these data: its confidence intervals and p values do not account for the selection, so they are too narrow (see the bootstrap coefficients).")
+            if (o$coefs) r$coefTable$setNote("post", txt)
+            if (o$oddsRatios) r$orTable$setNote("post", txt)
+            if (o$predTests) r$testTable$setNote("post", txt)
+            if (length(spec$interactions)) r$subTable$setNote("post", txt)
+        }
+        if (!o$bootCoefs) return()
+        t <- r$bootCoefTable; mt <- r$modelFreqTable
+        t$setVisible(TRUE)
+        if (is.null(iv) || iv$method != "boot" || is.null(iv$coefs)) {
+            t$setNote("need", .("Choose Internal validation: Bootstrap; the bootstrap fits repeat the whole procedure (selection, tuning)."))
+            return()
+        }
+        full <- stats::setNames(numeric(ncol(iv$coefs)), colnames(iv$coefs))
+        full[intersect(names(beta), names(full))] <- beta[intersect(names(beta), names(full))]
+        se <- NULL
+        V <- private$.vcov(beta)
+        if (!is.null(V)) {
+            se <- stats::setNames(rep(NA_real_, length(full)), names(full))
+            se[names(beta)] <- sqrt(pmax(0, diag(V)))
+        }
+        bc <- cp_boot_coefs(iv$coefs, full, se)
+        if (identical(private$.famName, "cox")) bc <- bc[bc$term != "(Intercept)", ]
+        for (i in seq_len(nrow(bc)))
+            private$.putRow(t, bc$term[i], list(term = if (bc$term[i] == "(Intercept)") .("Intercept") else bc$term[i],
+                est = bc$est[i], median = bc$median[i], lower = bc$lower[i], upper = bc$upper[i], incl = bc$incl[i],
+                rmsd = bc$rmsd[i], relbias = bc$relbias[i]))
+        t$setNote("ex", sprintf(.("%d bootstrap fits, each repeating the whole procedure. Median and 2.5th-97.5th percentiles count a coefficient left out of a fit as 0; inclusion: share of fits with the coefficient not 0. RMSD ratio: root mean squared difference of the bootstrap estimates from the final one, over its model-based SE (above 1: the selection adds variability the SE ignores). Relative conditional bias: mean estimate where selected over the final estimate, minus 1 (Heinze, Wallisch & Dunkler 2018)."),
+                                nrow(iv$coefs)))
+        t$setNote("cave", .("Percentile intervals describe the variability of the whole procedure; they are not exact confidence intervals, least of all for coefficients often shrunk or selected to 0."))
+        mf <- cp_model_freq(iv$sets)
+        if (!is.null(mf)) {
+            mt$setVisible(TRUE)
+            for (i in seq_len(nrow(mf)))
+                private$.putRow(mt, paste0("m", i), list(model = mf$model[i], n = mf$n[i], pct = mf$pct[i], cum = mf$cum[i]))
+            mt$setNote("ex", sprintf(.("The %d most frequent sets of selected terms among the bootstrap fits (%d distinct sets)."),
+                                     nrow(mf), length(unique(stats::na.omit(iv$sets)))))
+        }
     },
 
     # how each predictor enters the equation (scaling, dummies, spline basis)
