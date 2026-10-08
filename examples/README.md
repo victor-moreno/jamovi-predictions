@@ -51,6 +51,8 @@ patients with smoking `unknown`, systolic pressures above the development range,
      slope ≈ 0.80; the closed testing procedure chooses recalibration). The variable check lists
      the renamed columns, the unknown smoking level and the out-of-range pressures; the case-mix
      table shows the membership c-statistic (≈ 0.54 split, ≈ 0.70 external).
+   - *Missing Values*: the exploration shows `bmi` and `chol` missing (≈ 3 % and 2 %); compare
+     complete cases with the missing category, single and multiple imputation.
    - *Clinical Utility*, *Variable Importance*, *Plots*, *Save*: all of them;
      *Export model (JSON)* writes a file for step 4.
 2. **Continuous Outcome (Linear)**: Outcome `sbp1y`; covariates `sbp`, `bmi`; spline `age`; factors

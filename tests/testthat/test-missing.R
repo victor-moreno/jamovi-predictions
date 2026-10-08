@@ -69,3 +69,43 @@ test_that("Rubin's rules and the D1 test equal mice on the same fits", {
     expect_equal(d1[["df2"]], md[1, "df2"], tolerance = 1e-6, ignore_attr = TRUE)
     expect_equal(d1[["p"]], md[1, "P(>F)"], tolerance = 1e-8, ignore_attr = TRUE)
 })
+
+test_that("the analyses handle missing values: category, single and multiple imputation", {
+    f <- test_path("..", "..", "data", "heart_cohort.omv"); skip_if_not(file.exists(f))
+    d <- jmvReadWrite::read_omv(f)
+    ext <- list(path = test_path("..", "..", "examples", "heart_external.csv"), filename = "ext.csv")
+    src <- readLines(test_path("test-render.R"))
+    eval(parse(text = src[seq_len(grep("^test_that", src)[1] - 1)]))
+    args <- list(data = d, dep = "event10", eventLevel = "yes", covs = c("sbp", "chol", "bmi"), factors = c("sex", "smoking"),
+                 splitVar = "period", splitLevel = "2017-2019", extFile = ext, missExplore = TRUE, coefs = TRUE, predTests = TRUE)
+    r <- do.call(cpLogistic, c(args, list(missMethod = "category")))
+    expect_null(r$get("problem"))
+    expect_true("bmi (missing)" %in% r$coefTable$asDF$term)
+    expect_equal(r$samples$asDF$n, c(1600, 800, 988))
+    expect_equal(heading_problems(r), character(0))
+    r <- do.call(cpLogistic, c(args, list(missMethod = "single", updating = TRUE)))
+    expect_null(r$get("problem"))
+    expect_equal(r$samples$asDF$n, c(1600, 800, 1000))
+    expect_equal(nrow(r$updTable$asDF), 8)
+    # multiple imputation: pooled coefficients are Rubin's rules over glm fits of the same imputations
+    opts <- do.call(cpLogisticOptions$new, c(args[-1], list(missMethod = "mi", miM = 3, miIter = 3)))
+    an <- cpLogisticClass$new(options = opts, data = d, datasetId = "d", analysisId = "1", revision = 1)
+    an$init(); an$run()
+    rm <- an$results
+    expect_null(rm$get("problem"))
+    imps <- an$.__enclos_env__$private$.impSet(d[d$period == "2012-2016", ], 3, 1234)
+    fits <- lapply(imps, function(im) glm(event10 ~ sbp + chol + bmi + sex + smoking, binomial, im))
+    pool <- cp_rubin(lapply(fits, coef), lapply(fits, vcov))
+    expect_equal(rm$coefTable$asDF$est, unname(pool$est), tolerance = 1e-6)
+    expect_equal(rm$coefTable$asDF$se, unname(sqrt(diag(pool$vcov))), tolerance = 1e-5)
+    expect_equal(heading_problems(rm), character(0))
+    jmvcore:::initProtoBuf()
+    expect_gt(length(RProtoBuf::serialize(an$asProtoBuf(final = FALSE, includeState = TRUE), NULL)), 1000)
+    rl <- cpLinear(data = d, dep = "sbp1y", covs = c("sbp", "bmi"), factors = "smoking", missMethod = "mi", miM = 2, miIter = 2,
+                   validation = "cv", nFolds = 3, nRepeats = 1, shapley = TRUE)
+    expect_null(rl$get("problem"))
+    rc <- cpCox(data = d, time = "time", status = "status", eventLevel = "event", horizon = 5, covs = c("chol", "bmi"),
+                factors = "sex", missMethod = "mi", miM = 2, miIter = 2, kmPlot = TRUE, dca = TRUE)
+    expect_null(rc$get("problem"))
+    expect_equal(heading_problems(rc), character(0))
+})

@@ -69,7 +69,7 @@ cp_miss_category_apply <- function(h, data) {
         if (is.null(data[[v]])) next
         x <- as.character(data[[v]])
         x[is.na(x)] <- "(missing)"
-        lev <- if (is.factor(data[[v]])) levels(data[[v]]) else sort(unique(x[x != "(missing)"]))
+        lev <- setdiff(if (is.factor(data[[v]])) levels(data[[v]]) else sort(unique(x)), "(missing)")
         data[[v]] <- factor(x, c(lev, "(missing)"))
     }
     data

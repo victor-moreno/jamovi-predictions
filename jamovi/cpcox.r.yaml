@@ -52,6 +52,9 @@ items:
         - enetRule
         - enetFolds
         - enetTune
+        - missMethod
+        - miM
+        - miIter
         - splitVar
         - splitLevel
         - extFile
@@ -121,6 +124,90 @@ items:
           type: text
           visible: false
 
+    - name: missTable
+      title: Missing Values (Development Data)
+      type: Table
+      visible: (missExplore)
+      clearWith:
+        - time
+        - status
+        - eventLevel
+        - horizon
+        - covs
+        - splineVars
+        - factors
+        - splitVar
+        - splitLevel
+      columns:
+        - name: var
+          title: Variable
+          type: text
+        - name: role
+          title: Role
+          type: text
+        - name: n
+          title: Missing
+          type: integer
+        - name: pct
+          title: '%'
+          type: number
+          format: pc
+        - name: a_pct
+          title: Group 0
+          type: number
+          format: pc
+          superTitle: '% missing'
+          visible: false
+        - name: b_pct
+          title: Group 1
+          type: number
+          format: pc
+          superTitle: '% missing'
+          visible: false
+        - name: a_mean
+          title: Observed
+          type: number
+          superTitle: Outcome mean when the variable is
+          visible: false
+        - name: b_mean
+          title: Missing
+          type: number
+          superTitle: Outcome mean when the variable is
+          visible: false
+        - name: p
+          title: p
+          type: number
+          format: zto,pvalue
+
+    - name: missPatterns
+      title: Missing Value Patterns
+      type: Table
+      visible: (missExplore)
+      clearWith:
+        - time
+        - status
+        - eventLevel
+        - horizon
+        - covs
+        - splineVars
+        - factors
+        - splitVar
+        - splitLevel
+      columns:
+        - name: pattern
+          title: Missing
+          type: text
+        - name: nvars
+          title: Variables
+          type: integer
+        - name: n
+          title: Rows
+          type: integer
+        - name: pct
+          title: '%'
+          type: number
+          format: pc
+
     - name: descTable
       title: Descriptives (Development Data)
       type: Table
@@ -184,6 +271,9 @@ items:
         - enetRule
         - enetFolds
         - enetTune
+        - missMethod
+        - miM
+        - miIter
         - splitVar
         - splitLevel
         - ciWidth
@@ -261,6 +351,9 @@ items:
         - enetRule
         - enetFolds
         - enetTune
+        - missMethod
+        - miM
+        - miIter
         - splitVar
         - splitLevel
       columns:
@@ -305,6 +398,9 @@ items:
         - enetRule
         - enetFolds
         - enetTune
+        - missMethod
+        - miM
+        - miIter
         - splitVar
         - splitLevel
         - validation
@@ -368,6 +464,9 @@ items:
         - enetRule
         - enetFolds
         - enetTune
+        - missMethod
+        - miM
+        - miIter
         - splitVar
         - splitLevel
         - validation
@@ -431,6 +530,9 @@ items:
         - enetRule
         - enetFolds
         - enetTune
+        - missMethod
+        - miM
+        - miIter
         - splitVar
         - splitLevel
         - validation
@@ -578,6 +680,9 @@ items:
         - enetRule
         - enetFolds
         - enetTune
+        - missMethod
+        - miM
+        - miIter
         - splitVar
         - splitLevel
         - validation
@@ -641,6 +746,9 @@ items:
         - enetRule
         - enetFolds
         - enetTune
+        - missMethod
+        - miM
+        - miIter
         - splitVar
         - splitLevel
         - extFile
@@ -696,6 +804,9 @@ items:
         - enetRule
         - enetFolds
         - enetTune
+        - missMethod
+        - miM
+        - miIter
         - splitVar
         - splitLevel
         - validation
@@ -736,6 +847,9 @@ items:
         - enetRule
         - enetFolds
         - enetTune
+        - missMethod
+        - miM
+        - miIter
         - splitVar
         - splitLevel
         - extFile
@@ -788,6 +902,9 @@ items:
         - enetRule
         - enetFolds
         - enetTune
+        - missMethod
+        - miM
+        - miIter
         - splitVar
         - splitLevel
         - validation
@@ -838,6 +955,9 @@ items:
         - enetRule
         - enetFolds
         - enetTune
+        - missMethod
+        - miM
+        - miIter
         - splitVar
         - splitLevel
         - shapleyMeasure
@@ -884,6 +1004,9 @@ items:
         - enetRule
         - enetFolds
         - enetTune
+        - missMethod
+        - miM
+        - miIter
         - splitVar
         - splitLevel
         - extFile
@@ -957,6 +1080,9 @@ items:
             - enetRule
             - enetFolds
             - enetTune
+            - missMethod
+            - miM
+            - miIter
             - splitVar
             - splitLevel
             - extFile
@@ -993,6 +1119,9 @@ items:
             - enetRule
             - enetFolds
             - enetTune
+            - missMethod
+            - miM
+            - miIter
             - splitVar
             - splitLevel
             - extFile
@@ -1028,6 +1157,9 @@ items:
             - enetRule
             - enetFolds
             - enetTune
+            - missMethod
+            - miM
+            - miIter
             - splitVar
             - splitLevel
             - extFile
@@ -1090,6 +1222,9 @@ items:
             - enetRule
             - enetFolds
             - enetTune
+            - missMethod
+            - miM
+            - miIter
             - splitVar
             - splitLevel
             - shapRow
@@ -1124,6 +1259,9 @@ items:
             - enetRule
             - enetFolds
             - enetTune
+            - missMethod
+            - miM
+            - miIter
             - splitVar
             - splitLevel
             - validation
@@ -1162,6 +1300,9 @@ items:
             - enetRule
             - enetFolds
             - enetTune
+            - missMethod
+            - miM
+            - miIter
             - splitVar
             - splitLevel
             - validation

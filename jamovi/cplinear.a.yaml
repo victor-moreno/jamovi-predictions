@@ -2,7 +2,7 @@
 name: cpLinear
 title: Continuous Outcome (Linear)
 menuGroup: Prediction
-version: '0.3.0'
+version: '0.4.0'
 jas: '1.2'
 weightsSupport: none
 
@@ -222,6 +222,45 @@ options:
               full model: differences in performance (apparent, optimism-corrected
               and in validation data), LR test of the added predictors,
               reclassification and net benefit
+
+    - name: missExplore
+      title: Missing values (exploration)
+      type: Bool
+      default: false
+
+    - name: missMethod
+      title: Missing values
+      type: List
+      options:
+        - name: cc
+          title: Complete cases
+        - name: category
+          title: Missing category / indicator
+        - name: single
+          title: Single imputation
+        - name: mi
+          title: Multiple imputation
+      default: cc
+      description:
+          R: >-
+              `'cc'` (complete cases), `'category'` (a '(missing)' level for
+              factors; for numeric predictors an indicator and the development
+              median), `'single'` or `'mi'` (imputation by chained equations with
+              predictive mean matching)
+
+    - name: miM
+      title: Imputations
+      type: Integer
+      min: 2
+      max: 100
+      default: 10
+
+    - name: miIter
+      title: Iterations
+      type: Integer
+      min: 1
+      max: 50
+      default: 10
 
     - name: interactions
       title: Interaction terms

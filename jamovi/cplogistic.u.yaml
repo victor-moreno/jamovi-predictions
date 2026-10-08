@@ -202,6 +202,26 @@ children:
             name: incremental
 
   - type: CollapseBox
+    label: Missing Values
+    collapsed: true
+    children:
+      - type: LayoutBox
+        margin: large
+        children:
+          - type: CheckBox
+            name: missExplore
+          - type: ComboBox
+            name: missMethod
+          - type: TextBox
+            name: miM
+            format: number
+            enable: (missMethod:mi)
+          - type: TextBox
+            name: miIter
+            format: number
+            enable: (missMethod:mi || missMethod:single)
+
+  - type: CollapseBox
     label: Interactions
     collapsed: true
     stretchFactor: 1

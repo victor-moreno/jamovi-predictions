@@ -61,7 +61,7 @@ cp_read_external <- function(path, filename = path) {
 # Harmonise validation data to the spec. Returns the data (outcome + predictors,
 # complete cases) and a check table with one row per variable.
 # outcomeCols: names of the outcome columns in the spec (family-specific)
-cp_harmonise <- function(ext, spec, outcomeCols, setName) {
+cp_harmonise <- function(ext, spec, outcomeCols, setName, complete = TRUE) {
     avail <- names(ext)
     rows <- list()
     out <- data.frame(row.names = seq_len(nrow(ext)))
@@ -141,14 +141,15 @@ cp_harmonise <- function(ext, spec, outcomeCols, setName) {
               paste0("'", missingCols, "'", collapse = ", "),
               if (length(missingCols) == 1) " is" else " are",
               " not in the validation data. Rename the columns to the names used in the development data.")
-    complete <- stats::complete.cases(out)
-    list(data = out[complete, , drop = FALSE], check = check, nMissing = sum(!complete),
+    # complete = FALSE keeps incomplete rows (for a missing-data method to fill)
+    keep <- if (complete) stats::complete.cases(out) else rep(TRUE, nrow(out))
+    list(data = out[keep, , drop = FALSE], check = check, nMissing = sum(!keep),
          nTotal = nrow(ext))
 }
 
 # Validation rows of the current data defined by a split variable. The data are
 # already of the right types (jamovi), but levels must match the spec.
-cp_split_data <- function(data, spec, outcomeCols) {
+cp_split_data <- function(data, spec, outcomeCols, complete = TRUE) {
     out <- data.frame(row.names = rownames(data))
     for (v in outcomeCols) {
         x <- data[[v]]
@@ -160,9 +161,9 @@ cp_split_data <- function(data, spec, outcomeCols) {
         out[[info$name]] <- if (info$role == "factor")
             factor(as.character(x), levels = info$levels) else as.numeric(x)
     }
-    complete <- stats::complete.cases(out)
-    list(data = out[complete, , drop = FALSE], nMissing = sum(!complete), nTotal = nrow(data),
-         rows = rownames(data)[complete])
+    keep <- if (complete) stats::complete.cases(out) else rep(TRUE, nrow(out))
+    list(data = out[keep, , drop = FALSE], nMissing = sum(!keep), nTotal = nrow(data),
+         rows = rownames(data)[keep])
 }
 
 # Case-mix: per predictor, mean (SD) or level percentages in each data set

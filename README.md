@@ -31,6 +31,12 @@ Needs **jamovi 28.4 or later**.
   measure (apparent, optimism-corrected on the same resamples, and in validation data), ΔAUC
   (paired DeLong) or ΔC with confidence intervals, LR or F test of the added predictors, NRI and
   IDI, Δ net benefit and overlaid decision curves.
+- **Missing values**: an exploration table (missing by variable, by outcome group, with tests)
+  and the patterns; complete cases, a missing category / indicator, single imputation, or
+  **multiple imputation** by chained equations (predictive mean matching, written in pure R;
+  the outcome in the imputation models): coefficients pooled by Rubin's rules, tests by pooled
+  Wald (D1), selection by majority over imputations, performance averaged and optimism estimated
+  within each imputation (Wahl et al. 2016); validation data imputed separately.
 - **Interactions**, two ways: listed in an interaction builder, or all pairs of
   predictors as candidates.
   - A screening table gives each candidate added alone (LR χ², ΔAIC, ΔBIC).
@@ -126,8 +132,8 @@ to open from the analyses. In the Data Library too:
   (`survival::gbsg`) as in Royston & Altman (2013); for external validation load
   [`examples/gbsg_external.csv`](examples/gbsg_external.csv).
 
-Planned: model updating for Cox, penalised regression and machine-learning learners through the
-same validation pipeline, and Spanish and Catalan translations.
+Planned: model updating for Cox, machine-learning learners through the same validation pipeline,
+and Spanish and Catalan translations.
 
 ## Install
 
@@ -149,7 +155,8 @@ R. D. Riley and colleagues' work on sample size and stability. The results are c
 [rms](https://cran.r-project.org/package=rms), [pROC](https://cran.r-project.org/package=pROC),
 [Hmisc](https://cran.r-project.org/package=Hmisc),
 [survival](https://cran.r-project.org/package=survival) (T. Therneau),
-[timeROC](https://cran.r-project.org/package=timeROC),
+[timeROC](https://cran.r-project.org/package=timeROC), [glmnet](https://cran.r-project.org/package=glmnet),
+[mice](https://cran.r-project.org/package=mice),
 [relaimpo](https://cran.r-project.org/package=relaimpo) and
 [pmsampsize](https://cran.r-project.org/package=pmsampsize). Data from the R packages
 [MASS](https://cran.r-project.org/package=MASS) (Venables & Ripley) and survival. Designed and

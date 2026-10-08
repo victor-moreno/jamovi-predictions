@@ -175,6 +175,7 @@
         }
 
         if (self$options$incremental) private$.initInc(sets)
+        if (self$options$missExplore) private$.initMiss()
         private$.initExtras(sets)
         if (self$options$sampleSize) {
             crit <- private$.ssRows()
@@ -264,10 +265,24 @@
             if (!any(isVal)) .fail("No row has ", o$splitVar, " = ", sl, ".")
         }
         if (o$descTable) private$.fillDesc(data[isDev, , drop = FALSE])
+        if (o$missExplore) private$.fillMiss(data[isDev, , drop = FALSE])
+        if (o$missMethod == "mi") return(private$.analyseMI(data, isDev, isVal, sets, conf))
         cands <- private$.candidates()
-        prep <- cp_prepare(data[isDev, , drop = FALSE], outVars, o$covs, o$splineVars, o$factors, o$knots,
+        # missing values: complete cases, missing category / indicator, or single imputation
+        devData <- data[isDev, , drop = FALSE]
+        covs <- o$covs
+        private$.mh <- NULL
+        if (o$missMethod == "category") {
+            private$.mh <- cp_miss_category(devData, c(o$covs, o$splineVars), o$factors)
+            devData <- cp_miss_category_apply(private$.mh, devData)
+            covs <- c(covs, unname(private$.mh$indicator))
+        } else if (o$missMethod == "single") {
+            private$.nImputed <- private$.countImputed(devData)
+            devData <- private$.impSet(devData, 1, o$seed)[[1]]
+        }
+        prep <- cp_prepare(devData, outVars, covs, o$splineVars, o$factors, o$knots,
                            refLevels = private$.refs(), scales = private$.scales(), interactions = cands)
-        prep$nMissing <- prep$nMissing + sum(!isDev & !isVal)
+        prep$nMissing <- prep$nMissing + sum(isDev) - nrow(devData) + sum(!isDev & !isVal)
         prep <- private$.setOutcome(prep)
         fam <- private$.fam <- private$.makeFamily(prep)
         private$.devData <- prep$data
@@ -300,23 +315,28 @@
 
         # validation data sets, each with X, y, lp, p
         vsets <- list()
+        cc <- o$missMethod == "cc"
+        specRaw <- private$.specRaw(spec)
         if (any(isVal)) {
-            sd <- cp_split_data(data[isVal, , drop = FALSE], spec, outVars)
-            vsets$split <- private$.valSet(sd$data, spec, beta, "split")
-            vsets$split$nMissing <- sd$nMissing
+            sd <- cp_split_data(data[isVal, , drop = FALSE], specRaw, outVars, complete = cc)
+            sd2 <- cp_split_data(private$.missVal(sd$data), spec, outVars)
+            vsets$split <- private$.valSet(sd2$data, spec, beta, "split")
+            vsets$split$nMissing <- sum(isVal) - nrow(sd2$data)
         }
         if (!is.null(o$extFile)) {
             ext <- cp_read_external(o$extFile$path, o$extFile$filename %||% o$extFile$path)
-            h <- cp_harmonise(ext, spec, outVars, sets[["ext"]])
+            h <- cp_harmonise(ext, specRaw, outVars, sets[["ext"]], complete = cc)
             for (i in seq_len(nrow(h$check)))
                 r$extCheck$setRow(rowKey = h$check$var[i],
                                   values = list(role = h$check$role[i], status = h$check$status[i],
                                                 details = h$check$details[i]))
-            vsets$ext <- private$.valSet(h$data, spec, beta, "ext")
-            vsets$ext$nMissing <- h$nMissing
+            e2 <- cp_split_data(private$.missVal(h$data), spec, outVars)
+            vsets$ext <- private$.valSet(e2$data, spec, beta, "ext")
+            vsets$ext$nMissing <- h$nTotal - nrow(e2$data)
         }
 
         private$.fillSamples(y, prep$nMissing, vsets)
+        private$.missNote()
         if (length(spec$outcome$levels) > 2)
             r$samples$setNote("lev", sprintf(.("The outcome has %d levels: '%s' is modelled against all the others combined."),
                                              length(spec$outcome$levels), spec$outcome$event))
@@ -412,12 +432,12 @@
         if (is.null(V)) t$setNote("pen", .("Penalised (elastic net) estimates: they have no standard errors, confidence intervals or p values; their uncertainty is in the internal validation."))
     },
 
-    .fillOR = function(spec, beta, prep, y, lrt, conf) {
+    .fillOR = function(spec, beta, prep, y, lrt, conf, crude = NULL) {
         t <- self$results$orTable
         fam <- private$.fam
         adj <- cp_effects(spec, beta, private$.vcov(beta), conf, exp = fam$exp, df = fam$dfResid(beta))
         # crude effects for every candidate predictor; adjusted ones for those in the model
-        cr <- if (self$options$crude) cp_crude(prep$spec, prep$data, y, fam, conf) else NULL
+        cr <- if (self$options$crude) crude %||% cp_crude(prep$spec, prep$data, y, fam, conf) else NULL
         pAdj <- if (is.null(lrt)) list() else as.list(stats::setNames(lrt$p, lrt$key))
         ref <- if (fam$exp) 1 else 0
         for (info in prep$spec$vars) {
@@ -606,10 +626,11 @@
         iv
     },
 
-    .fillPerfDev = function(y, lp, iv, conf) {
+    # app: apparent measures already averaged over imputations (no CIs then)
+    .fillPerfDev = function(y, lp, iv, conf, app = NULL) {
         t <- self$results$perfDev
-        app <- private$.fam$metrics(y, lp)
-        ci <- private$.fam$ci(y, lp, conf)
+        ci <- if (is.null(app)) private$.fam$ci(y, lp, conf) else list()
+        app <- app %||% private$.fam$metrics(y, lp)
         for (k in t$rowKeys) {
             # apparent calibration-in-the-large is 0 by construction; print it as 0, not as rounding noise
             a <- if (abs(app[[k]]) < 1e-8) 0 else app[[k]]
@@ -631,8 +652,14 @@
 
     .fillPerfVal = function(key, vs, conf) {
         t <- self$results$perfVal
-        m <- private$.fam$metrics(vs$y, vs$lp)
-        ci <- private$.fam$ci(vs$y, vs$lp, conf)
+        # multiple imputation: averaged over the imputations, no CIs
+        if (!is.null(vs$lps)) {
+            m <- rowMeans(vapply(vs$lps, function(l) private$.fam$metrics(vs$y, l), private$.fam$metrics(vs$y, vs$lps[[1]])))
+            ci <- list()
+        } else {
+            m <- private$.fam$metrics(vs$y, vs$lp)
+            ci <- private$.fam$ci(vs$y, vs$lp, conf)
+        }
         for (k in names(m)) {
             rk <- paste(key, k)
             if (!(rk %in% t$rowKeys)) next
@@ -847,10 +874,117 @@
         print(cp_plot_dca(image$state, ggtheme)); TRUE
     },
 
-    # the covariance of the coefficients; none for a penalised model
-    .vcov = function(beta) if (isTRUE(attr(beta, "penalized"))) NULL else private$.fam$vcov(beta),
+    # ---- missing values ----------------------------------------------------
+    .mh = NULL,
+    .nImputed = 0,
 
-    .fillShapley = function(X, y, spec, penalized = FALSE) {
+    # rows (with the outcome) in which at least one predictor is missing
+    .countImputed = function(dd) {
+        out <- private$.outcomeVars(); pr <- intersect(private$.preds(), names(dd))
+        ok <- stats::complete.cases(dd[, out, drop = FALSE])
+        sum(ok & !stats::complete.cases(dd[, pr, drop = FALSE]))
+    },
+
+    # the spec without the missing indicators (they are made from the data, not read)
+    .specRaw = function(spec) {
+        if (is.null(private$.mh) || !length(private$.mh$indicator)) return(spec)
+        s <- spec; s$vars <- spec$vars[setdiff(names(spec$vars), private$.mh$indicator)]
+        s
+    },
+
+    # validation data under the missing-data method (indicators with the
+    # development medians, or their own single imputation)
+    .missVal = function(df) switch(self$options$missMethod,
+        category = cp_miss_category_apply(private$.mh, df),
+        single = private$.impSet(df, 1, self$options$seed + 1)[[1]],
+        df),
+
+    # m imputed copies of the rows with the outcome; the outcome (for Cox, the
+    # event and its Nelson-Aalen cumulative hazard; White & Royston 2009) is in
+    # every imputation model
+    .impSet = function(dd, m, seed) {
+        o <- self$options
+        outVars <- private$.outcomeVars()
+        preds <- intersect(private$.preds(), names(dd))
+        d <- dd[, c(outVars, preds), drop = FALSE]
+        for (v in intersect(c(o$covs, o$splineVars), preds)) {
+            x <- d[[v]]; d[[v]] <- if (is.factor(x)) suppressWarnings(as.numeric(as.character(x))) else as.numeric(x)
+        }
+        for (v in intersect(o$factors, preds)) d[[v]] <- factor(d[[v]], ordered = FALSE)
+        d <- d[stats::complete.cases(d[, outVars, drop = FALSE]), , drop = FALSE]
+        if (identical(private$.famName, "cox")) {
+            tm <- as.numeric(d[[o$time]])
+            st <- as.integer(as.character(d[[o$status]]) == private$.level(o$status, o$eventLevel))
+            ut <- sort(unique(tm[st == 1]))
+            na <- cumsum(tabulate(match(tm[st == 1], ut), length(ut)) / (length(tm) - findInterval(ut, sort(tm), left.open = TRUE)))
+            d[[".H"]] <- c(0, na)[findInterval(tm, ut) + 1]
+            d[[o$time]] <- NULL
+            imps <- cp_impute(d, preds, m = m, maxit = o$miIter, seed = seed)
+            return(lapply(imps, function(x) { x[[o$time]] <- tm; x[[".H"]] <- NULL; x }))
+        }
+        if (identical(private$.famName, "gaussian")) d[[outVars]] <- jmvcore::toNumeric(d[[outVars]])
+        cp_impute(d, preds, m = m, maxit = o$miIter, seed = seed)
+    },
+
+    .missNote = function() {
+        o <- self$options
+        t <- self$results$samples
+        if (o$missMethod == "category" && !is.null(private$.mh) && length(c(private$.mh$num, private$.mh$fac)))
+            t$setNote("miss", sprintf(.("Missing values: a '(missing)' level for %s; for %s, the development median and an indicator predictor."),
+                                      if (length(private$.mh$fac)) paste(private$.mh$fac, collapse = ", ") else "—",
+                                      if (length(private$.mh$num)) paste(private$.mh$num, collapse = ", ") else "—"))
+        if (o$missMethod == "single")
+            t$setNote("miss", sprintf(.("Missing predictor values imputed once by chained equations (predictive mean matching, %d iterations; the outcome in the imputation models): %d development rows. Validation data are imputed in the same way, separately. Rows with a missing outcome are excluded."),
+                                      o$miIter, private$.nImputed))
+    },
+
+    .initMiss = function() {
+        t <- self$results$missTable
+        for (v in private$.outcomeVars()) t$addRow(rowKey = v, values = list(var = v, role = .("Outcome")))
+        for (v in private$.preds()) t$addRow(rowKey = v, values = list(var = v, role = .("Predictor")))
+        if (identical(private$.famName, "gaussian")) {
+            for (cn in c("a_mean", "b_mean")) t$getColumn(cn)$setVisible(TRUE)
+        } else {
+            for (cn in c("a_pct", "b_pct")) t$getColumn(cn)$setVisible(TRUE)
+            cox <- identical(private$.famName, "cox")
+            t$getColumn("a_pct")$setTitle(if (cox) .("Censored") else .("Non-events"))
+            t$getColumn("b_pct")$setTitle(if (cox) .("Events") else .("Events"))
+        }
+    },
+
+    .fillMiss = function(dd) {
+        o <- self$options
+        outVars <- private$.outcomeVars()
+        g <- if (identical(private$.famName, "gaussian")) jmvcore::toNumeric(dd[[o$dep]]) else {
+            sv <- if (identical(private$.famName, "cox")) o$status else o$dep
+            ev <- private$.level(sv, if (identical(private$.famName, "cox")) o$eventLevel else o$eventLevel)
+            x <- as.character(dd[[sv]]); ifelse(is.na(x), NA, as.integer(x == ev))
+        }
+        ex <- cp_miss_explore(dd, c(outVars, private$.preds()), g, identical(private$.famName, "gaussian"))
+        t <- self$results$missTable
+        for (i in seq_len(nrow(ex))) {
+            isOut <- ex$var[i] %in% outVars
+            private$.putRow(t, ex$var[i], list(n = ex$n[i], pct = ex$pct[i],
+                a_pct = if (isOut) "" else ex$a[i], b_pct = if (isOut) "" else ex$b[i],
+                a_mean = if (isOut) "" else ex$a[i], b_mean = if (isOut) "" else ex$b[i], p = if (isOut) "" else ex$p[i]))
+        }
+        t$setNote("ex", if (identical(private$.famName, "gaussian"))
+            .("Outcome mean in the rows where the predictor is observed and where it is missing (Welch's t test): a difference means that missingness depends on the outcome (not missing completely at random).")
+            else .("Share of rows with the predictor missing among non-events and events (chi-square test): a difference means that missingness depends on the outcome (not missing completely at random)."))
+        pt <- cp_miss_patterns(dd, c(outVars, private$.preds()))
+        tp <- self$results$missPatterns
+        for (i in seq_len(nrow(pt)))
+            private$.putRow(tp, paste0("p", i), list(pattern = if (pt$pattern[i] == "(complete)") .("none (complete)") else pt$pattern[i],
+                                                     nvars = pt$nvars[i], n = pt$n[i], pct = pt$pct[i]))
+        tp$setNote("ex", .("The most frequent combinations of missing variables in the development rows (at most 10)."))
+    },
+
+    # the covariance of the coefficients; none for a penalised model
+    .vcov = function(beta) if (isTRUE(attr(beta, "penalized"))) NULL else
+        if (!is.null(attr(beta, "pool"))) attr(beta, "pool")$vcov else private$.fam$vcov(beta),
+
+    # Xs: design matrices of the imputed data sets (the decomposition is averaged)
+    .fillShapley = function(X, y, spec, penalized = FALSE, Xs = NULL) {
         t <- self$results$shapleyTable
         if (penalized) {
             t$setNote("tot", .("The Shapley decomposition refits unpenalised models for every subset of predictors, so it does not describe a penalised (elastic net) model; use SHAP or permutation importance."))
@@ -860,11 +994,19 @@
         # the linear analysis has a single R² (no shapleyMeasure option)
         measure <- if (self$options$has("shapleyMeasure")) self$options$shapleyMeasure else "r2"
         if (is.null(sh)) {
-            sh <- cp_shapley_r2(X, y, spec, private$.fam, measure, seed = self$options$seed)
+            sh <- if (is.null(Xs)) cp_shapley_r2(X, y, spec, private$.fam, measure, seed = self$options$seed) else {
+                shs <- lapply(Xs, function(Xm) cp_shapley_r2(Xm, y, spec, private$.fam, measure, seed = self$options$seed))
+                out <- shs[[1]]
+                out$shapley <- rowMeans(vapply(shs, `[[`, numeric(nrow(out)), "shapley"))
+                tot <- mean(vapply(shs, function(z) attr(z, "total"), 0))
+                out$share <- out$shapley / tot; out$rank <- rank(-out$shapley, ties.method = "min")
+                attr(out, "total") <- tot
+                out
+            }
             t$setState(sh)
         }
         for (i in seq_len(nrow(sh)))
-            t$setRow(rowKey = sh$var[i], values = list(shapley = sh$shapley[i], share = sh$share[i], rank = sh$rank[i]))
+            private$.putRow(t, sh$var[i], list(var = sh$var[i], shapley = sh$shapley[i], share = sh$share[i], rank = sh$rank[i]))
         lab <- switch(measure, r2mf = "McFadden R²", r2n = "Nagelkerke R²", "R²")
         t$setNote("tot", sprintf(.("%s of the full model: %.4f, shared among the predictors by their average gain over all orders of entry (Shapley / LMG)%s."),
                                  lab, attr(sh, "total"), if (isTRUE(attr(sh, "exact"))) "" else .("; estimated from 200 random orders")))
@@ -882,7 +1024,7 @@
             t$setState(pi)
         }
         for (i in seq_len(nrow(pi)))
-            t$setRow(rowKey = pi$var[i], values = as.list(pi[i, -1]))
+            private$.putRow(t, pi$var[i], as.list(pi[i, ]))
         t$setNote("data", sprintf(.("Computed in: %s. Each predictor is shuffled %d times; larger losses mean the model relies more on it."),
                                   sets[[key]], self$options$nPerm))
         img <- self$results$plots$permBar
@@ -894,7 +1036,7 @@
         phi <- cp_shap(beta, spec, X, intercept = fam$intercept)
         ma <- colMeans(abs(phi))
         t <- self$results$shapTable
-        for (v in names(ma)) t$setRow(rowKey = v, values = list(meanAbs = ma[[v]], share = ma[[v]] / sum(ma)))
+        for (v in names(ma)) private$.putRow(t, v, list(var = v, meanAbs = ma[[v]], share = ma[[v]] / sum(ma)))
         t$setNote("ex", private$.text("shapEx"))
         img <- self$results$plots$shapSummary
         if (is.null(img$state)) {
@@ -944,13 +1086,18 @@
     },
 
     # predictions written to the spreadsheet, for every row with complete predictors
-    .saveOutputs = function(beta, spec, data) {
+    # imputed: list(rows, lp) of imputed development rows (mean over imputations)
+    .saveOutputs = function(beta, spec, data, imputed = NULL) {
         defs <- private$.outputDefs()
         on <- Filter(function(k) isTRUE(self$options[[k]]), names(defs))
         if (!length(on)) return()
         nd <- cp_newdata(data, spec)
         lp <- rep(NA_real_, nrow(data)); names(lp) <- rownames(data)
         lp[rownames(nd)] <- private$.fam$lp(beta, cp_design(spec, nd))
+        if (!is.null(imputed)) {
+            fill <- imputed$rows %in% names(lp)[is.na(lp)]
+            lp[imputed$rows[fill]] <- imputed$lp[fill]
+        }
         for (k in on) {
             out <- self$results[[k]]
             if (!out$isNotFilled()) next

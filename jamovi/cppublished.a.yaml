@@ -2,7 +2,7 @@
 name: cpPublished
 title: Validate a Published Model
 menuGroup: Prediction
-version: '0.3.0'
+version: '0.4.0'
 jas: '1.2'
 weightsSupport: none
 

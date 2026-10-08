@@ -167,32 +167,49 @@ cp_crude <- function(spec, df, y, fam, conf = 0.95) {
 # Likelihood ratio tests in the final model: each predictor overall (with its
 # interactions), the non-linear part of each spline, each interaction term.
 # For the linear model, F tests (column chisq holds F, df2 its denominator df).
-cp_lr_tests <- function(spec, X, y, fam) {
-    full <- .fit_cols(X, y, fam, rep(TRUE, ncol(X)))
-    # full$df counts the intercept too
-    n <- NROW(X); dfResid <- n - full$df
-    test <- function(drop) {
-        red <- .fit_cols(X, y, fam, !drop)
-        t <- .nested_test(fam, red$loss, full$loss, full$df - red$df, n, dfResid)
-        c(chisq = t[["stat"]], df = t[["df"]], df2 = t[["df2"]], p = t[["p"]])
-    }
-    rows <- list()
-    add <- function(key, label, drop)
-        rows[[length(rows) + 1]] <<- c(list(key = key, term = label), as.list(test(drop)))
+# The terms tested in the model: each predictor (with its non-linear and
+# interaction columns), the non-linear part of each spline, each interaction;
+# key, label and the columns dropped
+.test_terms <- function(spec) {
+    out <- list()
+    add <- function(key, label, drop) out[[length(out) + 1]] <<- list(key = key, term = label, drop = drop)
     for (info in spec$vars) {
         v <- info$name
-        involves <- vapply(spec$colVars, function(vs) v %in% vs, TRUE)
-        add(v, v, involves)
+        add(v, v, vapply(spec$colVars, function(vs) v %in% vs, TRUE))
         if (info$role == "spline") {
             nl <- paste0(v, strrep("'", seq_len(length(info$knots) - 2)))
-            dropNl <- spec$columns %in% nl |
-                vapply(spec$colParts, function(ab) any(ab %in% nl), TRUE)
-            add(paste(v, "nonlinear"), paste0("   ", v, ": non-linear"), dropNl)
+            add(paste(v, "nonlinear"), paste0("   ", v, ": non-linear"),
+                spec$columns %in% nl | vapply(spec$colParts, function(ab) any(ab %in% nl), TRUE))
         }
     }
     for (key in names(spec$interactions))
         add(key, paste(spec$interactions[[key]], collapse = " × "), spec$colTerm == key)
-    do.call(rbind, lapply(rows, as.data.frame, stringsAsFactors = FALSE))
+    out
+}
+
+cp_lr_tests <- function(spec, X, y, fam) {
+    full <- .fit_cols(X, y, fam, rep(TRUE, ncol(X)))
+    # full$df counts the intercept too
+    n <- NROW(X); dfResid <- n - full$df
+    rows <- lapply(.test_terms(spec), function(tt) {
+        red <- .fit_cols(X, y, fam, !tt$drop)
+        t <- .nested_test(fam, red$loss, full$loss, full$df - red$df, n, dfResid)
+        data.frame(key = tt$key, term = tt$term, chisq = t[["stat"]], df = t[["df"]], df2 = t[["df2"]], p = t[["p"]],
+                   stringsAsFactors = FALSE)
+    })
+    do.call(rbind, rows)
+}
+
+# The same terms tested by pooled Wald tests (D1) after multiple imputation;
+# column chisq holds D1 x df (a chi-square-like statistic), p is from F(df, df2)
+cp_lr_tests_mi <- function(spec, pool, intercept = TRUE) {
+    rows <- lapply(.test_terms(spec), function(tt) {
+        idx <- which(tt$drop) + if (intercept) 1 else 0
+        d <- cp_d1(pool, idx)
+        data.frame(key = tt$key, term = tt$term, chisq = d[["stat"]] * d[["df1"]], df = d[["df1"]], df2 = d[["df2"]],
+                   p = d[["p"]], stringsAsFactors = FALSE)
+    })
+    do.call(rbind, rows)
 }
 
 # Effects of each variable of an interaction within subgroups of the other:

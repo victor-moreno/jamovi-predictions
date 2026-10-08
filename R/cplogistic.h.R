@@ -22,6 +22,10 @@ cpLogisticOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             enetFolds = 10,
             enetTune = TRUE,
             incremental = FALSE,
+            missExplore = FALSE,
+            missMethod = "cc",
+            miM = 10,
+            miIter = 10,
             interactions = NULL,
             intAllPairs = FALSE,
             intMode = "all",
@@ -210,6 +214,31 @@ cpLogisticOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                 "incremental",
                 incremental,
                 default=FALSE)
+            private$..missExplore <- jmvcore::OptionBool$new(
+                "missExplore",
+                missExplore,
+                default=FALSE)
+            private$..missMethod <- jmvcore::OptionList$new(
+                "missMethod",
+                missMethod,
+                options=list(
+                    "cc",
+                    "category",
+                    "single",
+                    "mi"),
+                default="cc")
+            private$..miM <- jmvcore::OptionInteger$new(
+                "miM",
+                miM,
+                min=2,
+                max=100,
+                default=10)
+            private$..miIter <- jmvcore::OptionInteger$new(
+                "miIter",
+                miIter,
+                min=1,
+                max=50,
+                default=10)
             private$..interactions <- jmvcore::OptionTerms$new(
                 "interactions",
                 interactions,
@@ -468,6 +497,10 @@ cpLogisticOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             self$.addOption(private$..enetFolds)
             self$.addOption(private$..enetTune)
             self$.addOption(private$..incremental)
+            self$.addOption(private$..missExplore)
+            self$.addOption(private$..missMethod)
+            self$.addOption(private$..miM)
+            self$.addOption(private$..miIter)
             self$.addOption(private$..interactions)
             self$.addOption(private$..intAllPairs)
             self$.addOption(private$..intMode)
@@ -533,6 +566,10 @@ cpLogisticOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
         enetFolds = function() private$..enetFolds$value,
         enetTune = function() private$..enetTune$value,
         incremental = function() private$..incremental$value,
+        missExplore = function() private$..missExplore$value,
+        missMethod = function() private$..missMethod$value,
+        miM = function() private$..miM$value,
+        miIter = function() private$..miIter$value,
         interactions = function() private$..interactions$value,
         intAllPairs = function() private$..intAllPairs$value,
         intMode = function() private$..intMode$value,
@@ -597,6 +634,10 @@ cpLogisticOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
         ..enetFolds = NA,
         ..enetTune = NA,
         ..incremental = NA,
+        ..missExplore = NA,
+        ..missMethod = NA,
+        ..miM = NA,
+        ..miIter = NA,
         ..interactions = NA,
         ..intAllPairs = NA,
         ..intMode = NA,
@@ -654,6 +695,8 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
         samples = function() private$.items[["samples"]],
         extCheck = function() private$.items[["extCheck"]],
         caseMix = function() private$.items[["caseMix"]],
+        missTable = function() private$.items[["missTable"]],
+        missPatterns = function() private$.items[["missPatterns"]],
         descTable = function() private$.items[["descTable"]],
         orTable = function() private$.items[["orTable"]],
         testTable = function() private$.items[["testTable"]],
@@ -730,6 +773,9 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "enetRule",
                     "enetFolds",
                     "enetTune",
+                    "missMethod",
+                    "miM",
+                    "miIter",
                     "splitVar",
                     "splitLevel",
                     "extFile"),
@@ -781,6 +827,9 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "enetRule",
                     "enetFolds",
                     "enetTune",
+                    "missMethod",
+                    "miM",
+                    "miIter",
                     "splitVar",
                     "splitLevel",
                     "extFile"),
@@ -827,6 +876,9 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "enetRule",
                     "enetFolds",
                     "enetTune",
+                    "missMethod",
+                    "miM",
+                    "miIter",
                     "splitVar",
                     "splitLevel",
                     "extFile"),
@@ -854,6 +906,99 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                         `title`="External", 
                         `type`="text", 
                         `visible`=FALSE))))
+            self$add(jmvcore::Table$new(
+                options=options,
+                name="missTable",
+                title="Missing Values (Development Data)",
+                visible="(missExplore)",
+                clearWith=list(
+                    "dep",
+                    "eventLevel",
+                    "covs",
+                    "splineVars",
+                    "factors",
+                    "splitVar",
+                    "splitLevel"),
+                columns=list(
+                    list(
+                        `name`="var", 
+                        `title`="Variable", 
+                        `type`="text"),
+                    list(
+                        `name`="role", 
+                        `title`="Role", 
+                        `type`="text"),
+                    list(
+                        `name`="n", 
+                        `title`="Missing", 
+                        `type`="integer"),
+                    list(
+                        `name`="pct", 
+                        `title`="%", 
+                        `type`="number", 
+                        `format`="pc"),
+                    list(
+                        `name`="a_pct", 
+                        `title`="Group 0", 
+                        `type`="number", 
+                        `format`="pc", 
+                        `superTitle`="% missing", 
+                        `visible`=FALSE),
+                    list(
+                        `name`="b_pct", 
+                        `title`="Group 1", 
+                        `type`="number", 
+                        `format`="pc", 
+                        `superTitle`="% missing", 
+                        `visible`=FALSE),
+                    list(
+                        `name`="a_mean", 
+                        `title`="Observed", 
+                        `type`="number", 
+                        `superTitle`="Outcome mean when the variable is", 
+                        `visible`=FALSE),
+                    list(
+                        `name`="b_mean", 
+                        `title`="Missing", 
+                        `type`="number", 
+                        `superTitle`="Outcome mean when the variable is", 
+                        `visible`=FALSE),
+                    list(
+                        `name`="p", 
+                        `title`="p", 
+                        `type`="number", 
+                        `format`="zto,pvalue"))))
+            self$add(jmvcore::Table$new(
+                options=options,
+                name="missPatterns",
+                title="Missing Value Patterns",
+                visible="(missExplore)",
+                clearWith=list(
+                    "dep",
+                    "eventLevel",
+                    "covs",
+                    "splineVars",
+                    "factors",
+                    "splitVar",
+                    "splitLevel"),
+                columns=list(
+                    list(
+                        `name`="pattern", 
+                        `title`="Missing", 
+                        `type`="text"),
+                    list(
+                        `name`="nvars", 
+                        `title`="Variables", 
+                        `type`="integer"),
+                    list(
+                        `name`="n", 
+                        `title`="Rows", 
+                        `type`="integer"),
+                    list(
+                        `name`="pct", 
+                        `title`="%", 
+                        `type`="number", 
+                        `format`="pc"))))
             self$add(jmvcore::Table$new(
                 options=options,
                 name="descTable",
@@ -920,6 +1065,9 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "enetRule",
                     "enetFolds",
                     "enetTune",
+                    "missMethod",
+                    "miM",
+                    "miIter",
                     "splitVar",
                     "splitLevel",
                     "ciWidth"),
@@ -1005,6 +1153,9 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "enetRule",
                     "enetFolds",
                     "enetTune",
+                    "missMethod",
+                    "miM",
+                    "miIter",
                     "splitVar",
                     "splitLevel"),
                 columns=list(
@@ -1051,6 +1202,9 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "enetRule",
                     "enetFolds",
                     "enetTune",
+                    "missMethod",
+                    "miM",
+                    "miIter",
                     "splitVar",
                     "splitLevel",
                     "validation",
@@ -1120,6 +1274,9 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "enetRule",
                     "enetFolds",
                     "enetTune",
+                    "missMethod",
+                    "miM",
+                    "miIter",
                     "splitVar",
                     "splitLevel",
                     "validation",
@@ -1188,6 +1345,9 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "enetRule",
                     "enetFolds",
                     "enetTune",
+                    "missMethod",
+                    "miM",
+                    "miIter",
                     "splitVar",
                     "splitLevel",
                     "validation",
@@ -1281,6 +1441,9 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "enetRule",
                     "enetFolds",
                     "enetTune",
+                    "missMethod",
+                    "miM",
+                    "miIter",
                     "splitVar",
                     "splitLevel",
                     "ciWidth"),
@@ -1337,6 +1500,9 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "enetRule",
                     "enetFolds",
                     "enetTune",
+                    "missMethod",
+                    "miM",
+                    "miIter",
                     "splitVar",
                     "splitLevel",
                     "ciWidth"),
@@ -1398,6 +1564,9 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "enetRule",
                     "enetFolds",
                     "enetTune",
+                    "missMethod",
+                    "miM",
+                    "miIter",
                     "splitVar",
                     "splitLevel")))
             self$add(jmvcore::Table$new(
@@ -1425,6 +1594,9 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "enetRule",
                     "enetFolds",
                     "enetTune",
+                    "missMethod",
+                    "miM",
+                    "miIter",
                     "splitVar",
                     "splitLevel",
                     "validation",
@@ -1493,6 +1665,9 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "enetRule",
                     "enetFolds",
                     "enetTune",
+                    "missMethod",
+                    "miM",
+                    "miIter",
                     "splitVar",
                     "splitLevel",
                     "extFile",
@@ -1552,6 +1727,9 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "enetRule",
                     "enetFolds",
                     "enetTune",
+                    "missMethod",
+                    "miM",
+                    "miIter",
                     "splitVar",
                     "splitLevel",
                     "extFile",
@@ -1636,6 +1814,9 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "enetRule",
                     "enetFolds",
                     "enetTune",
+                    "missMethod",
+                    "miM",
+                    "miIter",
                     "splitVar",
                     "splitLevel",
                     "validation",
@@ -1676,6 +1857,9 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "enetRule",
                     "enetFolds",
                     "enetTune",
+                    "missMethod",
+                    "miM",
+                    "miIter",
                     "splitVar",
                     "splitLevel",
                     "extFile",
@@ -1733,6 +1917,9 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "enetRule",
                     "enetFolds",
                     "enetTune",
+                    "missMethod",
+                    "miM",
+                    "miIter",
                     "splitVar",
                     "splitLevel",
                     "extFile",
@@ -1792,6 +1979,9 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "enetRule",
                     "enetFolds",
                     "enetTune",
+                    "missMethod",
+                    "miM",
+                    "miIter",
                     "splitVar",
                     "splitLevel",
                     "extFile",
@@ -1848,6 +2038,9 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "enetRule",
                     "enetFolds",
                     "enetTune",
+                    "missMethod",
+                    "miM",
+                    "miIter",
                     "splitVar",
                     "splitLevel",
                     "ssSource",
@@ -1895,6 +2088,9 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "enetRule",
                     "enetFolds",
                     "enetTune",
+                    "missMethod",
+                    "miM",
+                    "miIter",
                     "splitVar",
                     "splitLevel",
                     "shapleyMeasure",
@@ -1943,6 +2139,9 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "enetRule",
                     "enetFolds",
                     "enetTune",
+                    "missMethod",
+                    "miM",
+                    "miIter",
                     "splitVar",
                     "splitLevel",
                     "extFile",
@@ -1995,6 +2194,9 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "enetRule",
                     "enetFolds",
                     "enetTune",
+                    "missMethod",
+                    "miM",
+                    "miIter",
                     "splitVar",
                     "splitLevel"),
                 columns=list(
@@ -2062,6 +2264,9 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                                 "enetRule",
                                 "enetFolds",
                                 "enetTune",
+                                "missMethod",
+                                "miM",
+                                "miIter",
                                 "splitVar",
                                 "splitLevel",
                                 "extFile")))
@@ -2094,6 +2299,9 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                                 "enetRule",
                                 "enetFolds",
                                 "enetTune",
+                                "missMethod",
+                                "miM",
+                                "miIter",
                                 "splitVar",
                                 "splitLevel",
                                 "extFile",
@@ -2127,6 +2335,9 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                                 "enetRule",
                                 "enetFolds",
                                 "enetTune",
+                                "missMethod",
+                                "miM",
+                                "miIter",
                                 "splitVar",
                                 "splitLevel",
                                 "extFile")))
@@ -2159,6 +2370,9 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                                 "enetRule",
                                 "enetFolds",
                                 "enetTune",
+                                "missMethod",
+                                "miM",
+                                "miIter",
                                 "splitVar",
                                 "splitLevel",
                                 "extFile",
@@ -2192,6 +2406,9 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                                 "enetRule",
                                 "enetFolds",
                                 "enetTune",
+                                "missMethod",
+                                "miM",
+                                "miIter",
                                 "splitVar",
                                 "splitLevel",
                                 "shapleyMeasure",
@@ -2225,6 +2442,9 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                                 "enetRule",
                                 "enetFolds",
                                 "enetTune",
+                                "missMethod",
+                                "miM",
+                                "miIter",
                                 "splitVar",
                                 "splitLevel",
                                 "extFile",
@@ -2259,6 +2479,9 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                                 "enetRule",
                                 "enetFolds",
                                 "enetTune",
+                                "missMethod",
+                                "miM",
+                                "miIter",
                                 "splitVar",
                                 "splitLevel")))
                         self$add(jmvcore::Image$new(
@@ -2290,6 +2513,9 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                                 "enetRule",
                                 "enetFolds",
                                 "enetTune",
+                                "missMethod",
+                                "miM",
+                                "miIter",
                                 "splitVar",
                                 "splitLevel",
                                 "shapRow")))
@@ -2322,6 +2548,9 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                                 "enetRule",
                                 "enetFolds",
                                 "enetTune",
+                                "missMethod",
+                                "miM",
+                                "miIter",
                                 "splitVar",
                                 "splitLevel",
                                 "validation",
@@ -2358,6 +2587,9 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                                 "enetRule",
                                 "enetFolds",
                                 "enetTune",
+                                "missMethod",
+                                "miM",
+                                "miIter",
                                 "splitVar",
                                 "splitLevel",
                                 "validation",
@@ -2399,6 +2631,9 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                                 "enetRule",
                                 "enetFolds",
                                 "enetTune",
+                                "missMethod",
+                                "miM",
+                                "miIter",
                                 "splitVar",
                                 "splitLevel",
                                 "validation",
@@ -2433,6 +2668,9 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                                 "enetRule",
                                 "enetFolds",
                                 "enetTune",
+                                "missMethod",
+                                "miM",
+                                "miIter",
                                 "splitVar",
                                 "splitLevel",
                                 "validation",
@@ -2466,6 +2704,9 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "enetRule",
                     "enetFolds",
                     "enetTune",
+                    "missMethod",
+                    "miM",
+                    "miIter",
                     "splitVar",
                     "splitLevel",
                     "extFile")))
@@ -2497,6 +2738,9 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "enetRule",
                     "enetFolds",
                     "enetTune",
+                    "missMethod",
+                    "miM",
+                    "miIter",
                     "splitVar",
                     "splitLevel",
                     "extFile")))}))
@@ -2509,7 +2753,7 @@ cpLogisticBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             super$initialize(
                 package = "clinpred",
                 name = "cpLogistic",
-                version = c(0,3,0),
+                version = c(0,4,0),
                 options = options,
                 results = cpLogisticResults$new(options=options),
                 data = data,
@@ -2568,6 +2812,13 @@ cpLogisticBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
 #'   with the full model: differences in performance (apparent,
 #'   optimism-corrected and in validation data), LR test of the added
 #'   predictors, reclassification and net benefit
+#' @param missExplore .
+#' @param missMethod \code{'cc'} (complete cases), \code{'category'} (a
+#'   '(missing)' level for factors; for numeric predictors an indicator and the
+#'   development median), \code{'single'} or \code{'mi'} (imputation by chained
+#'   equations with predictive mean matching)
+#' @param miM .
+#' @param miIter .
 #' @param interactions a list of pairs of predictors, the candidate
 #'   interaction terms
 #' @param intAllPairs .
@@ -2630,6 +2881,8 @@ cpLogisticBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
 #'   \code{results$samples} \tab \tab \tab \tab \tab a table \cr
 #'   \code{results$extCheck} \tab \tab \tab \tab \tab a table \cr
 #'   \code{results$caseMix} \tab \tab \tab \tab \tab a table \cr
+#'   \code{results$missTable} \tab \tab \tab \tab \tab a table \cr
+#'   \code{results$missPatterns} \tab \tab \tab \tab \tab a table \cr
 #'   \code{results$descTable} \tab \tab \tab \tab \tab a table \cr
 #'   \code{results$orTable} \tab \tab \tab \tab \tab a table \cr
 #'   \code{results$testTable} \tab \tab \tab \tab \tab a table \cr
@@ -2691,6 +2944,10 @@ cpLogistic <- function(
     enetFolds = 10,
     enetTune = TRUE,
     incremental = FALSE,
+    missExplore = FALSE,
+    missMethod = "cc",
+    miM = 10,
+    miIter = 10,
     interactions = NULL,
     intAllPairs = FALSE,
     intMode = "all",
@@ -2776,6 +3033,10 @@ cpLogistic <- function(
         enetFolds = enetFolds,
         enetTune = enetTune,
         incremental = incremental,
+        missExplore = missExplore,
+        missMethod = missMethod,
+        miM = miM,
+        miIter = miIter,
         interactions = interactions,
         intAllPairs = intAllPairs,
         intMode = intMode,
