@@ -37,7 +37,6 @@ cpLogisticClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class(
             outcomeRow = .("Events"),
             outcomeLevel = "n (%)",
             memberNote = .("Membership c-statistic: how well the predictors and the outcome distinguish validation from development rows (Debray et al. 2015). Near 0.5: similar case-mix (reproducibility); high: different populations (transportability). A larger SD of the linear predictor means a more heterogeneous case-mix, which by itself raises the AUC."),
-            recalLabel = .("Logistic recalibration (intercept and slope)"),
             samplesEx = paste0(.("Event"), ": ", self$options$dep, " = ", private$.eventLabel(), ". ",
                                .("Rows with a missing outcome or predictor are excluded (complete-case analysis).")),
             coefSpline = .("Spline terms (', '') are the non-linear parts of a restricted cubic spline; their coefficients have no direct interpretation (see the odds ratios, Q3 vs Q1, or SHAP)."),
@@ -49,7 +48,7 @@ cpLogisticClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class(
             negNote = .("A negative corrected R² or scaled Brier score means that, in new patients, the model would predict worse than giving everyone the overall risk: it is overfitted."),
             perfEx = .("AUC: probability that a random event has a higher predicted risk than a random non-event (0.5 = no discrimination). Calibration-in-the-large: 0 is ideal (log-odds). Calibration slope: 1 is ideal; below 1 the predictions are too extreme (overfitting). O/E: observed / expected events. ICI, E50, E90, Emax: mean, median, 90th percentile and maximum absolute difference between the predicted and the (smoothed) observed risk. Brier: mean squared error of the predicted risks (lower is better); scaled Brier: 1 − Brier / Brier of a model without predictors."),
             valEx = .("The development model is applied unchanged to the validation data. A calibration-in-the-large far from 0 means the overall risk differs between the populations; a slope below 1, that the predictions are too extreme there."),
-            updNote = .("Intercept and slope: of the original linear predictor (log-odds) in the updated model. Each test compares a method with model revision (likelihood ratio); the closed testing procedure (Vergouwe et al. 2017) keeps the first method, from the original model up, not significantly worse than revision at α = %s (✓). Performance of an updated model is measured in the data used to update it, so it is optimistic, most of all for revision."),
+            updNote = .("Recalibration re-estimates the intercept and the slope of the original prediction; intercept and slope: of the original linear predictor (log-odds) in the updated model. Each test compares a method with model revision (likelihood ratio); the closed testing procedure (Vergouwe et al. 2017) keeps the first method, from the original model up, not significantly worse than revision at α = %s (✓). Performance of an updated model is measured in the data used to update it, so it is optimistic, most of all for revision."),
             stabEx = .("A shrinkage factor well below 1 (e.g. < 0.9) signals overfitting: the coefficients would need to be shrunk towards 0. MAPE: average absolute difference between an individual's risk from the developed model and from models developed in bootstrap samples (Riley & Collins 2023)."),
             shapEx = .("SHAP: the contribution of each predictor to an individual's log-odds, relative to the average individual of the development data (exact for this additive model)."),
             shapDown = .("Lowers risk"),
@@ -61,8 +60,7 @@ cpLogisticClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class(
             calX = .("Predicted risk"),
             calY = .("Observed proportion (smoothed)")),
 
-        .shapAxis = function(base, lp) sprintf("Log-odds  (mean %.2f → this person %.2f, risk %.1f%%)",
-                                               base, lp, 100 * stats::plogis(lp)),
+        .shapAxis = function(base, lp) c("Log-odds", sprintf("risk %.1f%%", 100 * stats::plogis(lp))),
 
         .equation = function(beta, spec) {
             out <- c(sprintf("log-odds(%s = %s) =", spec$outcome$name, spec$outcome$event),

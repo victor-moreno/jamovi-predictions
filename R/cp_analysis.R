@@ -78,7 +78,7 @@
 
     # the updating methods, labelled for this family
     .updMethods = function() c(original = .("Original model"), citl = .("Recalibration in the large"),
-                               recal = private$.text("recalLabel"), revision = .("Model revision")),
+                               recal = .("Recalibration"), revision = .("Model revision")),
 
     .init = function() {
         r <- self$results
@@ -517,7 +517,8 @@
             mm <- u$methods[[m]]
             if (is.null(mm)) next
             perf <- private$.fam$metrics(vs$y, mm$lp)[private$.updKeys]
-            vals <- c(list(a = mm$a, b = mm$b, k = mm$k,
+            # revision has no single intercept and slope: blank, not NA (jamovi shows NaN)
+            vals <- c(list(a = if (is.na(mm$a)) "" else mm$a, b = if (is.na(mm$b)) "" else mm$b, k = mm$k,
                            stat = mm$test[["stat"]] %||% "", df = mm$test[["df"]] %||% "", p = mm$test[["p"]] %||% "",
                            chosen = if (identical(u$chosen, m)) "✓" else ""),
                       as.list(perf))

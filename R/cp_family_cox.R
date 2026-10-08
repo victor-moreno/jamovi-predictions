@@ -279,7 +279,7 @@ cp_net_benefit_surv <- function(y, p, thresholds, h) {
 cp_km_groups <- function(y, p, cuts, h, maxPts = 200) {
     g <- cut(p, c(-Inf, cuts, Inf), labels = FALSE)
     ng <- length(cuts) + 1
-    labs <- paste0("Group ", seq_len(ng), ifelse(seq_len(ng) == 1, " (lowest risk)", ifelse(seq_len(ng) == ng, " (highest)", "")))
+    labs <- paste0(seq_len(ng), ifelse(seq_len(ng) == 1, " (lowest)", ifelse(seq_len(ng) == ng, " (highest)", "")))
     curves <- list(); pts <- list()
     for (k in sort(unique(g))) {
         i <- which(g == k)

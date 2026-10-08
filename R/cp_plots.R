@@ -145,7 +145,9 @@ cp_plot_shap_summary <- function(d, ggtheme, xlab = "SHAP value (contribution to
                                        name = "Predictor value") +
         ggplot2::scale_y_continuous(breaks = seq_along(ord), labels = ord) +
         ggplot2::labs(x = xlab, y = NULL) +
-        .jtheme(ggtheme) + ggplot2::theme(legend.position = "right")
+        ggplot2::guides(colour = ggplot2::guide_colourbar(title.position = "top", title.hjust = 0.5, barheight = ggplot2::unit(0.5, "lines"),
+                                                          barwidth = ggplot2::unit(10, "lines"))) +
+        .jtheme(ggtheme) + ggplot2::theme(legend.position = "bottom")
 }
 
 # Waterfall: from the mean log-odds of the development data to this person's
@@ -164,9 +166,10 @@ cp_plot_shap_patient <- function(w, ggtheme) {
                                         ymin = .data$y - 0.35, ymax = .data$y + 0.35, fill = .data$sign)) +
         ggplot2::scale_fill_manual(values = stats::setNames(c("#0072B2", "#D55E00"), sg)) +
         ggplot2::scale_y_continuous(breaks = df$y, labels = as.character(df$label)) +
-        ggplot2::labs(x = w$axis %||% sprintf("Log-odds  (mean %.2f → this person %.2f, risk %.1f%%)",
-                                              w$base, w$lp, 100 * w$risk), y = NULL,
-                      subtitle = w$title) +
+        # axis: the scale; subtitle: this person (too long for the axis at jamovi's text size)
+        ggplot2::labs(x = (w$axis %||% "Log-odds")[1], y = NULL,
+                      subtitle = paste0(w$title, ": ", if (length(w$axis) > 1) w$axis[2] else
+                          sprintf("mean %.2f → this person %.2f, risk %.1f%%", w$base, w$lp, 100 * w$risk))) +
         .base_theme(ggtheme)
 }
 
@@ -244,10 +247,13 @@ cp_plot_km <- function(st, ggtheme) {
         ggplot2::geom_vline(xintercept = st$h, linetype = "dashed", colour = "grey60") +
         ggplot2::geom_step(linewidth = 0.8) +
         ggplot2::geom_point(data = pred, size = 2.5, shape = 18) +
-        ggplot2::scale_colour_manual(values = cols) +
+        ggplot2::scale_colour_manual(values = cols, name = "Risk group") +
         ggplot2::facet_wrap(~label) +
         ggplot2::coord_cartesian(ylim = c(0, 1)) +
         ggplot2::labs(x = "Time", y = "Event-free (Kaplan–Meier)",
                       subtitle = "Diamonds: mean predicted at the horizon") +
-        .base_theme(ggtheme)
+        .base_theme(ggtheme) +
+        # jamovi's 16 pt theme: the group labels need two legend rows
+        ggplot2::guides(colour = ggplot2::guide_legend(nrow = 2)) +
+        ggplot2::theme(legend.title = ggplot2::element_text())
 }

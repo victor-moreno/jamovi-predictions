@@ -35,7 +35,6 @@ cpLinearClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class(
             outcomeRow = self$options$dep,
             outcomeLevel = .("mean (SD)"),
             memberNote = .("Membership c-statistic: how well the predictors and the outcome distinguish validation from development rows (Debray et al. 2015). Near 0.5: similar case-mix (reproducibility); high: different populations (transportability). A larger SD of the predictions means a more heterogeneous case-mix, which by itself raises the R²."),
-            recalLabel = .("Recalibration (intercept and slope)"),
             samplesEx = .("Rows with a missing outcome or predictor are excluded (complete-case analysis)."),
             coefSpline = .("Spline terms (', '') are the non-linear parts of a restricted cubic spline; their coefficients have no direct interpretation (see the effects, Q3 vs Q1, or SHAP)."),
             orSpline = .("Spline predictors: difference in the mean outcome between the third and the first quartile; the p is the F test of the whole (non-linear) association."),
@@ -46,7 +45,7 @@ cpLinearClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class(
             negNote = .("A negative corrected R² means that, in new patients, the model would predict worse than the mean outcome: it is overfitted."),
             perfEx = .("R²: 1 − residual sum of squares / total sum of squares around the mean of the data in which it is measured (can be negative outside the development data). RMSE: root mean squared error; MAE: mean absolute error, in the units of the outcome (lower is better). Calibration-in-the-large: mean of observed − predicted, 0 is ideal. Calibration slope: of the regression of the observed on the predicted outcome, 1 is ideal; below 1 the predictions are too extreme (overfitting)."),
             valEx = .("The development model is applied unchanged to the validation data. A calibration-in-the-large far from 0 means the mean outcome differs between the populations; a slope below 1, that the predictions are too extreme there."),
-            updNote = .("Intercept and slope: of the original prediction in the updated model. Each test compares a method with model revision (F test); the closed testing procedure (Vergouwe et al. 2017) keeps the first method, from the original model up, not significantly worse than revision at α = %s (✓). Performance of an updated model is measured in the data used to update it, so it is optimistic, most of all for revision."),
+            updNote = .("Recalibration re-estimates the intercept and the slope of the original prediction; intercept and slope: of the original prediction in the updated model. Each test compares a method with model revision (F test); the closed testing procedure (Vergouwe et al. 2017) keeps the first method, from the original model up, not significantly worse than revision at α = %s (✓). Performance of an updated model is measured in the data used to update it, so it is optimistic, most of all for revision."),
             stabEx = .("A shrinkage factor well below 1 (e.g. < 0.9) signals overfitting: the coefficients would need to be shrunk towards 0. MAPE: average absolute difference between an individual's prediction from the developed model and from models developed in bootstrap samples (Riley & Collins 2023), in the units of the outcome."),
             shapEx = .("SHAP: the contribution of each predictor to an individual's predicted outcome, relative to the average individual of the development data (exact for this additive model), in the units of the outcome."),
             shapDown = .("Lowers the prediction"),
@@ -58,8 +57,8 @@ cpLinearClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class(
             calX = .("Predicted value"),
             calY = .("Observed value (smoothed)")),
 
-        .shapAxis = function(base, lp) sprintf("Predicted %s  (mean %.4g → this person %.4g)",
-                                               self$options$dep, base, lp),
+        .shapAxis = function(base, lp) c(paste("Predicted", self$options$dep),
+                                         sprintf("predicted %.4g", lp)),
 
         .equation = function(beta, spec) {
             out <- c(sprintf("predicted %s =", spec$outcome$name), private$.equationTerms(beta))

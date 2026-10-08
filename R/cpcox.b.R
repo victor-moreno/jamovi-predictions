@@ -79,8 +79,8 @@ cpCoxClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class(
             calX = .("Predicted risk"),
             calY = .("Observed risk (smoothed)")),
 
-        .shapAxis = function(base, lp) sprintf("Log cumulative hazard at t = %s  (mean %.2f → this person %.2f, risk %.1f%%)",
-                                               private$.hText(), base, lp, 100 * .cox_risk(lp)),
+        .shapAxis = function(base, lp) c(sprintf("Log cumulative hazard at t = %s", private$.hText()),
+                                         sprintf("risk %.1f%% by t = %s", 100 * .cox_risk(lp), private$.hText())),
 
         .equation = function(beta, spec) {
             out <- c("Prognostic index PI =", private$.equationTerms(beta)[-1], "",
