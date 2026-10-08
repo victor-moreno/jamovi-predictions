@@ -36,9 +36,19 @@ install_desktop() {
   # the Built: stamp of any copy already installed; the new one must differ
   OLD="$(grep '^Built:' "$MODDIR/R/$MODULE/DESCRIPTION" 2>/dev/null || true)"
 
-  echo ">> desktop: building $MODULE $VERSION with $(Rscript -e 'cat(R.version.string)')"
   LOG="$(mktemp "$ROOT/.tmp/install.XXXXXX")"
-  ( cd "$MODULE_DIR" && Rscript -e 'jmvtools::install()' ) 2>&1 | tee "$LOG" | grep -vE '^\s*$' || true
+  # clinpred uses the File option (jamovi >= 28.4), which jmvtools' bundled
+  # compiler (0.3.5) rejects: use jamovi-src's compiler when it is there (on
+  # macOS it builds with the R bundled in the app given to --home)
+  local JMC
+  if JMC="$(find_compiler)" && command -v node >/dev/null; then
+    [ -d "$JMC/node_modules" ] || ( cd "$JMC" && npm install --no-audit --no-fund >/dev/null )
+    echo ">> desktop: building $MODULE $VERSION with $JMC (R bundled in $(basename "$APP"))"
+    node "$JMC/index.js" --install "$MODULE_DIR" --home "$APP" 2>&1 | tee "$LOG" | grep -vE '^\s*$' || true
+  else
+    echo ">> desktop: building $MODULE $VERSION with $(Rscript -e 'cat(R.version.string)')"
+    ( cd "$MODULE_DIR" && Rscript -e 'jmvtools::install()' ) 2>&1 | tee "$LOG" | grep -vE '^\s*$' || true
+  fi
 
   # jmvtools::install() reports errors on stdout and still exits 0, and it can
   # claim success after failing to drive jamovi.app. Judge by the artifacts.
@@ -51,7 +61,7 @@ install_desktop() {
     rm -f "$LOG"; return 0
   fi
   if ! grep -q 'Module installed successfully' "$LOG"; then
-    echo "error: jmvtools::install() did not install the module (see above)" >&2
+    echo "error: the compiler did not install the module (see above)" >&2
     rm -f "$LOG"; return 1
   fi
   rm -f "$LOG"
