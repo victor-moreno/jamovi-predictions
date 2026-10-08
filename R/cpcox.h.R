@@ -19,6 +19,10 @@ cpCoxOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             selMode = "none",
             selCrit = "aic",
             selAlpha = 0.05,
+            enetAlpha = 0.5,
+            enetRule = "min",
+            enetFolds = 10,
+            enetTune = TRUE,
             interactions = NULL,
             intAllPairs = FALSE,
             intMode = "all",
@@ -170,7 +174,8 @@ cpCoxOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                 options=list(
                     "none",
                     "backward",
-                    "forward"),
+                    "forward",
+                    "enet"),
                 default="none")
             private$..selCrit <- jmvcore::OptionList$new(
                 "selCrit",
@@ -186,6 +191,29 @@ cpCoxOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                 min=0.0001,
                 max=0.5,
                 default=0.05)
+            private$..enetAlpha <- jmvcore::OptionNumber$new(
+                "enetAlpha",
+                enetAlpha,
+                min=0,
+                max=1,
+                default=0.5)
+            private$..enetRule <- jmvcore::OptionList$new(
+                "enetRule",
+                enetRule,
+                options=list(
+                    "min",
+                    "1se"),
+                default="min")
+            private$..enetFolds <- jmvcore::OptionInteger$new(
+                "enetFolds",
+                enetFolds,
+                min=3,
+                max=20,
+                default=10)
+            private$..enetTune <- jmvcore::OptionBool$new(
+                "enetTune",
+                enetTune,
+                default=TRUE)
             private$..interactions <- jmvcore::OptionTerms$new(
                 "interactions",
                 interactions,
@@ -415,6 +443,10 @@ cpCoxOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             self$.addOption(private$..selMode)
             self$.addOption(private$..selCrit)
             self$.addOption(private$..selAlpha)
+            self$.addOption(private$..enetAlpha)
+            self$.addOption(private$..enetRule)
+            self$.addOption(private$..enetFolds)
+            self$.addOption(private$..enetTune)
             self$.addOption(private$..interactions)
             self$.addOption(private$..intAllPairs)
             self$.addOption(private$..intMode)
@@ -472,6 +504,10 @@ cpCoxOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
         selMode = function() private$..selMode$value,
         selCrit = function() private$..selCrit$value,
         selAlpha = function() private$..selAlpha$value,
+        enetAlpha = function() private$..enetAlpha$value,
+        enetRule = function() private$..enetRule$value,
+        enetFolds = function() private$..enetFolds$value,
+        enetTune = function() private$..enetTune$value,
         interactions = function() private$..interactions$value,
         intAllPairs = function() private$..intAllPairs$value,
         intMode = function() private$..intMode$value,
@@ -528,6 +564,10 @@ cpCoxOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
         ..selMode = NA,
         ..selCrit = NA,
         ..selAlpha = NA,
+        ..enetAlpha = NA,
+        ..enetRule = NA,
+        ..enetFolds = NA,
+        ..enetTune = NA,
         ..interactions = NA,
         ..intAllPairs = NA,
         ..intMode = NA,
@@ -650,6 +690,10 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "selMode",
                     "selCrit",
                     "selAlpha",
+                    "enetAlpha",
+                    "enetRule",
+                    "enetFolds",
+                    "enetTune",
                     "splitVar",
                     "splitLevel",
                     "extFile"),
@@ -704,6 +748,10 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "selMode",
                     "selCrit",
                     "selAlpha",
+                    "enetAlpha",
+                    "enetRule",
+                    "enetFolds",
+                    "enetTune",
                     "splitVar",
                     "splitLevel",
                     "extFile"),
@@ -748,6 +796,10 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "selMode",
                     "selCrit",
                     "selAlpha",
+                    "enetAlpha",
+                    "enetRule",
+                    "enetFolds",
+                    "enetTune",
                     "splitVar",
                     "splitLevel",
                     "extFile"),
@@ -841,6 +893,10 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "selMode",
                     "selCrit",
                     "selAlpha",
+                    "enetAlpha",
+                    "enetRule",
+                    "enetFolds",
+                    "enetTune",
                     "splitVar",
                     "splitLevel",
                     "ciWidth"),
@@ -924,6 +980,10 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "selMode",
                     "selCrit",
                     "selAlpha",
+                    "enetAlpha",
+                    "enetRule",
+                    "enetFolds",
+                    "enetTune",
                     "splitVar",
                     "splitLevel"),
                 columns=list(
@@ -968,6 +1028,10 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "selMode",
                     "selCrit",
                     "selAlpha",
+                    "enetAlpha",
+                    "enetRule",
+                    "enetFolds",
+                    "enetTune",
                     "splitVar",
                     "splitLevel",
                     "validation",
@@ -1035,6 +1099,10 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "selMode",
                     "selCrit",
                     "selAlpha",
+                    "enetAlpha",
+                    "enetRule",
+                    "enetFolds",
+                    "enetTune",
                     "splitVar",
                     "splitLevel",
                     "validation",
@@ -1101,6 +1169,10 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "selMode",
                     "selCrit",
                     "selAlpha",
+                    "enetAlpha",
+                    "enetRule",
+                    "enetFolds",
+                    "enetTune",
                     "splitVar",
                     "splitLevel",
                     "ciWidth"),
@@ -1155,6 +1227,10 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "selMode",
                     "selCrit",
                     "selAlpha",
+                    "enetAlpha",
+                    "enetRule",
+                    "enetFolds",
+                    "enetTune",
                     "splitVar",
                     "splitLevel",
                     "ciWidth"),
@@ -1214,6 +1290,10 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "selMode",
                     "selCrit",
                     "selAlpha",
+                    "enetAlpha",
+                    "enetRule",
+                    "enetFolds",
+                    "enetTune",
                     "splitVar",
                     "splitLevel")))
             self$add(jmvcore::Table$new(
@@ -1239,6 +1319,10 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "selMode",
                     "selCrit",
                     "selAlpha",
+                    "enetAlpha",
+                    "enetRule",
+                    "enetFolds",
+                    "enetTune",
                     "splitVar",
                     "splitLevel",
                     "validation",
@@ -1305,6 +1389,10 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "selMode",
                     "selCrit",
                     "selAlpha",
+                    "enetAlpha",
+                    "enetRule",
+                    "enetFolds",
+                    "enetTune",
                     "splitVar",
                     "splitLevel",
                     "extFile",
@@ -1362,6 +1450,10 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "selMode",
                     "selCrit",
                     "selAlpha",
+                    "enetAlpha",
+                    "enetRule",
+                    "enetFolds",
+                    "enetTune",
                     "splitVar",
                     "splitLevel",
                     "validation",
@@ -1400,6 +1492,10 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "selMode",
                     "selCrit",
                     "selAlpha",
+                    "enetAlpha",
+                    "enetRule",
+                    "enetFolds",
+                    "enetTune",
                     "splitVar",
                     "splitLevel",
                     "extFile",
@@ -1454,6 +1550,10 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "selMode",
                     "selCrit",
                     "selAlpha",
+                    "enetAlpha",
+                    "enetRule",
+                    "enetFolds",
+                    "enetTune",
                     "splitVar",
                     "splitLevel",
                     "validation",
@@ -1504,6 +1604,10 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "selMode",
                     "selCrit",
                     "selAlpha",
+                    "enetAlpha",
+                    "enetRule",
+                    "enetFolds",
+                    "enetTune",
                     "splitVar",
                     "splitLevel",
                     "shapleyMeasure",
@@ -1550,6 +1654,10 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "selMode",
                     "selCrit",
                     "selAlpha",
+                    "enetAlpha",
+                    "enetRule",
+                    "enetFolds",
+                    "enetTune",
                     "splitVar",
                     "splitLevel",
                     "extFile",
@@ -1600,6 +1708,10 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "selMode",
                     "selCrit",
                     "selAlpha",
+                    "enetAlpha",
+                    "enetRule",
+                    "enetFolds",
+                    "enetTune",
                     "splitVar",
                     "splitLevel"),
                 columns=list(
@@ -1626,6 +1738,7 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     permBar = function() private$.items[["permBar"]],
                     shapSummary = function() private$.items[["shapSummary"]],
                     shapPatient = function() private$.items[["shapPatient"]],
+                    enetCv = function() private$.items[["enetCv"]],
                     instability = function() private$.items[["instability"]],
                     calInstability = function() private$.items[["calInstability"]]),
                 private = list(),
@@ -1662,6 +1775,10 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                                 "selMode",
                                 "selCrit",
                                 "selAlpha",
+                                "enetAlpha",
+                                "enetRule",
+                                "enetFolds",
+                                "enetTune",
                                 "splitVar",
                                 "splitLevel",
                                 "extFile",
@@ -1694,6 +1811,10 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                                 "selMode",
                                 "selCrit",
                                 "selAlpha",
+                                "enetAlpha",
+                                "enetRule",
+                                "enetFolds",
+                                "enetTune",
                                 "splitVar",
                                 "splitLevel",
                                 "extFile",
@@ -1725,6 +1846,10 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                                 "selMode",
                                 "selCrit",
                                 "selAlpha",
+                                "enetAlpha",
+                                "enetRule",
+                                "enetFolds",
+                                "enetTune",
                                 "splitVar",
                                 "splitLevel",
                                 "extFile",
@@ -1756,6 +1881,10 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                                 "selMode",
                                 "selCrit",
                                 "selAlpha",
+                                "enetAlpha",
+                                "enetRule",
+                                "enetFolds",
+                                "enetTune",
                                 "splitVar",
                                 "splitLevel",
                                 "shapleyMeasure",
@@ -1787,6 +1916,10 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                                 "selMode",
                                 "selCrit",
                                 "selAlpha",
+                                "enetAlpha",
+                                "enetRule",
+                                "enetFolds",
+                                "enetTune",
                                 "splitVar",
                                 "splitLevel",
                                 "extFile",
@@ -1819,6 +1952,10 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                                 "selMode",
                                 "selCrit",
                                 "selAlpha",
+                                "enetAlpha",
+                                "enetRule",
+                                "enetFolds",
+                                "enetTune",
                                 "splitVar",
                                 "splitLevel")))
                         self$add(jmvcore::Image$new(
@@ -1848,9 +1985,51 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                                 "selMode",
                                 "selCrit",
                                 "selAlpha",
+                                "enetAlpha",
+                                "enetRule",
+                                "enetFolds",
+                                "enetTune",
                                 "splitVar",
                                 "splitLevel",
                                 "shapRow")))
+                        self$add(jmvcore::Image$new(
+                            options=options,
+                            name="enetCv",
+                            title="Elastic Net \u2014 Cross-Validated Deviance",
+                            width=550,
+                            height=400,
+                            renderFun=".plotEnet",
+                            visible=FALSE,
+                            clearWith=list(
+                                "time",
+                                "status",
+                                "eventLevel",
+                                "horizon",
+                                "covs",
+                                "splineVars",
+                                "factors",
+                                "knots",
+                                "refLevels",
+                                "covScales",
+                                "interactions",
+                                "intAllPairs",
+                                "intMode",
+                                "intAlpha",
+                                "baseline",
+                                "selMode",
+                                "selCrit",
+                                "selAlpha",
+                                "enetAlpha",
+                                "enetRule",
+                                "enetFolds",
+                                "enetTune",
+                                "splitVar",
+                                "splitLevel",
+                                "validation",
+                                "nBoot",
+                                "nFolds",
+                                "nRepeats",
+                                "seed")))
                         self$add(jmvcore::Image$new(
                             options=options,
                             name="instability",
@@ -1878,6 +2057,10 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                                 "selMode",
                                 "selCrit",
                                 "selAlpha",
+                                "enetAlpha",
+                                "enetRule",
+                                "enetFolds",
+                                "enetTune",
                                 "splitVar",
                                 "splitLevel",
                                 "validation",
@@ -1910,6 +2093,10 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                                 "selMode",
                                 "selCrit",
                                 "selAlpha",
+                                "enetAlpha",
+                                "enetRule",
+                                "enetFolds",
+                                "enetTune",
                                 "splitVar",
                                 "splitLevel",
                                 "validation",
@@ -1941,6 +2128,10 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "selMode",
                     "selCrit",
                     "selAlpha",
+                    "enetAlpha",
+                    "enetRule",
+                    "enetFolds",
+                    "enetTune",
                     "splitVar",
                     "splitLevel",
                     "extFile")))
@@ -1970,6 +2161,10 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "selMode",
                     "selCrit",
                     "selAlpha",
+                    "enetAlpha",
+                    "enetRule",
+                    "enetFolds",
+                    "enetTune",
                     "splitVar",
                     "splitLevel",
                     "extFile")))}))
@@ -2032,11 +2227,16 @@ cpCoxBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
 #'   predictors that are always in the model (never removed by selection, never
 #'   penalised); they form the baseline model of the incremental-value
 #'   comparison
-#' @param selMode \code{'none'}, \code{'backward'} or \code{'forward'}:
-#'   selection of the predictors that are not baseline covariates, repeated in
-#'   every bootstrap or cross-validation fit
+#' @param selMode \code{'none'}, \code{'backward'}, \code{'forward'} or
+#'   \code{'enet'}: selection of the predictors that are not baseline
+#'   covariates, repeated in every bootstrap or cross-validation fit
 #' @param selCrit .
 #' @param selAlpha .
+#' @param enetAlpha the elastic net mixing parameter alpha (1 lasso, 0 ridge)
+#' @param enetRule .
+#' @param enetFolds .
+#' @param enetTune in bootstrap and cross-validation fits, choose λ again by
+#'   cross-validation (honest, slower) instead of using the λ of the final model
 #' @param interactions a list of pairs of predictors, the candidate
 #'   interaction terms
 #' @param intAllPairs .
@@ -2115,6 +2315,7 @@ cpCoxBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
 #'   \code{results$plots$permBar} \tab \tab \tab \tab \tab an image \cr
 #'   \code{results$plots$shapSummary} \tab \tab \tab \tab \tab an image \cr
 #'   \code{results$plots$shapPatient} \tab \tab \tab \tab \tab an image \cr
+#'   \code{results$plots$enetCv} \tab \tab \tab \tab \tab an image \cr
 #'   \code{results$plots$instability} \tab \tab \tab \tab \tab an image \cr
 #'   \code{results$plots$calInstability} \tab \tab \tab \tab \tab an image \cr
 #'   \code{results$predRisk} \tab \tab \tab \tab \tab an output \cr
@@ -2143,6 +2344,10 @@ cpCox <- function(
     selMode = "none",
     selCrit = "aic",
     selAlpha = 0.05,
+    enetAlpha = 0.5,
+    enetRule = "min",
+    enetFolds = 10,
+    enetTune = TRUE,
     interactions = NULL,
     intAllPairs = FALSE,
     intMode = "all",
@@ -2222,6 +2427,10 @@ cpCox <- function(
         selMode = selMode,
         selCrit = selCrit,
         selAlpha = selAlpha,
+        enetAlpha = enetAlpha,
+        enetRule = enetRule,
+        enetFolds = enetFolds,
+        enetTune = enetTune,
         interactions = interactions,
         intAllPairs = intAllPairs,
         intMode = intMode,

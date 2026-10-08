@@ -23,6 +23,10 @@ Needs **jamovi 28.4 or later**.
   - **Restricted cubic splines** (3–7 knots, Harrell's placement) for non-linear
     associations.
   - Factors, with a chosen **reference level**.
+- **Baseline covariates and selection**: predictors marked as baseline (e.g. institution, age,
+  sex) are always in the model; the others are kept, selected backward or forward (AIC, BIC or LR
+  test), or penalised by an **elastic net** (λ by cross-validation; checked against glmnet), the
+  selection or tuning repeated in every bootstrap or cross-validation fit.
 - **Interactions**, two ways: listed in an interaction builder, or all pairs of
   predictors as candidates.
   - A screening table gives each candidate added alone (LR χ², ΔAIC, ΔBIC).

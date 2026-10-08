@@ -125,7 +125,8 @@ cp_gaussian_samplesize <- function(nparams, r2adj, intercept, sd, shrinkage = 0.
     intercept = TRUE,
     fit = cp_gaussian_fit,
     vcov = function(beta) .lm_vcov(attr(beta, "fit")),
-    dfResid = function(beta) attr(beta, "fit")$df.residual,
+    # a penalised model has no lm fit (and no standard errors): normal quantiles
+    dfResid = function(beta) attr(beta, "fit")$df.residual %||% Inf,
     nullLoss = function(y) .gaussian_loss(y, mean(y)),
     lp = cp_lp,
     metrics = cp_gaussian_metrics,

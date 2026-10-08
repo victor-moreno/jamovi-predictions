@@ -72,7 +72,8 @@
         forced <- character(0)
         for (it in o$baseline) if (isTRUE(it$forced)) forced <- c(forced, it$var)
         list(mode = o$selMode, crit = o$selCrit, alpha = o$selAlpha,
-             forced = intersect(forced, private$.preds()), intMode = o$intMode, intAlpha = o$intAlpha)
+             forced = intersect(forced, private$.preds()), intMode = o$intMode, intAlpha = o$intAlpha,
+             enetAlpha = o$enetAlpha, enetRule = o$enetRule, enetFolds = o$enetFolds, seed = o$seed)
     },
     .selecting = function() {
         s <- private$.selOpts()
@@ -157,6 +158,8 @@
             for (v in private$.preds()) st$addRow(rowKey = v, values = list(var = v))
             st$getColumn("freq")$setVisible(val != "none")
             st$getColumn("freq")$setTitle(if (val == "cv") .("CV fits") else .("Bootstrap fits"))
+            r$plots$enetCv$setVisible(self$options$selMode == "enet")
+            for (cn in c("step", "chisq", "df", "p")) st$getColumn(cn)$setVisible(self$options$selMode != "enet")
         }
 
         if (val == "boot") {
@@ -226,6 +229,8 @@
 
     # write a row by key, adding it when .init could not know it
     .putRow = function(tab, key, values) {
+        # a missing number is a blank cell (jamovi would show NaN)
+        values <- lapply(values, function(v) if (length(v) == 1 && !is.character(v) && is.na(v)) "" else v)
         if (key %in% tab$rowKeys) tab$setRow(rowKey = key, values = values)
         else tab$addRow(rowKey = key, values = values)
     },
@@ -274,8 +279,14 @@
             .fail("The selection removed every predictor. Mark baseline covariates under Variable Selection, ",
                   "or use a less strict criterion.")
         spec <- cp_with_terms(specC, attr(sel, "vars"), attr(sel, "ints"))
+        penalized <- isTRUE(attr(sel, "penalized"))
         X <- cp_design(spec, prep$data)
-        beta <- fam$fit(X, y)
+        # a penalised model is its penalised coefficients; any other is refitted on the kept terms
+        beta <- if (penalized) {
+            b <- sel[c("(Intercept)", spec$columns)]
+            attributes(b) <- c(attributes(b)["names"], attributes(sel)[c("converged", "penalized", "lambda", "cv")])
+            b
+        } else fam$fit(X, y)
         if (anyNA(beta))
             .fail("The predictor column '", names(beta)[is.na(beta)][1], "' is redundant (a combination of ",
                   "other predictors); remove one of the predictors involved.")
@@ -310,11 +321,11 @@
                                              length(spec$outcome$levels), spec$outcome$event))
         private$.fillCoefs(beta, spec, conf)
         if (o$equation) r$equationText$setContent(private$.equation(beta, spec))
-        lrt <- if (o$oddsRatios || o$predTests) cp_lr_tests(spec, X, y, fam) else NULL
+        lrt <- if ((o$oddsRatios || o$predTests) && !penalized) cp_lr_tests(spec, X, y, fam) else NULL
         if (o$oddsRatios) private$.fillOR(spec, beta, prep, y, lrt, conf)
         if (o$predTests) private$.fillTests(lrt)
 
-        iv <- private$.internal(XC, y, specC)
+        iv <- private$.internal(XC, y, specC, attr(sel, "lambda"))
         if (length(cands)) private$.fillInt(XC, y, specC, sel, iv, conf, spec, beta)
         if (o$selMode != "none") private$.fillSel(sel, iv)
         private$.fillPerfDev(y, lp, iv, conf)
@@ -327,7 +338,7 @@
         all <- c(list(dev = list(X = X, y = y, lp = lp, p = p, df = prep$data)), vsets)
         private$.fillExtras(all, sets, conf)
         if (o$sampleSize) private$.fillSampleSize(y, lp, specC, iv)
-        if (o$shapley) private$.fillShapley(X, y, spec)
+        if (o$shapley) private$.fillShapley(X, y, spec, penalized)
         if (o$permImp) private$.fillPerm(beta, spec, all, sets)
         if (o$shap) private$.fillShap(beta, spec, X, data)
         dropped <- setdiff(private$.preds(), names(spec$vars))
@@ -376,8 +387,8 @@
         if (!self$options$coefs) return()
         fam <- private$.fam
         t <- self$results$coefTable
-        V <- fam$vcov(beta)
-        se <- sqrt(diag(V))
+        V <- private$.vcov(beta)
+        se <- if (is.null(V)) rep(NA_real_, length(beta)) else sqrt(diag(V))
         df <- fam$dfResid(beta)
         z <- stats::qt(1 - (1 - conf) / 2, df)
         for (i in seq_along(beta)) {
@@ -396,15 +407,16 @@
                        function(i) paste0(i$name, " = ", i$levels[1]), "")
         if (length(refs)) t$setNote("ref", paste0(.("Reference levels"), ": ", paste(refs, collapse = "; "), "."))
         if (length(self$options$splineVars)) t$setNote("spl", private$.text("coefSpline"))
+        if (is.null(V)) t$setNote("pen", .("Penalised (elastic net) estimates: they have no standard errors, confidence intervals or p values; their uncertainty is in the internal validation."))
     },
 
     .fillOR = function(spec, beta, prep, y, lrt, conf) {
         t <- self$results$orTable
         fam <- private$.fam
-        adj <- cp_effects(spec, beta, fam$vcov(beta), conf, exp = fam$exp, df = fam$dfResid(beta))
+        adj <- cp_effects(spec, beta, private$.vcov(beta), conf, exp = fam$exp, df = fam$dfResid(beta))
         # crude effects for every candidate predictor; adjusted ones for those in the model
         cr <- if (self$options$crude) cp_crude(prep$spec, prep$data, y, fam, conf) else NULL
-        pAdj <- stats::setNames(lrt$p, lrt$key)
+        pAdj <- if (is.null(lrt)) list() else as.list(stats::setNames(lrt$p, lrt$key))
         ref <- if (fam$exp) 1 else 0
         for (info in prep$spec$vars) {
             v <- info$name
@@ -412,7 +424,7 @@
             if (info$role == "factor")
                 private$.putRow(t, paste0(v, " (ref)"), list(var = v, level = info$levels[1],
                     or_u = ref, lower_u = "", upper_u = "", p_u = if (!is.null(cr)) attr(cr, "pOverall")[[v]] else "",
-                    or = if (inModel) ref else "", lower = "", upper = "", p = if (inModel) pAdj[[v]] else ""))
+                    or = if (inModel) ref else "", lower = "", upper = "", p = if (inModel) pAdj[[v]] %||% "" else ""))
             if (!inModel) {
                 for (d in cp_effect_defs(prep$spec, v)) {
                     cc <- if (!is.null(cr)) cr[cr$key == d$key, ] else NULL
@@ -426,7 +438,7 @@
             for (i in which(adj$var == v)) {
                 a <- adj[i, ]
                 vals <- list(var = v, level = a$level, or = a$est, lower = a$lower, upper = a$upper,
-                             p = if (info$role == "spline") pAdj[[v]] else a$p)
+                             p = if (info$role == "spline") pAdj[[v]] %||% "" else a$p)
                 if (!is.null(cr)) {
                     cc <- cr[cr$key == a$key, ]
                     vals <- c(vals, list(or_u = cc$est, lower_u = cc$lower, upper_u = cc$upper,
@@ -444,6 +456,10 @@
 
     .fillTests = function(lrt) {
         t <- self$results$testTable
+        if (is.null(lrt)) {
+            t$setNote("ex", .("Likelihood ratio tests do not apply to a penalised (elastic net) model."))
+            return()
+        }
         for (i in seq_len(nrow(lrt)))
             private$.putRow(t, lrt$key[i], list(term = lrt$term[i], chisq = lrt$chisq[i],
                                                 df = lrt$df[i], df2 = lrt$df2[i], p = lrt$p[i]))
@@ -482,7 +498,7 @@
                 t$setNote("res", .("The selection is repeated in every resampled fit, so the internal validation includes its optimism; the last column is the share of fits that selected the term."))
         }
         sub <- if (length(spec$interactions))
-            cp_subgroups(spec, beta, fam$vcov(beta), conf, exp = fam$exp, df = fam$dfResid(beta)) else NULL
+            cp_subgroups(spec, beta, private$.vcov(beta), conf, exp = fam$exp, df = fam$dfResid(beta)) else NULL
         st <- self$results$subTable
         if (is.null(sub)) {
             st$setNote("none", .("No interaction is in the model."))
@@ -505,11 +521,31 @@
                                                      freq = if (!is.null(iv$selection)) 1 else ""))
         for (i in seq_len(NROW(tt))) {
             v <- tt$var[i]
-            st <- if (tt$kept[i]) { if (is.na(tt$step[i])) .("kept") else .("added") } else
+            st <- if (o$selMode == "enet") { if (tt$kept[i]) .("kept") else .("shrunk to 0") } else
+                if (tt$kept[i]) { if (is.na(tt$step[i])) .("kept") else .("added") } else
                 { if (is.na(tt$step[i])) .("not added") else .("removed") }
             private$.putRow(t, v, list(var = v, status = st, step = if (is.na(tt$step[i])) "" else tt$step[i],
                 chisq = tt$chisq[i], df = tt$df[i], p = tt$p[i],
                 freq = if (!is.null(iv$selection)) .sel_freq(iv$selection, v) else ""))
+        }
+        if (o$selMode == "enet") {
+            lam <- attr(sel, "lambda"); cv <- attr(sel, "cv")
+            t$setNote("how", sprintf(.("Elastic net, mixing α = %s, λ = %s (%s, %d-fold cross-validation); baseline covariates are not penalised. A predictor is kept when any of its coefficients is not shrunk to 0; all candidate interactions enter the penalised model."),
+                                     .num(o$enetAlpha), .num(lam, 4),
+                                     if (o$enetRule == "1se") .("largest within 1 SE of the minimum deviance") else .("minimum deviance"),
+                                     o$enetFolds))
+            if (identical(private$.famName, "cox"))
+                t$setNote("ties", .("The penalised Cox model uses Breslow's handling of tied times (the unpenalised one, Efron's)."))
+            if (!is.null(iv)) t$setNote("res", if (o$enetTune)
+                .("λ is tuned again by cross-validation in every resampled fit, so the internal validation includes the tuning; the last column is the share of fits that kept the predictor.")
+                else .("Resampled fits use the λ of the final model (the tuning itself is not validated); the last column is the share of fits that kept the predictor."))
+            img <- self$results$plots$enetCv
+            if (!is.null(cv) && is.null(img$state))
+                img$setState(list(lambda = cv$lambda, cvm = cv$cvm, cvsd = cv$cvsd, imin = cv$imin, i1se = cv$i1se,
+                                  nz = colSums(cv$path$beta != 0), chosen = lam,
+                                  ylab = if (identical(private$.famName, "gaussian")) "Mean squared error" else
+                                      if (identical(private$.famName, "cox")) "Partial likelihood deviance" else "Binomial deviance"))
+            return()
         }
         crit <- switch(o$selCrit, aic = "AIC", bic = "BIC", lrt = sprintf(.("LR test, α = %s"), .num(o$selAlpha)))
         t$setNote("how", sprintf(if (o$selMode == "backward")
@@ -549,7 +585,7 @@
     },
 
     # internal validation, cached in the performance table's state
-    .internal = function(X, y, specC) {
+    .internal = function(X, y, specC, lambda = NULL) {
         o <- self$options
         if (o$validation == "none") return(NULL)
         iv <- self$results$perfDev$state
@@ -557,6 +593,8 @@
             fam <- private$.fam
             if (private$.selecting()) {
                 base <- fam; so <- private$.selOpts()
+                # elastic net: tune lambda again in each fit, or keep the final model's
+                if (so$mode == "enet" && !o$enetTune) so$lambda <- lambda
                 fam$fit <- function(X, y) cp_fit_procedure(X, y, specC, base, so)
             }
             iv <- cp_internal(X, y, fam, o$validation, B = o$nBoot, k = o$nFolds,
@@ -631,6 +669,8 @@
             vals$events <- private$.outcomeSummary(yy)
             for (info in prep$spec$vars) {
                 x <- df[[info$name]]
+                # validation data hold the final model's predictors only (selection)
+                if (is.null(x)) next
                 if (info$role == "factor") {
                     for (l in info$levels) vals[[paste(info$name, l)]] <- sprintf("%.1f%%", 100 * mean(x == l))
                 } else vals[[info$name]] <- fmt(mean(x), stats::sd(x))
@@ -676,8 +716,15 @@
             r[[t]]$setNote("drop", note)
     },
 
-    .fillShapley = function(X, y, spec) {
+    # the covariance of the coefficients; none for a penalised model
+    .vcov = function(beta) if (isTRUE(attr(beta, "penalized"))) NULL else private$.fam$vcov(beta),
+
+    .fillShapley = function(X, y, spec, penalized = FALSE) {
         t <- self$results$shapleyTable
+        if (penalized) {
+            t$setNote("tot", .("The Shapley decomposition refits unpenalised models for every subset of predictors, so it does not describe a penalised (elastic net) model; use SHAP or permutation importance."))
+            return()
+        }
         sh <- t$state
         # the linear analysis has a single R² (no shapleyMeasure option)
         measure <- if (self$options$has("shapleyMeasure")) self$options$shapleyMeasure else "r2"
@@ -782,6 +829,10 @@
     },
 
     # ---- plots -------------------------------------------------------------
+    .plotEnet = function(image, ggtheme, theme, ...) {
+        if (is.null(image$state)) return(FALSE)
+        print(cp_plot_enet_cv(image$state, ggtheme)); TRUE
+    },
     .plotShapley = function(image, ggtheme, theme, ...) {
         if (is.null(image$state)) return(FALSE)
         print(cp_plot_shapley(image$state$df, image$state$label, ggtheme)); TRUE

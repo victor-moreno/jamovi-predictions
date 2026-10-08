@@ -180,10 +180,12 @@ options:
           title: Backward elimination
         - name: forward
           title: Forward selection
+        - name: enet
+          title: Elastic net (penalised)
       default: none
       description:
           R: >-
-              `'none'`, `'backward'` or `'forward'`: selection of the predictors
+              `'none'`, `'backward'`, `'forward'` or `'enet'`: selection of the predictors
               that are not baseline covariates, repeated in every bootstrap or
               cross-validation fit
 
@@ -205,6 +207,42 @@ options:
       min: 0.0001
       max: 0.5
       default: 0.05
+
+    - name: enetAlpha
+      title: Mixing (1 = lasso, 0 = ridge)
+      type: Number
+      min: 0
+      max: 1
+      default: 0.5
+      description:
+          R: the elastic net mixing parameter α (1 lasso, 0 ridge)
+
+    - name: enetRule
+      title: λ
+      type: List
+      options:
+        - name: min
+          title: Minimum CV deviance
+        - name: 1se
+          title: Largest within 1 SE (sparser)
+      default: min
+
+    - name: enetFolds
+      title: Folds for λ
+      type: Integer
+      min: 3
+      max: 20
+      default: 10
+
+    - name: enetTune
+      title: Repeat the λ tuning in each resampled fit
+      type: Bool
+      default: true
+      description:
+          R: >-
+              in bootstrap and cross-validation fits, choose λ again by
+              cross-validation (honest, slower) instead of using the λ of the
+              final model
 
     - name: interactions
       title: Interaction terms

@@ -37,7 +37,9 @@ patients with smoking `unknown`, systolic pressures above the development range,
      Levels*: e.g. `smoking` = `current`.
    - *Variable Selection*: tick `sex` and `centre` as baseline covariates (always in the model),
      choose backward elimination (AIC, BIC or LR test); the selection table shows what was kept,
-     and with bootstrap validation how often each predictor was kept in the resampled fits.
+     and with bootstrap validation how often each predictor was kept in the resampled fits. Or
+     choose *Elastic net (penalised)*: λ by cross-validation (plot), baseline covariates unpenalised,
+     the tuning repeated in every bootstrap fit.
    - *Interactions*: add `age × sex` (and a false one, e.g. `sbp × diabetes`), keep
      *Forward selection, LR test*: `age × sex` enters at step 1, and the table of effects within
      subgroups shows the sex odds ratio at each age quartile.

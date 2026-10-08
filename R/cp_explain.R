@@ -87,7 +87,8 @@ cp_contrast <- function(spec, beta, V, p1, p0, intercept = TRUE) {
     if (intercept) L <- cbind(0, L)
     b <- beta; b[is.na(b)] <- 0
     est <- sum(L * b)
-    se <- sqrt(max(0, drop(L %*% V %*% t(L))))
+    # no covariance (a penalised model): no standard error
+    se <- if (is.null(V)) NA_real_ else sqrt(max(0, drop(L %*% V %*% t(L))))
     c(est = est, se = se)
 }
 

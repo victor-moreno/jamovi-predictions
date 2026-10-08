@@ -257,3 +257,22 @@ cp_plot_km <- function(st, ggtheme) {
         ggplot2::guides(colour = ggplot2::guide_legend(nrow = 2)) +
         ggplot2::theme(legend.title = ggplot2::element_text())
 }
+
+# Cross-validated deviance along the lambda path, with 1 SE bars; dashed lines
+# at the minimum and at the largest lambda within 1 SE, the solid one at the
+# lambda chosen; numbers of non-zero coefficients on top
+cp_plot_enet_cv <- function(st, ggtheme) {
+    df <- data.frame(ll = log(st$lambda), cvm = st$cvm, lo = st$cvm - st$cvsd, hi = st$cvm + st$cvsd)
+    lab <- df[unique(round(seq(1, nrow(df), length.out = 8))), ]
+    lab$nz <- st$nz[as.integer(rownames(lab))]
+    top <- max(df$hi, na.rm = TRUE)
+    ggplot2::ggplot(df, ggplot2::aes(.data$ll, .data$cvm)) +
+        ggplot2::geom_errorbar(ggplot2::aes(ymin = .data$lo, ymax = .data$hi), width = 0, colour = "grey60") +
+        ggplot2::geom_point(colour = "#D55E00", size = 1.4) +
+        ggplot2::geom_vline(xintercept = log(st$lambda[c(st$imin, st$i1se)]), linetype = "dashed", colour = "grey50") +
+        ggplot2::geom_vline(xintercept = log(st$chosen), colour = "#0072B2") +
+        ggplot2::geom_text(data = lab, ggplot2::aes(.data$ll, top, label = .data$nz), vjust = -0.3,
+                           size = 0.8 * ggplot2::calc_element("axis.text", .jtheme(ggtheme))$size / ggplot2::.pt %||% 3.5) +
+        ggplot2::labs(x = "log(λ)", y = st$ylab, subtitle = "Numbers: non-zero coefficients") +
+        .jtheme(ggtheme)
+}

@@ -46,6 +46,10 @@ items:
         - selMode
         - selCrit
         - selAlpha
+        - enetAlpha
+        - enetRule
+        - enetFolds
+        - enetTune
         - splitVar
         - splitLevel
         - extFile
@@ -166,6 +170,10 @@ items:
         - selMode
         - selCrit
         - selAlpha
+        - enetAlpha
+        - enetRule
+        - enetFolds
+        - enetTune
         - splitVar
         - splitLevel
         - ciWidth
@@ -237,6 +245,10 @@ items:
         - selMode
         - selCrit
         - selAlpha
+        - enetAlpha
+        - enetRule
+        - enetFolds
+        - enetTune
         - splitVar
         - splitLevel
       columns:
@@ -275,6 +287,10 @@ items:
         - selMode
         - selCrit
         - selAlpha
+        - enetAlpha
+        - enetRule
+        - enetFolds
+        - enetTune
         - splitVar
         - splitLevel
         - validation
@@ -332,6 +348,10 @@ items:
         - selMode
         - selCrit
         - selAlpha
+        - enetAlpha
+        - enetRule
+        - enetFolds
+        - enetTune
         - splitVar
         - splitLevel
         - validation
@@ -389,6 +409,10 @@ items:
         - selMode
         - selCrit
         - selAlpha
+        - enetAlpha
+        - enetRule
+        - enetFolds
+        - enetTune
         - splitVar
         - splitLevel
         - ciWidth
@@ -435,6 +459,10 @@ items:
         - selMode
         - selCrit
         - selAlpha
+        - enetAlpha
+        - enetRule
+        - enetFolds
+        - enetTune
         - splitVar
         - splitLevel
         - ciWidth
@@ -485,6 +513,10 @@ items:
         - selMode
         - selCrit
         - selAlpha
+        - enetAlpha
+        - enetRule
+        - enetFolds
+        - enetTune
         - splitVar
         - splitLevel
 
@@ -508,6 +540,10 @@ items:
         - selMode
         - selCrit
         - selAlpha
+        - enetAlpha
+        - enetRule
+        - enetFolds
+        - enetTune
         - splitVar
         - splitLevel
         - validation
@@ -565,6 +601,10 @@ items:
         - selMode
         - selCrit
         - selAlpha
+        - enetAlpha
+        - enetRule
+        - enetFolds
+        - enetTune
         - splitVar
         - splitLevel
         - extFile
@@ -614,6 +654,10 @@ items:
         - selMode
         - selCrit
         - selAlpha
+        - enetAlpha
+        - enetRule
+        - enetFolds
+        - enetTune
         - splitVar
         - splitLevel
         - extFile
@@ -682,6 +726,10 @@ items:
         - selMode
         - selCrit
         - selAlpha
+        - enetAlpha
+        - enetRule
+        - enetFolds
+        - enetTune
         - splitVar
         - splitLevel
         - validation
@@ -716,6 +764,10 @@ items:
         - selMode
         - selCrit
         - selAlpha
+        - enetAlpha
+        - enetRule
+        - enetFolds
+        - enetTune
         - splitVar
         - splitLevel
         - extFile
@@ -791,6 +843,10 @@ items:
         - selMode
         - selCrit
         - selAlpha
+        - enetAlpha
+        - enetRule
+        - enetFolds
+        - enetTune
         - splitVar
         - splitLevel
         - extFile
@@ -837,6 +893,10 @@ items:
         - selMode
         - selCrit
         - selAlpha
+        - enetAlpha
+        - enetRule
+        - enetFolds
+        - enetTune
         - splitVar
         - splitLevel
         - ssSource
@@ -876,6 +936,10 @@ items:
         - selMode
         - selCrit
         - selAlpha
+        - enetAlpha
+        - enetRule
+        - enetFolds
+        - enetTune
         - splitVar
         - splitLevel
         - shapleyMeasure
@@ -916,6 +980,10 @@ items:
         - selMode
         - selCrit
         - selAlpha
+        - enetAlpha
+        - enetRule
+        - enetFolds
+        - enetTune
         - splitVar
         - splitLevel
         - extFile
@@ -959,6 +1027,10 @@ items:
         - selMode
         - selCrit
         - selAlpha
+        - enetAlpha
+        - enetRule
+        - enetFolds
+        - enetTune
         - splitVar
         - splitLevel
       columns:
@@ -1010,6 +1082,10 @@ items:
             - selMode
             - selCrit
             - selAlpha
+            - enetAlpha
+            - enetRule
+            - enetFolds
+            - enetTune
             - splitVar
             - splitLevel
             - extFile
@@ -1048,6 +1124,10 @@ items:
             - selMode
             - selCrit
             - selAlpha
+            - enetAlpha
+            - enetRule
+            - enetFolds
+            - enetTune
             - splitVar
             - splitLevel
             - extFile
@@ -1077,6 +1157,10 @@ items:
             - selMode
             - selCrit
             - selAlpha
+            - enetAlpha
+            - enetRule
+            - enetFolds
+            - enetTune
             - splitVar
             - splitLevel
             - shapleyMeasure
@@ -1106,6 +1190,10 @@ items:
             - selMode
             - selCrit
             - selAlpha
+            - enetAlpha
+            - enetRule
+            - enetFolds
+            - enetTune
             - splitVar
             - splitLevel
             - extFile
@@ -1136,6 +1224,10 @@ items:
             - selMode
             - selCrit
             - selAlpha
+            - enetAlpha
+            - enetRule
+            - enetFolds
+            - enetTune
             - splitVar
             - splitLevel
 
@@ -1163,9 +1255,49 @@ items:
             - selMode
             - selCrit
             - selAlpha
+            - enetAlpha
+            - enetRule
+            - enetFolds
+            - enetTune
             - splitVar
             - splitLevel
             - shapRow
+
+        - name: enetCv
+          title: Elastic Net — Cross-Validated Deviance
+          type: Image
+          width: 550
+          height: 400
+          renderFun: .plotEnet
+          visible: false
+          clearWith:
+            - dep
+            - eventLevel
+            - covs
+            - splineVars
+            - factors
+            - knots
+            - refLevels
+            - covScales
+            - interactions
+            - intAllPairs
+            - intMode
+            - intAlpha
+            - baseline
+            - selMode
+            - selCrit
+            - selAlpha
+            - enetAlpha
+            - enetRule
+            - enetFolds
+            - enetTune
+            - splitVar
+            - splitLevel
+            - validation
+            - nBoot
+            - nFolds
+            - nRepeats
+            - seed
 
         - name: instability
           title: Prediction Instability
@@ -1191,6 +1323,10 @@ items:
             - selMode
             - selCrit
             - selAlpha
+            - enetAlpha
+            - enetRule
+            - enetFolds
+            - enetTune
             - splitVar
             - splitLevel
             - validation

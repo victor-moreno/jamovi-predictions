@@ -79,6 +79,7 @@ cp_select_main <- function(X, y, spec, fam, mode = "none", crit = "aic", alpha =
 # resampling frequencies), mainTests and screen (interaction screening).
 cp_fit_procedure <- function(X, y, spec, fam, sel) {
     mode <- sel$mode %||% "none"
+    if (mode == "enet") return(.fit_enet(X, y, spec, fam, sel))
     ms <- cp_select_main(X, y, spec, fam, mode, sel$crit %||% "aic", sel$alpha %||% 0.05, sel$forced %||% character(0))
     specK <- cp_with_terms(spec, ms$kept, names(spec$interactions))
     XK <- X[, specK$columns, drop = FALSE]
@@ -96,4 +97,27 @@ cp_fit_procedure <- function(X, y, spec, fam, sel) {
     attr(out, "mainTests") <- ms$tests
     attr(out, "screen") <- attr(b, "screen")
     out
+}
+
+# Elastic net over every candidate column (main effects and all candidate
+# interactions); the columns of baseline covariates are not penalised. The
+# penalised coefficients are the model (no refit). A predictor is kept when
+# any of its columns, or of an interaction it is part of, is not zero.
+.fit_enet <- function(X, y, spec, fam, sel) {
+    forced <- sel$forced %||% character(0)
+    pf <- ifelse(spec$colTerm %in% forced, 0, 1)
+    if (all(pf == 0)) pf[] <- 1
+    b <- cp_enet_fit(X, y, fam, alpha = sel$enetAlpha %||% 0.5, pf = pf, rule = sel$enetRule %||% "min",
+                     nfolds = sel$enetFolds %||% 10, seed = sel$seed %||% 1, lambda = sel$lambda)
+    nz <- spec$colTerm[b[-1] != 0]
+    ints <- intersect(names(spec$interactions), nz)
+    vars <- names(spec$vars)[names(spec$vars) %in% c(forced, nz, unlist(spec$interactions[ints]))]
+    free <- setdiff(names(spec$vars), forced)
+    tests <- data.frame(var = free, kept = free %in% vars, step = NA_integer_, chisq = NA_real_, df = NA_real_,
+                        p = NA_real_, stringsAsFactors = FALSE)
+    attr(b, "vars") <- vars
+    attr(b, "ints") <- ints
+    attr(b, "selected") <- c(vars, ints)
+    attr(b, "mainTests") <- tests
+    b
 }

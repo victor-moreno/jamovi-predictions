@@ -179,6 +179,20 @@ children:
             name: selAlpha
             format: number
             enable: (selCrit:lrt)
+          - type: TextBox
+            name: enetAlpha
+            format: number
+            enable: (selMode:enet)
+          - type: ComboBox
+            name: enetRule
+            enable: (selMode:enet)
+          - type: TextBox
+            name: enetFolds
+            format: number
+            enable: (selMode:enet)
+          - type: CheckBox
+            name: enetTune
+            enable: (selMode:enet)
 
   - type: CollapseBox
     label: Interactions
