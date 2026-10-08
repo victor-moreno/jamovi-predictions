@@ -212,6 +212,17 @@ options:
               cross-validation (honest, slower) instead of using the λ of the
               final model
 
+    - name: incremental
+      title: Incremental value over the baseline model
+      type: Bool
+      default: false
+      description:
+          R: >-
+              compare the baseline model (baseline covariates only) with the
+              full model: differences in performance (apparent, optimism-corrected
+              and in validation data), LR test of the added predictors,
+              reclassification and net benefit
+
     - name: interactions
       title: Interaction terms
       type: Terms

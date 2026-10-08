@@ -83,18 +83,23 @@ cp_plot_risk <- function(sets, ggtheme) {
 cp_plot_dca <- function(sets, ggtheme) {
     df <- do.call(rbind, lapply(sets, function(s) {
         nb <- s$nb
-        rbind(data.frame(threshold = nb$threshold, nb = nb$model, strategy = "Model", label = s$label),
+        rbind(data.frame(threshold = nb$threshold, nb = nb$model, strategy = if (is.null(nb$base)) "Model" else "Full model", label = s$label),
+              # the baseline model, when comparing models
+              if (!is.null(nb$base)) data.frame(threshold = nb$threshold, nb = nb$base, strategy = "Baseline model", label = s$label),
               data.frame(threshold = nb$threshold, nb = nb$all, strategy = "Treat all", label = s$label),
               data.frame(threshold = nb$threshold, nb = nb$none, strategy = "Treat none", label = s$label))
     }))
     df$label <- factor(df$label, vapply(sets, `[[`, "", "label"))
-    df$strategy <- factor(df$strategy, c("Model", "Treat all", "Treat none"))
+    strat <- intersect(c("Model", "Full model", "Baseline model", "Treat all", "Treat none"), unique(df$strategy))
+    df$strategy <- factor(df$strategy, strat)
     top <- max(df$nb[df$strategy != "Treat none"], na.rm = TRUE)
     ggplot2::ggplot(df, ggplot2::aes(.data$threshold, .data$nb, colour = .data$strategy,
                                      linetype = .data$strategy)) +
         ggplot2::geom_line(linewidth = 0.9) +
-        ggplot2::scale_colour_manual(values = c("#0072B2", "#D55E00", "grey40")) +
-        ggplot2::scale_linetype_manual(values = c("solid", "longdash", "dotted")) +
+        ggplot2::scale_colour_manual(values = c(Model = "#0072B2", `Full model` = "#0072B2", `Baseline model` = "#009E73",
+                                                `Treat all` = "#D55E00", `Treat none` = "grey40")) +
+        ggplot2::scale_linetype_manual(values = c(Model = "solid", `Full model` = "solid", `Baseline model` = "twodash",
+                                                  `Treat all` = "longdash", `Treat none` = "dotted")) +
         ggplot2::facet_wrap(~label) +
         ggplot2::coord_cartesian(ylim = c(-0.1 * top, top * 1.05)) +
         ggplot2::labs(x = "Threshold probability", y = "Net benefit") +

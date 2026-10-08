@@ -198,6 +198,8 @@ children:
           - type: CheckBox
             name: enetTune
             enable: (selMode:enet)
+          - type: CheckBox
+            name: incremental
 
   - type: CollapseBox
     label: Interactions

@@ -27,6 +27,10 @@ Needs **jamovi 28.4 or later**.
   sex) are always in the model; the others are kept, selected backward or forward (AIC, BIC or LR
   test), or penalised by an **elastic net** (λ by cross-validation; checked against glmnet), the
   selection or tuning repeated in every bootstrap or cross-validation fit.
+- **Incremental value** of the other predictors over the baseline model: Δ of every performance
+  measure (apparent, optimism-corrected on the same resamples, and in validation data), ΔAUC
+  (paired DeLong) or ΔC with confidence intervals, LR or F test of the added predictors, NRI and
+  IDI, Δ net benefit and overlaid decision curves.
 - **Interactions**, two ways: listed in an interaction builder, or all pairs of
   predictors as candidates.
   - A screening table gives each candidate added alone (LR χ², ΔAIC, ΔBIC).

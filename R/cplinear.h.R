@@ -20,6 +20,7 @@ cpLinearOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             enetRule = "min",
             enetFolds = 10,
             enetTune = TRUE,
+            incremental = FALSE,
             interactions = NULL,
             intAllPairs = FALSE,
             intMode = "all",
@@ -190,6 +191,10 @@ cpLinearOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                 "enetTune",
                 enetTune,
                 default=TRUE)
+            private$..incremental <- jmvcore::OptionBool$new(
+                "incremental",
+                incremental,
+                default=FALSE)
             private$..interactions <- jmvcore::OptionTerms$new(
                 "interactions",
                 interactions,
@@ -391,6 +396,7 @@ cpLinearOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             self$.addOption(private$..enetRule)
             self$.addOption(private$..enetFolds)
             self$.addOption(private$..enetTune)
+            self$.addOption(private$..incremental)
             self$.addOption(private$..interactions)
             self$.addOption(private$..intAllPairs)
             self$.addOption(private$..intMode)
@@ -443,6 +449,7 @@ cpLinearOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
         enetRule = function() private$..enetRule$value,
         enetFolds = function() private$..enetFolds$value,
         enetTune = function() private$..enetTune$value,
+        incremental = function() private$..incremental$value,
         interactions = function() private$..interactions$value,
         intAllPairs = function() private$..intAllPairs$value,
         intMode = function() private$..intMode$value,
@@ -494,6 +501,7 @@ cpLinearOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
         ..enetRule = NA,
         ..enetFolds = NA,
         ..enetTune = NA,
+        ..incremental = NA,
         ..interactions = NA,
         ..intAllPairs = NA,
         ..intMode = NA,
@@ -545,6 +553,7 @@ cpLinearResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
         testTable = function() private$.items[["testTable"]],
         intTable = function() private$.items[["intTable"]],
         selTable = function() private$.items[["selTable"]],
+        incTable = function() private$.items[["incTable"]],
         subTable = function() private$.items[["subTable"]],
         coefTable = function() private$.items[["coefTable"]],
         equationText = function() private$.items[["equationText"]],
@@ -1032,6 +1041,96 @@ cpLinearResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                         `title`="Resampled fits", 
                         `type`="number", 
                         `format`="pc", 
+                        `visible`=FALSE))))
+            self$add(jmvcore::Table$new(
+                options=options,
+                name="incTable",
+                title="Incremental Value over the Baseline Model",
+                visible=FALSE,
+                clearWith=list(
+                    "dep",
+                    "covs",
+                    "splineVars",
+                    "factors",
+                    "knots",
+                    "refLevels",
+                    "covScales",
+                    "interactions",
+                    "intAllPairs",
+                    "intMode",
+                    "intAlpha",
+                    "baseline",
+                    "selMode",
+                    "selCrit",
+                    "selAlpha",
+                    "enetAlpha",
+                    "enetRule",
+                    "enetFolds",
+                    "enetTune",
+                    "splitVar",
+                    "splitLevel",
+                    "validation",
+                    "nBoot",
+                    "nFolds",
+                    "nRepeats",
+                    "seed",
+                    "ciWidth",
+                    "incremental",
+                    "extFile"),
+                columns=list(
+                    list(
+                        `name`="set", 
+                        `title`="Data set", 
+                        `type`="text", 
+                        `combineBelow`=TRUE),
+                    list(
+                        `name`="measure", 
+                        `title`="Measure", 
+                        `type`="text"),
+                    list(
+                        `name`="base", 
+                        `title`="Baseline", 
+                        `type`="number"),
+                    list(
+                        `name`="full", 
+                        `title`="Full", 
+                        `type`="number"),
+                    list(
+                        `name`="delta", 
+                        `title`="\u0394", 
+                        `type`="number"),
+                    list(
+                        `name`="lower", 
+                        `title`="Lower", 
+                        `type`="number", 
+                        `superTitle`="\u0394 CI"),
+                    list(
+                        `name`="upper", 
+                        `title`="Upper", 
+                        `type`="number", 
+                        `superTitle`="\u0394 CI"),
+                    list(
+                        `name`="p", 
+                        `title`="p", 
+                        `type`="number", 
+                        `format`="zto,pvalue"),
+                    list(
+                        `name`="baseCorr", 
+                        `title`="Baseline", 
+                        `type`="number", 
+                        `superTitle`="Optimism-corrected", 
+                        `visible`=FALSE),
+                    list(
+                        `name`="fullCorr", 
+                        `title`="Full", 
+                        `type`="number", 
+                        `superTitle`="Optimism-corrected", 
+                        `visible`=FALSE),
+                    list(
+                        `name`="deltaCorr", 
+                        `title`="\u0394", 
+                        `type`="number", 
+                        `superTitle`="Optimism-corrected", 
                         `visible`=FALSE))))
             self$add(jmvcore::Table$new(
                 options=options,
@@ -1965,6 +2064,10 @@ cpLinearBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
 #' @param enetFolds .
 #' @param enetTune in bootstrap and cross-validation fits, choose λ again by
 #'   cross-validation (honest, slower) instead of using the λ of the final model
+#' @param incremental compare the baseline model (baseline covariates only)
+#'   with the full model: differences in performance (apparent,
+#'   optimism-corrected and in validation data), LR test of the added
+#'   predictors, reclassification and net benefit
 #' @param interactions a list of pairs of predictors, the candidate
 #'   interaction terms
 #' @param intAllPairs .
@@ -2022,6 +2125,7 @@ cpLinearBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
 #'   \code{results$testTable} \tab \tab \tab \tab \tab a table \cr
 #'   \code{results$intTable} \tab \tab \tab \tab \tab a table \cr
 #'   \code{results$selTable} \tab \tab \tab \tab \tab a table \cr
+#'   \code{results$incTable} \tab \tab \tab \tab \tab a table \cr
 #'   \code{results$subTable} \tab \tab \tab \tab \tab a table \cr
 #'   \code{results$coefTable} \tab \tab \tab \tab \tab a table \cr
 #'   \code{results$equationText} \tab \tab \tab \tab \tab a preformatted \cr
@@ -2067,6 +2171,7 @@ cpLinear <- function(
     enetRule = "min",
     enetFolds = 10,
     enetTune = TRUE,
+    incremental = FALSE,
     interactions = NULL,
     intAllPairs = FALSE,
     intMode = "all",
@@ -2139,6 +2244,7 @@ cpLinear <- function(
         enetRule = enetRule,
         enetFolds = enetFolds,
         enetTune = enetTune,
+        incremental = incremental,
         interactions = interactions,
         intAllPairs = intAllPairs,
         intMode = intMode,

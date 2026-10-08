@@ -388,6 +388,88 @@ items:
           format: pc
           visible: false
 
+    - name: incTable
+      title: Incremental Value over the Baseline Model
+      type: Table
+      visible: false
+      clearWith:
+        - dep
+        - eventLevel
+        - covs
+        - splineVars
+        - factors
+        - knots
+        - refLevels
+        - covScales
+        - interactions
+        - intAllPairs
+        - intMode
+        - intAlpha
+        - baseline
+        - selMode
+        - selCrit
+        - selAlpha
+        - enetAlpha
+        - enetRule
+        - enetFolds
+        - enetTune
+        - splitVar
+        - splitLevel
+        - validation
+        - nBoot
+        - nFolds
+        - nRepeats
+        - seed
+        - ciWidth
+        - incremental
+        - extFile
+        - nbThresholds
+        - dcaMax
+      columns:
+        - name: set
+          title: Data set
+          type: text
+          combineBelow: true
+        - name: measure
+          title: Measure
+          type: text
+        - name: base
+          title: Baseline
+          type: number
+        - name: full
+          title: Full
+          type: number
+        - name: delta
+          title: Δ
+          type: number
+        - name: lower
+          title: Lower
+          type: number
+          superTitle: Δ CI
+        - name: upper
+          title: Upper
+          type: number
+          superTitle: Δ CI
+        - name: p
+          title: p
+          type: number
+          format: zto,pvalue
+        - name: baseCorr
+          title: Baseline
+          type: number
+          superTitle: Optimism-corrected
+          visible: false
+        - name: fullCorr
+          title: Full
+          type: number
+          superTitle: Optimism-corrected
+          visible: false
+        - name: deltaCorr
+          title: Δ
+          type: number
+          superTitle: Optimism-corrected
+          visible: false
+
     - name: subTable
       title: Effects Within Subgroups
       type: Table
@@ -1298,6 +1380,47 @@ items:
             - nFolds
             - nRepeats
             - seed
+
+        - name: incDca
+          title: Decision Curve — Baseline and Full Model
+          type: Image
+          width: 550
+          height: 420
+          renderFun: .plotIncDca
+          visible: false
+          clearWith:
+            - dep
+            - eventLevel
+            - covs
+            - splineVars
+            - factors
+            - knots
+            - refLevels
+            - covScales
+            - interactions
+            - intAllPairs
+            - intMode
+            - intAlpha
+            - baseline
+            - selMode
+            - selCrit
+            - selAlpha
+            - enetAlpha
+            - enetRule
+            - enetFolds
+            - enetTune
+            - splitVar
+            - splitLevel
+            - validation
+            - nBoot
+            - nFolds
+            - nRepeats
+            - seed
+            - ciWidth
+            - incremental
+            - extFile
+            - nbThresholds
+            - dcaMax
 
         - name: instability
           title: Prediction Instability

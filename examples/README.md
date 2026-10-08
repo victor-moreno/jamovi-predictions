@@ -39,7 +39,9 @@ patients with smoking `unknown`, systolic pressures above the development range,
      choose backward elimination (AIC, BIC or LR test); the selection table shows what was kept,
      and with bootstrap validation how often each predictor was kept in the resampled fits. Or
      choose *Elastic net (penalised)*: λ by cross-validation (plot), baseline covariates unpenalised,
-     the tuning repeated in every bootstrap fit.
+     the tuning repeated in every bootstrap fit. Tick *Incremental value over the baseline model*
+     (baseline `age`, `sex`): ΔAUC with a paired CI, the LR test of the added predictors, NRI,
+     IDI and Δ net benefit, apparent, optimism-corrected and in the validation sets.
    - *Interactions*: add `age × sex` (and a false one, e.g. `sbp × diabetes`), keep
      *Forward selection, LR test*: `age × sex` enters at step 1, and the table of effects within
      subgroups shows the sex odds ratio at each age quartile.

@@ -174,6 +174,7 @@
             r$plots$calInstability$setVisible(self$options$stability)
         }
 
+        if (self$options$incremental) private$.initInc(sets)
         private$.initExtras(sets)
         if (self$options$sampleSize) {
             crit <- private$.ssRows()
@@ -333,6 +334,7 @@
         if (length(vsets)) private$.fillCaseMix(prep, X, y, lp, vsets)
         if (private$.on("updating")) for (k in names(vsets)) private$.fillUpd(k, vsets[[k]])
         # shrinkage and sample size count the candidate parameters (selection included)
+        if (o$incremental) private$.fillInc(prep, specC, spec, y, lp, iv, vsets, conf, beta)
         if (!is.null(iv) && iv$method == "boot") private$.fillStab(iv, y, lp, XC)
 
         all <- c(list(dev = list(X = X, y = y, lp = lp, p = p, df = prep$data)), vsets)
@@ -714,6 +716,135 @@
         }
         for (t in c("shapleyTable", "permTable", "shapTable")) if (o[[c(shapleyTable = "shapley", permTable = "permImp", shapTable = "shap")[[t]]]])
             r[[t]]$setNote("drop", note)
+    },
+
+    # ---- incremental value of the other predictors over the baseline model ----
+    .incKeys = function() switch(private$.famName,
+        binary = c("auc", "dslope", "slope", "brier", "sbrier", "r2n"),
+        gaussian = c("r2", "rmse", "mae", "slope"),
+        cox = c("c", "uno", "auc", "d", "brier", "sbrier", "r2d", "r2n")),
+
+    .incThresholds = function() {
+        if (identical(private$.famName, "gaussian")) return(numeric(0))
+        th <- tryCatch(.parse_numbers(self$options$nbThresholds), error = function(e) numeric(0))
+        th[th > 0 & th < 1]
+    },
+
+    .initInc = function(sets) {
+        t <- self$results$incTable
+        t$setVisible(TRUE)
+        defs <- cp_metric_defs(private$.famName)
+        lab <- stats::setNames(defs$label, defs$key)
+        for (k in names(sets)) {
+            for (m in private$.incKeys()) t$addRow(rowKey = paste(k, m), values = list(set = sets[[k]], measure = lab[[m]]))
+            if (identical(private$.famName, "binary")) {
+                t$addRow(rowKey = paste(k, "nri"), values = list(set = sets[[k]], measure = .("NRI (continuous)")))
+                t$addRow(rowKey = paste(k, "idi"), values = list(set = sets[[k]], measure = .("IDI")))
+            }
+            for (x in private$.incThresholds())
+                t$addRow(rowKey = paste(k, "nb", x), values = list(set = sets[[k]], measure = sprintf(.("Net benefit at %s"), .num(x))))
+            if (k == "dev") t$addRow(rowKey = "dev lr", values = list(set = sets[[k]], measure = .("Test of the added predictors")))
+        }
+        if (self$options$validation != "none")
+            for (cn in c("baseCorr", "fullCorr", "deltaCorr")) t$getColumn(cn)$setVisible(TRUE)
+        t$getColumn("lower")$setSuperTitle(paste0("Δ ", self$options$ciWidth, "% CI"))
+        if (!is.null(self$results$plots[["incDca"]])) self$results$plots[["incDca"]]$setVisible(TRUE)
+    },
+
+    .fillInc = function(prep, specC, spec, y, lp, iv, vsets, conf, beta) {
+        o <- self$options
+        t <- self$results$incTable
+        fam <- private$.fam
+        forced <- private$.selOpts()$forced
+        if (!length(forced)) {
+            t$setNote("need", .("Tick the baseline covariates under Variable Selection: they form the baseline model."))
+            return()
+        }
+        if (!length(setdiff(names(spec$vars), forced))) {
+            t$setNote("need", .("The full model has no predictor beyond the baseline covariates (the selection removed all of them)."))
+            return()
+        }
+        specB <- cp_with_terms(specC, forced, character(0))
+        XB <- cp_design(specB, prep$data)
+        bB <- fam$fit(XB, y)
+        lpB <- fam$lp(bB, XB)
+        keys <- private$.incKeys()
+        th <- private$.incThresholds()
+        nbf <- function(yy, p) if (identical(fam$name, "cox")) cp_net_benefit_surv(yy, p, th, fam$horizon) else cp_net_benefit(yy, p, th)
+        fillSet <- function(k, yy, lb, lf) {
+            mb <- fam$metrics(yy, lb); mf <- fam$metrics(yy, lf)
+            for (m in keys) {
+                dl <- mf[[m]] - mb[[m]]
+                # rounding noise (e.g. apparent calibration slopes of 1) printed as 0
+                v <- list(base = mb[[m]], full = mf[[m]], delta = if (isTRUE(abs(dl) < 1e-8)) 0 else dl)
+                ci <- if (m == "auc" && fam$name == "binary") cp_delta_auc(yy, fam$risk(lb), fam$risk(lf), conf)
+                      else if (m == "c" && fam$name == "cox") cp_delta_c(yy, lb, lf, conf) else NULL
+                if (!is.null(ci)) v <- c(v, list(lower = ci[["lower"]], upper = ci[["upper"]], p = ci[["p"]]))
+                private$.putRow(t, paste(k, m), v)
+            }
+            if (fam$name == "binary") {
+                ni <- cp_nri_idi(yy, fam$risk(lb), fam$risk(lf), conf)
+                for (z in c("nri", "idi"))
+                    private$.putRow(t, paste(k, z), list(delta = ni[[z]][["est"]], lower = ni[[z]][["lower"]],
+                                                         upper = ni[[z]][["upper"]], p = ni[[z]][["p"]]))
+            }
+            if (length(th)) {
+                b <- nbf(yy, fam$risk(lb)); f <- nbf(yy, fam$risk(lf))
+                for (i in seq_along(th))
+                    private$.putRow(t, paste(k, "nb", th[i]), list(base = b$model[i], full = f$model[i], delta = f$model[i] - b$model[i]))
+            }
+        }
+        fillSet("dev", y, lpB, lp)
+        for (k in names(vsets)) fillSet(k, vsets[[k]]$y, fam$lp(bB, cp_design(specB, vsets[[k]]$df)), vsets[[k]]$lp)
+
+        # nested test of the added predictors (not for a penalised model)
+        if (isTRUE(attr(beta, "penalized"))) {
+            private$.putRow(t, "dev lr", list(measure = .("Test of the added predictors: not for a penalised model")))
+        } else {
+            kF <- sum(beta != 0 & !is.na(beta)); kB <- sum(bB != 0 & !is.na(bB))
+            n <- NROW(y)
+            tst <- .nested_test(fam, fam$loss(y, lpB), fam$loss(y, lp), kF - kB, n, n - kF)
+            private$.putRow(t, "dev lr", list(
+                measure = if (fam$name == "gaussian") sprintf(.("F test of the added predictors (df = %d, %d)"), kF - kB, n - kF)
+                          else sprintf(.("LR test of the added predictors (χ², df = %d)"), kF - kB),
+                delta = tst[["stat"]], p = tst[["p"]]))
+            if (o$selMode %in% c("backward", "forward"))
+                t$setNote("sel", .("The test ignores that the added predictors were selected: its p is too small."))
+        }
+
+        # optimism-corrected, the baseline model validated on the same resamples
+        if (!is.null(iv)) {
+            ivB <- t$state
+            if (is.null(ivB)) {
+                ivB <- cp_internal(XB, y, fam, o$validation, B = o$nBoot, k = o$nFolds, R = o$nRepeats,
+                                   seed = o$seed, stability = FALSE)
+                t$setState(ivB)
+            }
+            for (m in keys)
+                private$.putRow(t, paste("dev", m), list(baseCorr = ivB$corrected[[m]], fullCorr = iv$corrected[[m]],
+                                                         deltaCorr = iv$corrected[[m]] - ivB$corrected[[m]]))
+            t$setNote("corr", .("Optimism-corrected: each model validated on the same resamples; the full model's validation repeats its selection."))
+        }
+        t$setNote("base", sprintf(.("Baseline model: %s. Full model: the prediction model. Δ = full − baseline (for Brier, RMSE and MAE, negative is better)."),
+                                  paste(forced, collapse = ", ")))
+        if (fam$name == "binary")
+            t$setNote("nri", .("NRI and IDI are reported for completeness; they can favour miscalibrated models (Pepe et al. 2015) and say less than ΔAUC, the LR test and Δ net benefit."))
+
+        img <- self$results$plots[["incDca"]]
+        if (!is.null(img) && is.null(img$state) && fam$name != "gaussian") {
+            grid <- seq(0.01, o$dcaMax, by = 0.01)
+            nbg <- function(yy, p) if (fam$name == "cox") cp_net_benefit_surv(yy, p, grid, fam$horizon) else cp_net_benefit(yy, p, grid)
+            mk <- function(label, yy, lb, lf) { f <- nbg(yy, fam$risk(lf)); f$base <- nbg(yy, fam$risk(lb))$model; list(label = label, nb = f) }
+            sets <- private$.sets()
+            st <- list(mk(sets[["dev"]], y, lpB, lp))
+            for (k in names(vsets)) st[[length(st) + 1]] <- mk(sets[[k]], vsets[[k]]$y, fam$lp(bB, cp_design(specB, vsets[[k]]$df)), vsets[[k]]$lp)
+            img$setState(st)
+        }
+    },
+
+    .plotIncDca = function(image, ggtheme, theme, ...) {
+        if (is.null(image$state)) return(FALSE)
+        print(cp_plot_dca(image$state, ggtheme)); TRUE
     },
 
     # the covariance of the coefficients; none for a penalised model
