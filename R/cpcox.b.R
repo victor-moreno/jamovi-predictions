@@ -53,7 +53,7 @@ cpCoxClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class(
         .text = function(key) switch(key,
             separation = .("The partial likelihood has no maximum for some coefficient (monotone likelihood): a predictor, or a combination of them, separates patients with and without events. Coefficients and their intervals are unreliable."),
             outcomeRow = .("Events"),
-            outcomeLevel = "",
+            outcomeLevel = "n (%)",
             memberNote = .("Membership c-statistic: how well the predictors and the outcome distinguish validation from development rows (Debray et al. 2015). Near 0.5: similar case-mix (reproducibility); high: different populations (transportability). A larger SD of the linear predictor means a more heterogeneous case-mix, which by itself raises the concordance."),
             samplesEx = paste0(.("Event"), ": ", self$options$status, " = ", private$.eventLabel(), ". ",
                                sprintf(.("Risks are predicted by the horizon t = %s%s."), private$.hText(),
@@ -96,17 +96,17 @@ cpCoxClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class(
             if (!self$options$descTable) return()
             t <- self$results$descTable
             st <- self$options$status
-            lev <- levels(factor(self$data[[st]]))
+            lev <- private$.levelsOf(st)
             ev <- private$.level(st, self$options$eventLevel)
             other <- setdiff(lev, ev)
             t$getColumn("g1")$setTitle(if (length(other) == 1) other else .("Other levels"))
             t$getColumn("g2")$setTitle(ev)
-            t$addRow(rowKey = "n", values = list(var = .("N")))
+            t$addRow(rowKey = "n", values = list(var = .("Patients"), level = "n"))
             stat <- if (self$options$descStat == "meanSD") .("mean (SD)") else .("median [Q1, Q3]")
             for (v in c(self$options$covs, self$options$splineVars))
                 t$addRow(rowKey = v, values = list(var = v, level = stat))
             for (v in self$options$factors)
-                for (l in levels(factor(self$data[[v]])))
+                for (l in private$.levelsOf(v))
                     t$addRow(rowKey = paste(v, l), values = list(var = v, level = l))
         },
 

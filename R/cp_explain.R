@@ -235,7 +235,7 @@ cp_describe <- function(data, group, groupLevels, numVars, facVars, stat = "mean
         if (stat == "meanSD") sprintf("%.2f (%.2f)", mean(x), if (length(x) > 1) stats::sd(x) else NA)
         else { q <- stats::quantile(x, c(0.5, 0.25, 0.75)); sprintf("%.2f [%.2f, %.2f]", q[1], q[2], q[3]) }
     }
-    rows <- list(list(key = "n", var = "N", level = "",
+    rows <- list(list(key = "n", var = "Patients", level = "n",
                       values = lapply(sets, function(i) as.character(length(i))), missing = ""))
     for (v in numVars)
         rows[[length(rows) + 1]] <- list(key = v, var = v, level = if (stat == "meanSD") "mean (SD)" else "median [Q1, Q3]",

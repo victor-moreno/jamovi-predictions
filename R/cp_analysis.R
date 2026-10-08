@@ -29,10 +29,17 @@
     # the family object; Cox needs the horizon, known once the outcome is read
     .makeFamily = function(prep) cp_family(private$.famName),
 
+    # Levels of a factor in the data. In jamovi, .init() sees only the data
+    # header (0 rows), and factor() would drop every level of an empty factor.
+    .levelsOf = function(var) {
+        x <- self$data[[var]]
+        if (is.factor(x)) levels(x) else levels(factor(x))
+    },
+
     # the level chosen in a LevelSelector, or the second level of the variable
     .level = function(var, chosen) {
         if (!is.null(chosen) && nzchar(chosen)) return(chosen)
-        lev <- levels(factor(self$data[[var]]))
+        lev <- private$.levelsOf(var)
         if (length(lev) >= 2) lev[2] else if (length(lev)) lev[1] else ""
     },
 
@@ -47,7 +54,7 @@
         for (it in self$options$covScales) out[[it$var]] <- it$scale %||% "unit"
         out
     },
-    .refOf = function(v) private$.refs()[[v]] %||% levels(factor(self$data[[v]]))[1],
+    .refOf = function(v) private$.refs()[[v]] %||% private$.levelsOf(v)[1],
 
     # candidate interactions: the listed two-way terms, or every pair of predictors
     .candidates = function() {
@@ -165,15 +172,17 @@
         t <- self$results$caseMix
         t$setVisible(TRUE)
         for (k in setdiff(names(sets), "dev")) t$getColumn(k)$setVisible(TRUE)
-        t$addRow(rowKey = "n", values = list(var = .("N")))
+        # every cell of the two heading columns gets a value: jamovi spans a heading
+        # cell over blank ones below it but still draws them, shifting those rows
+        t$addRow(rowKey = "n", values = list(var = .("Patients"), level = "n"))
         t$addRow(rowKey = "events", values = list(var = private$.text("outcomeRow"), level = private$.text("outcomeLevel")))
         for (v in c(self$options$covs, self$options$splineVars))
             t$addRow(rowKey = v, values = list(var = v, level = .("mean (SD)")))
         for (v in self$options$factors)
-            for (l in levels(factor(self$data[[v]])))
+            for (l in private$.levelsOf(v))
                 t$addRow(rowKey = paste(v, l), values = list(var = v, level = l))
         t$addRow(rowKey = "lp", values = list(var = .("Linear predictor"), level = .("mean (SD)")))
-        t$addRow(rowKey = "member", values = list(var = .("Membership c-statistic")))
+        t$addRow(rowKey = "member", values = list(var = .("Membership c-statistic"), level = "c"))
     },
 
     # effects table: one row per covariate, reference + one per level of a factor
@@ -187,7 +196,7 @@
         for (v in self$options$splineVars) t$addRow(rowKey = v, values = list(var = v, level = .("Q3 vs Q1")))
         for (v in self$options$factors) {
             ref <- private$.refOf(v)
-            lev <- levels(factor(self$data[[v]]))
+            lev <- private$.levelsOf(v)
             t$addRow(rowKey = paste0(v, " (ref)"), values = list(var = v, level = ref))
             for (l in setdiff(lev, ref)) t$addRow(rowKey = paste0(v, ": ", l), values = list(var = v, level = l))
         }

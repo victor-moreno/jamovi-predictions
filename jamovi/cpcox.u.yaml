@@ -4,8 +4,6 @@ name: cpCox
 jus: '3.0'
 stage: 0
 compilerMode: tame
-events:
-  update: './cplogistic.events::update'
 children:
   - type: VariableSupplier
     persistentItems: false
@@ -38,24 +36,18 @@ children:
           - type: VariablesListBox
             name: covs
             isTarget: true
-            events:
-              change: './cplogistic.events::onChange_predictors'
       - type: TargetLayoutBox
         label: Covariates (spline)
         children:
           - type: VariablesListBox
             name: splineVars
             isTarget: true
-            events:
-              change: './cplogistic.events::onChange_predictors'
       - type: TargetLayoutBox
         label: Factors
         children:
           - type: VariablesListBox
             name: factors
             isTarget: true
-            events:
-              change: './cplogistic.events::onChange_predictors'
       - type: TargetLayoutBox
         label: Validation split (optional)
         children:
@@ -128,8 +120,6 @@ children:
         fullRowSelect: true
         stretchFactor: 1
         height: large
-        events:
-          change: './cplogistic.events::onChange_refLevels'
         columns:
           - name: var
             label: Factor
@@ -182,8 +172,6 @@ children:
         label: Predictors
         persistentItems: true
         stretchFactor: 1
-        events:
-          update: './cplogistic.events::onUpdate_interactionSupplier'
         children:
           - type: TargetLayoutBox
             transferAction: interactions

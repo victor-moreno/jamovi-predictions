@@ -71,12 +71,12 @@ cpLinearClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class(
         .initDesc = function() {
             if (!self$options$descTable) return()
             t <- self$results$descTable
-            t$addRow(rowKey = "n", values = list(var = .("N")))
+            t$addRow(rowKey = "n", values = list(var = .("Patients"), level = "n"))
             stat <- if (self$options$descStat == "meanSD") .("mean (SD)") else .("median [Q1, Q3]")
             for (v in c(self$options$covs, self$options$splineVars))
                 t$addRow(rowKey = v, values = list(var = v, level = stat))
             for (v in self$options$factors)
-                for (l in levels(factor(self$data[[v]])))
+                for (l in private$.levelsOf(v))
                     t$addRow(rowKey = paste(v, l), values = list(var = v, level = l))
         },
 
