@@ -1,0 +1,4143 @@
+msgid ""
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2021-07-26 12:08:06+01000\n"
+"Plural-Forms: nplurals=2; plural=(n!=1);\n"
+"Language: ca\n"
+
+#: R/cppublished.b.R
+msgid " (from the model file)"
+msgstr " (del fitxer del model)"
+
+#: R/cpcox.b.R
+msgid " (median follow-up; set a clinically relevant horizon)"
+msgstr " (mediana de seguiment; fixeu un horitzó clínicament rellevant)"
+
+#: R/cppublished.b.R
+msgid " (median follow-up)"
+msgstr " (mediana de seguiment)"
+
+#: R/cppublished.b.R
+msgid " after subtracting the centre %s"
+msgstr " després de restar el centre %s"
+
+#: R/cp_analysis.R
+msgid "; estimated from 200 random orders"
+msgstr "; estimat amb 200 ordres aleatoris"
+
+#: R/cp_data.R
+msgid "'%s' does not vary in the complete cases; remove it."
+msgstr "'%s' no varia en els casos complets; elimineu-la."
+
+#: R/cp_data.R
+msgid ""
+"'%s' has only %s distinct values, too few for a spline with %s knots. Use "
+"fewer knots or enter it as a linear covariate."
+msgstr "'%s' només té %s valors diferents, massa pocs per a un spline amb %s nodes. Feu servir menys nodes o introduïu-la com a covariable lineal."
+
+#: R/cp_published.R
+msgid "'%s' is categorical in the data: name the level in the model, e.g. '%s = %s'."
+msgstr "'%s' és categòrica a les dades: indiqueu el nivell al model, p. ex. '%s = %s'."
+
+#: R/cp_data.R
+msgid "'%s' is entered more than once; each predictor goes in one box only."
+msgstr "'%s' s'ha introduït més d'una vegada; cada predictor va en una sola casella."
+
+#: R/cp_family_cox.R
+msgid "(highest)"
+msgstr "(més alt)"
+
+#: R/cp_family_cox.R
+msgid "(lowest)"
+msgstr "(més baix)"
+
+#: R/cpcox.b.R
+msgid ""
+"(S0: event-free probability at t for PI = 0, i.e. every covariate 0 and "
+"factors at their reference level)"
+msgstr "(S0: probabilitat lliure d'esdeveniment a t per a PI = 0, és a dir, totes les covariables a 0 i els factors al seu nivell de referència)"
+
+#: R/cp_analysis.R
+msgid "[%s: level] = 1 if %s is that level, else 0 (reference: %s)"
+msgstr "[%s: nivell] = 1 si %s és aquest nivell, si no 0 (referència: %s)"
+
+#: cpCox/ui[8][0]/ciWidth.suffix
+#: cpCox/results/samples.columns.title
+#: cpCox/results/missTable.columns.title
+#: cpCox/results/missPatterns.columns.title
+#: cpCox/results/modelFreqTable.columns.title
+#: cpLinear/ui[7][0]/ciWidth.suffix
+#: cpLinear/results/missTable.columns.title
+#: cpLinear/results/missPatterns.columns.title
+#: cpLinear/results/modelFreqTable.columns.title
+#: cpLogistic/ui[7][0]/ciWidth.suffix
+#: cpLogistic/results/samples.columns.title
+#: cpLogistic/results/missTable.columns.title
+#: cpLogistic/results/missPatterns.columns.title
+#: cpLogistic/results/modelFreqTable.columns.title
+#: cpPublished/ui[3][0]/ciWidth.suffix
+#: cpPublished/results/samples.columns.title
+msgid "%"
+msgstr "%"
+
+#: cpCox/results/missTable.columns.superTitle
+#: cpLinear/results/missTable.columns.superTitle
+#: cpLogistic/results/missTable.columns.superTitle
+msgid "% missing"
+msgstr "% perduts"
+
+#: cpCox/results/missTable.columns.superTitle
+#: cpLinear/results/missTable.columns.superTitle
+#: cpLogistic/results/missTable.columns.superTitle
+msgid "% missing in validation data"
+msgstr "% perduts a les dades de validació"
+
+#: cpCox/results/shapleyTable.columns.title
+#: cpLinear/results/shapleyTable.columns.title
+#: cpLogistic/results/shapleyTable.columns.title
+msgid "% of gain"
+msgstr "% del guany"
+
+#: cpCox/results/shapleyTable.columns.title
+#: cpLinear/results/shapleyTable.columns.title
+#: cpLogistic/results/shapleyTable.columns.title
+msgid "% of R²"
+msgstr "% de l'R²"
+
+#: cpCox/results/shapTable.columns.title
+#: cpLinear/results/shapTable.columns.title
+#: cpLogistic/results/shapTable.columns.title
+msgid "% of total"
+msgstr "% del total"
+
+#: R/cp_analysis.R
+msgid ""
+"%d bootstrap fits, each repeating the whole procedure. Median and "
+"2.5th-97.5th percentiles count a coefficient left out of a fit as 0; "
+"inclusion: share of fits with the coefficient not 0. RMSD ratio: root mean "
+"squared difference of the bootstrap estimates from the final one, over its "
+"model-based SE (above 1: the selection adds variability the SE ignores). "
+"Relative conditional bias: mean estimate where selected over the final "
+"estimate, minus 1 (Heinze, Wallisch & Dunkler 2018)."
+msgstr "%d ajustos bootstrap, cadascun repetint tot el procediment. La mediana i els percentils 2,5–97,5 compten com a 0 un coeficient exclòs d'un ajust; inclusió: proporció d'ajustos amb el coeficient diferent de 0. Raó RMSD: arrel de la diferència quadràtica mitjana de les estimacions bootstrap respecte a la final, dividida pel seu EE del model (per sobre d'1: la selecció afegeix una variabilitat que l'EE ignora). Biaix condicional relatiu: estimació mitjana quan se selecciona dividida per l'estimació final, menys 1 (Heinze, Wallisch i Dunkler 2018)."
+
+#: R/cp_external.R
+msgid "%d non-numeric values set to missing"
+msgstr "%d valors no numèrics passats a perduts"
+
+#: R/cp_external.R
+msgid "%d rows with levels not in development (%s) set to missing"
+msgstr "%d files amb nivells absents en el desenvolupament (%s) passades a perduts"
+
+#: R/cp_external.R
+msgid "%d rows with unknown values (%s) set to missing"
+msgstr "%d files amb valors desconeguts (%s) passades a perduts"
+
+#: R/cp_plots.R
+msgid "%s (AUC %.3f)"
+msgstr "%s (AUC %.3f)"
+
+#: R/cp_external.R
+#: R/cp_published.R
+msgid "%s missing"
+msgstr "%s perduts"
+
+#: R/cp_analysis.R
+msgid ""
+"%s of the full model: %.4f, shared among the predictors by their average "
+"gain over all orders of entry (Shapley / LMG)%s."
+msgstr "%s del model complet: %.4f, repartit entre els predictors segons el seu guany mitjà en tots els ordres d'entrada (Shapley / LMG)%s."
+
+#: R/cp_external.R
+msgid "%s outside the development range"
+msgstr "%s fora del rang de desenvolupament"
+
+#: R/cpcox.b.R
+msgid "%s: no event happens before the horizon (%s) in the validation data."
+msgstr "%s: cap esdeveniment no passa abans de l'horitzó (%s) a les dades de validació."
+
+#: R/cpcox.b.R
+msgid "%s: nobody is followed beyond the horizon (%s) in the validation data."
+msgstr "%s: ningú no té seguiment més enllà de l'horitzó (%s) a les dades de validació."
+
+#: R/cp_explain.R
+msgid "%s: non-linear"
+msgstr "%s: no lineal"
+
+#: R/cplinear.b.R
+msgid ""
+"%s: the validation data need at least 3 complete rows with a varying outcome "
+"(there are %s)."
+msgstr "%s: les dades de validació necessiten almenys 3 files completes amb un desenllaç que variï (n'hi ha %s)."
+
+#: R/cplogistic.b.R
+msgid ""
+"%s: the validation data need both events and non-events (there are %s events "
+"among %s complete rows)."
+msgstr "%s: les dades de validació necessiten esdeveniments i no esdeveniments (hi ha %s esdeveniments entre %s files completes)."
+
+#: R/cp_external.R
+msgid ""
+"%s: the variable '%s' is not in the validation data. Rename the columns to "
+"the names used in the development data."
+msgstr "%s: la variable '%s' no és a les dades de validació. Canvieu el nom de les columnes pels noms usats a les dades de desenvolupament."
+
+#: R/cp_external.R
+msgid ""
+"%s: the variables %s are not in the validation data. Rename the columns to "
+"the names used in the development data."
+msgstr "%s: les variables %s no són a les dades de validació. Canvieu el nom de les columnes pels noms usats a les dades de desenvolupament."
+
+#: R/cppublished.b.R
+msgid ""
+"<b>Model file</b>: a model exported by clinpred (Export model, JSON), or a "
+"table (csv, tsv, txt, xlsx) with the columns <b>term</b>, <b>estimate</b> "
+"and, optionally, <b>SE</b>."
+msgstr "<b>Fitxer del model</b>: un model exportat per clinpred (Exporta el model, JSON), o una taula (csv, tsv, txt, xlsx) amb les columnes <b>term</b>, <b>estimate</b> i, opcionalment, <b>SE</b>."
+
+#: cpCox/options/nbThresholds.default
+#: cpLogistic/options/nbThresholds.default
+#: cpPublished/options/nbThresholds.default
+msgid "0.05, 0.1, 0.2"
+msgstr "0.05, 0.1, 0.2"
+
+#: R/cp_plots.R
+msgid "1 − Specificity"
+msgstr "1 − Especificitat"
+
+#: R/cpcox.b.R
+#: R/cplinear.b.R
+#: R/cplogistic.b.R
+msgid "1. Shrinkage factor ≥ 0.9"
+msgstr "1. Factor de contracció ≥ 0,9"
+
+#: package/datasets/Heartcohort(simulated).description
+msgid ""
+"2,400 patients, three outcomes (10-year event, blood pressure, time to "
+"event), splines, interaction, missing values, period split."
+msgstr "2.400 pacients, tres desenllaços (esdeveniment a 10 anys, pressió arterial, temps fins a l'esdeveniment), splines, interacció, valors perduts, divisió per període."
+
+#: R/cpcox.b.R
+#: R/cplogistic.b.R
+msgid "2. Optimism in Nagelkerke R² ≤ 0.05"
+msgstr "2. Optimisme en l'R² de Nagelkerke ≤ 0,05"
+
+#: R/cplinear.b.R
+msgid "2. Optimism in R² ≤ 0.05 (apparent − adjusted)"
+msgstr "2. Optimisme en l'R² ≤ 0,05 (aparent − ajustat)"
+
+#: cpCox/results/bootCoefTable.columns.title
+#: cpLinear/results/bootCoefTable.columns.title
+#: cpLogistic/results/bootCoefTable.columns.title
+msgid "2.5%"
+msgstr "2,5%"
+
+#: R/cpcox.b.R
+msgid ""
+"3. Overall risk by t = %s: %.3f (exponential), estimated within [%.3f, %.3f] "
+"with the minimum required size."
+msgstr "3. Risc global a t = %s: %.3f (exponencial), estimat a [%.3f, %.3f] amb la mida mínima requerida."
+
+#: R/cplogistic.b.R
+msgid "3. Overall risk within ± 0.05"
+msgstr "3. Risc global amb un marge de ± 0,05"
+
+#: R/cplinear.b.R
+msgid "3. Residual SD within × 1.1"
+msgstr "3. DE residual amb un marge de × 1,1"
+
+#: R/cplinear.b.R
+msgid "4. Mean outcome within × 1.1"
+msgstr "4. Mitjana del desenllaç amb un marge de × 1,1"
+
+#: cpCox/results/bootCoefTable.columns.title
+#: cpLinear/results/bootCoefTable.columns.title
+#: cpLogistic/results/bootCoefTable.columns.title
+msgid "97.5%"
+msgstr "97,5%"
+
+#: R/cppublished.b.R
+msgid "a model exported by clinpred"
+msgstr "un model exportat per clinpred"
+
+#: R/cplinear.b.R
+msgid ""
+"A negative corrected R² means that, in new patients, the model would predict "
+"worse than the mean outcome: it is overfitted."
+msgstr "Un R² corregit negatiu vol dir que, en pacients nous, el model prediria pitjor que la mitjana del desenllaç: està sobreajustat."
+
+#: R/cpcox.b.R
+#: R/cplogistic.b.R
+msgid ""
+"A negative corrected R² or scaled Brier score means that, in new patients, "
+"the model would predict worse than giving everyone the overall risk: it is "
+"overfitted."
+msgstr "Un R² o una puntuació de Brier escalada corregits negatius volen dir que, en pacients nous, el model prediria pitjor que assignar a tothom el risc global: està sobreajustat."
+
+#: R/cp_analysis_mi.R
+msgid ""
+"A predictor column is redundant (a combination of other predictors) in some "
+"imputed data; remove one of the predictors involved."
+msgstr "Una columna de predictor és redundant (combinació d'altres predictors) en algun conjunt imputat; elimineu un dels predictors implicats."
+
+#: R/cplinear.b.R
+msgid ""
+"A shrinkage factor well below 1 (e.g. < 0.9) signals overfitting: the "
+"coefficients would need to be shrunk towards 0. MAPE: average absolute "
+"difference between an individual's prediction from the developed model and "
+"from models developed in bootstrap samples (Riley & Collins 2023), in the "
+"units of the outcome."
+msgstr "Un factor de contracció molt per sota d'1 (p. ex. < 0,9) indica sobreajust: caldria contraure els coeficients cap a 0. MAPE: diferència absoluta mitjana entre la predicció d'un individu segons el model desenvolupat i segons els models desenvolupats en mostres bootstrap (Riley i Collins 2023), en les unitats del desenllaç."
+
+#: R/cpcox.b.R
+#: R/cplogistic.b.R
+msgid ""
+"A shrinkage factor well below 1 (e.g. < 0.9) signals overfitting: the "
+"coefficients would need to be shrunk towards 0. MAPE: average absolute "
+"difference between an individual's risk from the developed model and from "
+"models developed in bootstrap samples (Riley & Collins 2023)."
+msgstr "Un factor de contracció molt per sota d'1 (p. ex. < 0,9) indica sobreajust: caldria contraure els coeficients cap a 0. MAPE: diferència absoluta mitjana entre el risc d'un individu segons el model desenvolupat i segons els models desenvolupats en mostres bootstrap (Riley i Collins 2023)."
+
+#: R/cppublished.b.R
+msgid "a table of coefficients"
+msgstr "una taula de coeficients"
+
+#: R/cplogistic.b.R
+#: R/cppublished.b.R
+msgid "Accuracy"
+msgstr "Exactitud"
+
+#: R/cp_data.R
+msgid "Add at least one predictor."
+msgstr "Afegiu almenys un predictor."
+
+#: R/cpcox.b.R
+#: R/cplinear.b.R
+#: R/cplogistic.b.R
+msgid ""
+"Add predictors: numeric ones as linear covariates or as splines "
+"(non-linear), categorical ones as factors."
+msgstr "Afegiu predictors: els numèrics com a covariables lineals o com a splines (no lineals), els categòrics com a factors."
+
+#: R/cp_analysis.R
+msgid "added"
+msgstr "afegit"
+
+#: R/cp_plots.R
+#: cpCox/options/forestAdj.title
+#: cpCox/results/orTable.columns.superTitle
+#: cpLinear/options/forestAdj.title
+#: cpLinear/results/orTable.columns.superTitle
+#: cpLogistic/options/forestAdj.title
+#: cpLogistic/results/orTable.columns.superTitle
+msgid "Adjusted"
+msgstr "Ajustat"
+
+#: R/cp_analysis.R
+#: R/cp_plots.R
+msgid "Adjusted (all predictors)"
+msgstr "Ajustat (tots els predictors)"
+
+#: cpLinear/options/ssR2.title
+msgid "Adjusted R²"
+msgstr "R² ajustat"
+
+#: R/cplinear.b.R
+msgid "adjusted, this model"
+msgstr "ajustat, aquest model"
+
+#: cpCox/options/selCrit/aic.title
+#: cpLinear/options/selCrit/aic.title
+#: cpLogistic/options/selCrit/aic.title
+msgid "AIC"
+msgstr "AIC"
+
+#: cpCox/options/intMode/all.title
+#: cpLinear/options/intMode/all.title
+#: cpLogistic/options/intMode/all.title
+msgid "All candidates"
+msgstr "Tots els candidats"
+
+#: cpCox/options/intAllPairs.title
+#: cpLinear/options/intAllPairs.title
+#: cpLogistic/options/intAllPairs.title
+msgid "All pairs of predictors as candidates"
+msgstr "Tots els parells de predictors com a candidats"
+
+#: R/cp_analysis.R
+msgid "All predictors"
+msgstr "Tots els predictors"
+
+#: cpLinear/options/ssSource.title
+msgid "Anticipated adjusted R²"
+msgstr "R² ajustat previst"
+
+#: cpCox/options/ssSource.title
+#: cpLogistic/options/ssSource.title
+msgid "Anticipated R²"
+msgstr "R² previst"
+
+#: cpCox/results/perfDev.columns.title
+#: cpLinear/results/perfDev.columns.title
+#: cpLogistic/results/perfDev.columns.title
+msgid "Apparent"
+msgstr "Aparent"
+
+#: R/cp_analysis.R
+msgid ""
+"Apparent performance is optimistic: it is measured in the data used to fit "
+"the model. Choose bootstrap or cross-validation under Validation."
+msgstr "El rendiment aparent és optimista: es mesura a les dades usades per ajustar el model. Trieu bootstrap o validació creuada a Validació."
+
+#: R/cpcox.b.R
+#: R/cplogistic.b.R
+msgid "apparent, this model"
+msgstr "aparent, aquest model"
+
+#: R/cp_published.R
+msgid "as reference: %s"
+msgstr "com a referència: %s"
+
+#: cpLogistic/results/updTable.columns.title
+#: cpPublished/results/updTable.columns.title
+msgid "AUC"
+msgstr "AUC"
+
+#: R/cp_plots.R
+msgid ""
+"AUC full %.3f\n"
+"baseline %.3f"
+msgstr "AUC complet %.3f\nbase %.3f"
+
+#: cpLogistic/results/permTable.columns.title
+msgid "AUC loss"
+msgstr "Pèrdua d'AUC"
+
+#: R/cplogistic.b.R
+msgid ""
+"AUC: probability that a random event has a higher predicted risk than a "
+"random non-event (0.5 = no discrimination). Calibration-in-the-large: 0 is "
+"ideal (log-odds). Calibration slope: 1 is ideal; below 1 the predictions are "
+"too extreme (overfitting). O/E: observed / expected events. ICI, E50, E90, "
+"Emax: mean, median, 90th percentile and maximum absolute difference between "
+"the predicted and the (smoothed) observed risk. Brier: mean squared error of "
+"the predicted risks (lower is better); scaled Brier: 1 − Brier / Brier of a "
+"model without predictors."
+msgstr "AUC: probabilitat que un esdeveniment a l'atzar tingui un risc predit més alt que un no esdeveniment a l'atzar (0,5 = sense discriminació). Calibratge global: 0 és l'ideal (log-odds). Pendent de calibratge: 1 és l'ideal; per sota d'1 les prediccions són massa extremes (sobreajust). O/E: esdeveniments observats / esperats. ICI, E50, E90, Emax: mitjana, mediana, percentil 90 i màxim de la diferència absoluta entre el risc predit i l'observat (suavitzat). Brier: error quadràtic mitjà dels riscos predits (més baix és millor); Brier escalat: 1 − Brier / Brier d'un model sense predictors."
+
+#: R/cp_analysis_mi.R
+msgid ""
+"Averaged over the imputations (no confidence intervals); internal validation "
+"within each imputation."
+msgstr "Mitjana sobre les imputacions (sense intervals de confiança); validació interna dins de cada imputació."
+
+#: R/cp_analysis_mi.R
+msgid ""
+"Averaged over the imputations, without confidence intervals; the "
+"optimism-corrected comparison is not computed with multiple imputation."
+msgstr "Mitjana sobre les imputacions, sense intervals de confiança; la comparació corregida per optimisme no es calcula amb imputació múltiple."
+
+#: cpCox/options/selMode/backward.title
+#: cpLinear/options/selMode/backward.title
+#: cpLogistic/options/selMode/backward.title
+msgid "Backward elimination"
+msgstr "Eliminació cap enrere"
+
+#: R/cp_analysis.R
+msgid ""
+"Backward elimination (%s): at each step the predictor whose removal improves "
+"the criterion most leaves. Baseline covariates are never removed."
+msgstr "Eliminació cap enrere (%s): a cada pas surt el predictor l'eliminació del qual més millora el criteri. Les covariables de base no s'eliminen mai."
+
+#: cpCox/results/incTable.columns.title
+#: cpLinear/results/incTable.columns.title
+#: cpLogistic/results/incTable.columns.title
+msgid "Baseline"
+msgstr "Base"
+
+#: cpCox/ui[5]/baseline.columns.label
+#: cpLinear/ui[4]/baseline.columns.label
+#: cpLogistic/ui[4]/baseline.columns.label
+msgid "Baseline (always in)"
+msgstr "Base (sempre inclosa)"
+
+#: R/cp_analysis.R
+#: R/cp_plots.R
+#: cpCox/options/baseline.title
+#: cpLinear/options/baseline.title
+#: cpLogistic/options/baseline.title
+msgid "Baseline covariates"
+msgstr "Covariables de base"
+
+#: R/cp_analysis.R
+msgid "Baseline covariates, always in the model and not selected: %s."
+msgstr "Covariables de base, sempre al model i no seleccionades: %s."
+
+#: R/cp_analysis.R
+msgid "Baseline covariates: always in the model."
+msgstr "Covariables de base: sempre al model."
+
+#: R/cp_plots.R
+msgid "Baseline model"
+msgstr "Model base"
+
+#: R/cp_analysis.R
+#: R/cp_analysis_mi.R
+msgid ""
+"Baseline model: %s. Full model: the prediction model. Δ = full − baseline "
+"(for Brier, RMSE and MAE, negative is better)."
+msgstr "Model base: %s. Model complet: el model de predicció. Δ = complet − base (per a Brier, RMSE i MAE, negatiu és millor)."
+
+#: R/cppublished.b.R
+msgid "Baseline survival"
+msgstr "Supervivència basal"
+
+#: R/cppublished.b.R
+msgid "Baseline survival at t = %s, for a prognostic index of 0%s."
+msgstr "Supervivència basal a t = %s, per a un índex pronòstic de 0%s."
+
+#: cpCox/options/selCrit/bic.title
+#: cpLinear/options/selCrit/bic.title
+#: cpLogistic/options/selCrit/bic.title
+msgid "BIC"
+msgstr "BIC"
+
+#: R/cp_published.R
+msgid "Binary (logistic)"
+msgstr "Binari (logístic)"
+
+#: package/analyses/cpLogistic.title
+#: package/analyses/cpLogistic.menuTitle
+#: cpLogistic/options.title
+#: cpLogistic/ui.title
+#: cpLogistic/results.title
+msgid "Binary Outcome (Logistic)"
+msgstr "Desenllaç binari (logístic)"
+
+#: cpPublished/options/family/binary.title
+msgid "Binary outcome (logistic)"
+msgstr "Desenllaç binari (logístic)"
+
+#: R/cp_analysis.R
+msgid "Binomial deviance"
+msgstr "Desviació binomial"
+
+#: cpCox/results/bootCoefTable.columns.superTitle
+#: cpLinear/results/bootCoefTable.columns.superTitle
+#: cpLogistic/results/bootCoefTable.columns.superTitle
+msgid "Bootstrap"
+msgstr "Bootstrap"
+
+#: cpCox/options/validation/boot.title
+#: cpLinear/options/validation/boot.title
+#: cpLogistic/options/validation/boot.title
+msgid "Bootstrap (optimism correction)"
+msgstr "Bootstrap (correcció de l'optimisme)"
+
+#: cpCox/results/bootCoefTable.title
+#: cpLinear/results/bootCoefTable.title
+#: cpLogistic/results/bootCoefTable.title
+msgid "Bootstrap Coefficients (Selection Repeated)"
+msgstr "Coeficients bootstrap (selecció repetida)"
+
+#: R/cp_analysis.R
+msgid "Bootstrap fits"
+msgstr "Ajustos bootstrap"
+
+#: cpCox/options/bootCoefs.title
+#: cpLinear/options/bootCoefs.title
+#: cpLogistic/options/bootCoefs.title
+msgid "Bootstrap inclusion and coefficients"
+msgstr "Inclusió i coeficients bootstrap"
+
+#: R/cp_analysis.R
+msgid ""
+"Bootstrap optimism correction (Harrell): %d samples (%d usable); corrected = "
+"apparent − optimism."
+msgstr "Correcció bootstrap de l'optimisme (Harrell): %d mostres (%d utilitzables); corregit = aparent − optimisme."
+
+#: cpCox/options/nBoot.title
+#: cpLinear/options/nBoot.title
+#: cpLogistic/options/nBoot.title
+msgid "Bootstrap samples"
+msgstr "Mostres bootstrap"
+
+#: package/datasets/Breastcancer,Rotterdam(development).name
+msgid "Breast cancer, Rotterdam (development)"
+msgstr "Càncer de mama, Rotterdam (desenvolupament)"
+
+#: package/datasets/Breastcancer,Rotterdam+GBSG(development+validation).name
+msgid "Breast cancer, Rotterdam + GBSG (development + validation)"
+msgstr "Càncer de mama, Rotterdam + GBSG (desenvolupament + validació)"
+
+#: cpCox/results/updTable.columns.title
+#: cpLogistic/results/updTable.columns.title
+#: cpPublished/results/updTable.columns.title
+msgid "Brier"
+msgstr "Brier"
+
+#: cpCox/results/permTable.columns.title
+#: cpLogistic/results/permTable.columns.title
+msgid "Brier increase"
+msgstr "Augment del Brier"
+
+#: R/cp_family_binary.R
+msgid "Brier score"
+msgstr "Puntuació de Brier"
+
+#: R/cp_family_binary.R
+msgid "Brier score (at the horizon)"
+msgstr "Puntuació de Brier (a l'horitzó)"
+
+#: cpCox/results/permTable.columns.title
+msgid "C loss"
+msgstr "Pèrdua de C"
+
+#: R/cp_family_binary.R
+msgid "C-statistic (AUC)"
+msgstr "Estadístic C (AUC)"
+
+#: R/cp_family_binary.R
+#: cpCox/results/plots/calibration.title
+#: cpLinear/results/plots/calibration.title
+#: cpLogistic/results/plots/calibration.title
+#: cpPublished/results/plots/calibration.title
+msgid "Calibration"
+msgstr "Calibratge"
+
+#: cpCox/results/plots/calInstability.title
+#: cpLinear/results/plots/calInstability.title
+#: cpLogistic/results/plots/calInstability.title
+msgid "Calibration Instability"
+msgstr "Inestabilitat del calibratge"
+
+#: cpCox/options/calPlot.title
+#: cpLogistic/options/calPlot.title
+#: cpPublished/options/calPlot.title
+msgid "Calibration plot"
+msgstr "Gràfic de calibratge"
+
+#: cpLinear/options/calPlot.title
+msgid "Calibration plot (observed vs predicted)"
+msgstr "Gràfic de calibratge (observat davant predit)"
+
+#: R/cp_family_binary.R
+msgid "Calibration slope"
+msgstr "Pendent de calibratge"
+
+#: R/cp_family_binary.R
+msgid "Calibration-in-the-large"
+msgstr "Calibratge global"
+
+#: cpCox/ui[7]/interactionSupplier[0].label
+#: cpLinear/ui[6]/interactionSupplier[0].label
+#: cpLogistic/ui[6]/interactionSupplier[0].label
+msgid "Candidate interactions"
+msgstr "Interaccions candidates"
+
+#: R/cplinear.b.R
+msgid ""
+"Candidate parameters (excluding the intercept): %d; anticipated adjusted R²: "
+"%.3f (%s); outcome mean %.4g, SD %.4g."
+msgstr "Paràmetres candidats (sense la constant): %d; R² ajustat previst: %.3f (%s); mitjana del desenllaç %.4g, DE %.4g."
+
+#: R/cplogistic.b.R
+msgid ""
+"Candidate parameters (excluding the intercept): %d; outcome proportion: "
+"%.3f; anticipated Cox–Snell R²: %.3f (%s)."
+msgstr "Paràmetres candidats (sense la constant): %d; proporció del desenllaç: %.3f; R² de Cox–Snell previst: %.3f (%s)."
+
+#: R/cpcox.b.R
+msgid ""
+"Candidate parameters: %d; event rate %.4g per unit of time, mean follow-up "
+"%.4g; anticipated Cox–Snell R²: %.3f (%s)."
+msgstr "Paràmetres candidats: %d; taxa d'esdeveniments %.4g per unitat de temps, seguiment mitjà %.4g; R² de Cox–Snell previst: %.3f (%s)."
+
+#: cpCox/results/caseMix.title
+#: cpLinear/results/caseMix.title
+#: cpLogistic/results/caseMix.title
+msgid "Case-mix"
+msgstr "Case-mix"
+
+#: R/cp_analysis.R
+#: cpCox/results/descTable.columns.title
+msgid "Censored"
+msgstr "Censurats"
+
+#: R/cp_analysis.R
+msgid ""
+"Choose Internal validation: Bootstrap; the bootstrap fits repeat the whole "
+"procedure (selection, tuning)."
+msgstr "Trieu Validació interna: Bootstrap; els ajustos bootstrap repeteixen tot el procediment (selecció, ajust de λ)."
+
+#: R/cppublished.b.R
+msgid ""
+"Choose the model type, put the outcome (for Cox, the event and the time) in "
+"their boxes, and the variables the model uses in <b>Predictor variables</b>."
+msgstr "Trieu el tipus de model, poseu el desenllaç (per a Cox, l'esdeveniment i el temps) a les seves caselles, i les variables que fa servir el model a <b>Variables predictores</b>."
+
+#: cpCox/results/updTable.columns.title
+#: cpLinear/results/updTable.columns.title
+#: cpLogistic/results/updTable.columns.title
+#: cpPublished/results/updTable.columns.title
+msgid "Chosen"
+msgstr "Triat"
+
+#: cpCox/results/coefTable.columns.superTitle
+#: cpCox/results/perfDev.columns.superTitle
+#: cpCox/results/perfVal.columns.superTitle
+#: cpLinear/results/coefTable.columns.superTitle
+#: cpLinear/results/perfDev.columns.superTitle
+#: cpLinear/results/perfVal.columns.superTitle
+#: cpLogistic/results/coefTable.columns.superTitle
+#: cpLogistic/results/perfDev.columns.superTitle
+#: cpLogistic/results/perfVal.columns.superTitle
+#: cpLogistic/results/classTable.columns.superTitle
+#: cpPublished/results/modelTable.columns.superTitle
+#: cpPublished/results/perf.columns.superTitle
+#: cpPublished/results/classTable.columns.superTitle
+msgid "CI"
+msgstr "IC"
+
+#: cpLogistic/results/classTable.title
+#: cpPublished/results/classTable.title
+msgid "Classification — Accuracy"
+msgstr "Classificació — Exactitud"
+
+#: cpLogistic/results/confTable.title
+#: cpPublished/results/confTable.title
+msgid "Classification — Counts"
+msgstr "Classificació — Recomptes"
+
+#: cpLogistic/options/classif.title
+#: cpPublished/options/classif.title
+msgid "Classification at a threshold"
+msgstr "Classificació amb un llindar"
+
+#: package.title
+msgid "Clinical Prediction Models"
+msgstr "Models de predicció clínica"
+
+#: cpCox/ui[10].label
+#: cpLogistic/ui[9].label
+#: cpPublished/ui[5].label
+msgid "Clinical Utility"
+msgstr "Utilitat clínica"
+
+#: cpCox/results/bootCoefTable.columns.title
+#: cpLinear/results/bootCoefTable.columns.title
+#: cpLogistic/results/bootCoefTable.columns.title
+msgid "Coefficient"
+msgstr "Coeficient"
+
+#: R/cp_published.R
+msgid "column '%s'"
+msgstr "columna '%s'"
+
+#: cpCox/options/missMethod/cc.title
+#: cpLinear/options/missMethod/cc.title
+#: cpLogistic/options/missMethod/cc.title
+msgid "Complete cases"
+msgstr "Casos complets"
+
+#: R/cp_analysis.R
+msgid ""
+"Computed in: %s. Each predictor is shuffled %d times; larger losses mean the "
+"model relies more on it."
+msgstr "Calculat a: %s. Cada predictor es permuta %d vegades; pèrdues més grans indiquen que el model en depèn més."
+
+#: cpCox/ui[8][0]/ciWidth.label
+#: cpLinear/ui[7][0]/ciWidth.label
+#: cpLogistic/ui[7][0]/ciWidth.label
+#: cpPublished/ui[3][0]/ciWidth.label
+msgid "Confidence interval"
+msgstr "Interval de confiança"
+
+#: cpCox/options/orCI.title
+#: cpLinear/options/orCI.title
+#: cpLogistic/options/orCI.title
+msgid "Confidence intervals"
+msgstr "Intervals de confiança"
+
+#: cpCox/options/ciWidth.title
+#: cpLinear/options/ciWidth.title
+#: cpLogistic/options/ciWidth.title
+#: cpPublished/options/ciWidth.title
+msgid "Confidence level"
+msgstr "Nivell de confiança"
+
+#: R/cp_published.R
+msgid "Continuous (linear)"
+msgstr "Continu (lineal)"
+
+#: package/analyses/cpLinear.title
+#: package/analyses/cpLinear.menuTitle
+#: cpLinear/options.title
+#: cpLinear/ui.title
+#: cpLinear/results.title
+msgid "Continuous Outcome (Linear)"
+msgstr "Desenllaç continu (lineal)"
+
+#: cpPublished/options/family/gaussian.title
+msgid "Continuous outcome (linear)"
+msgstr "Desenllaç continu (lineal)"
+
+#: cpCox/options/cores.title
+#: cpLinear/options/cores.title
+#: cpLogistic/options/cores.title
+msgid "Cores (macOS/Linux)"
+msgstr "Nuclis (macOS/Linux)"
+
+#: cpCox/results/perfDev.columns.title
+#: cpLinear/results/perfDev.columns.title
+#: cpLogistic/results/perfDev.columns.title
+msgid "Corrected"
+msgstr "Corregit"
+
+#: R/cp_data.R
+msgid "Could not place 3 distinct knots for '%s': most of its values are tied."
+msgstr "No s'han pogut situar 3 nodes diferents per a '%s': la majoria dels seus valors estan empatats."
+
+#: R/cp_utils.R
+msgid "Could not read '%s' as a list of numbers separated by commas."
+msgstr "No s'ha pogut llegir '%s' com una llista de nombres separats per comes."
+
+#: R/cp_plots.R
+msgid "Count"
+msgstr "Recompte"
+
+#: cpCox/ui[4]/covScales.columns.label
+#: cpLinear/ui[3]/covScales.columns.label
+#: cpLogistic/ui[3]/covScales.columns.label
+msgid "Covariate"
+msgstr "Covariable"
+
+#: cpCox/options/covScales.title
+#: cpCox/ui[4].label
+#: cpLinear/options/covScales.title
+#: cpLinear/ui[3].label
+#: cpLogistic/options/covScales.title
+#: cpLogistic/ui[3].label
+msgid "Covariate Scaling"
+msgstr "Escala de les covariables"
+
+#: cpCox/options/covs.title
+#: cpCox/ui[0][2].label
+#: cpLinear/options/covs.title
+#: cpLinear/ui[0][1].label
+#: cpLogistic/options/covs.title
+#: cpLogistic/ui[0][1].label
+msgid "Covariates (linear)"
+msgstr "Covariables (lineals)"
+
+#: cpCox/options/splineVars.title
+#: cpCox/ui[0][3].label
+#: cpLinear/options/splineVars.title
+#: cpLinear/ui[0][2].label
+#: cpLogistic/options/splineVars.title
+#: cpLogistic/ui[0][2].label
+msgid "Covariates (spline)"
+msgstr "Covariables (spline)"
+
+#: R/cp_family_binary.R
+#: cpCox/options/ssR2.title
+#: cpLogistic/options/ssR2.title
+msgid "Cox–Snell R²"
+msgstr "R² de Cox–Snell"
+
+#: cpCox/options/selCrit.title
+#: cpCox/results/ssTable.columns.title
+#: cpLinear/options/selCrit.title
+#: cpLinear/results/ssTable.columns.title
+#: cpLogistic/options/selCrit.title
+#: cpLogistic/results/ssTable.columns.title
+msgid "Criterion"
+msgstr "Criteri"
+
+#: R/cp_analysis.R
+msgid "Cross-validated"
+msgstr "Validat per VC"
+
+#: cpCox/options/validation/cv.title
+#: cpLinear/options/validation/cv.title
+#: cpLogistic/options/validation/cv.title
+msgid "Cross-validation (k-fold)"
+msgstr "Validació creuada (k grups)"
+
+#: R/cp_validate.R
+msgid ""
+"Cross-validation failed in every repeat: the folds are too small for this "
+"model. Use fewer folds or the bootstrap."
+msgstr "La validació creuada ha fallat en totes les repeticions: els grups són massa petits per a aquest model. Feu servir menys grups o el bootstrap."
+
+#: R/cpcox.b.R
+msgid ""
+"Cross-validation: %d folds × %d repeats, stratified by event; performance of "
+"the out-of-fold predictions, averaged over repeats."
+msgstr "Validació creuada: %d grups × %d repeticions, estratificada per esdeveniment; rendiment de les prediccions fora del grup, mitjana sobre les repeticions."
+
+#: R/cplinear.b.R
+msgid ""
+"Cross-validation: %d folds × %d repeats, stratified by outcome quintiles; "
+"performance of the out-of-fold predictions, averaged over repeats."
+msgstr "Validació creuada: %d grups × %d repeticions, estratificada per quintils del desenllaç; rendiment de les prediccions fora del grup, mitjana sobre les repeticions."
+
+#: R/cplogistic.b.R
+msgid ""
+"Cross-validation: %d folds × %d repeats, stratified by outcome; performance "
+"of the out-of-fold predictions, averaged over repeats."
+msgstr "Validació creuada: %d grups × %d repeticions, estratificada pel desenllaç; rendiment de les prediccions fora del grup, mitjana sobre les repeticions."
+
+#: R/cp_plots.R
+#: cpCox/options/forestCrude.title
+#: cpCox/results/orTable.columns.superTitle
+#: cpLinear/options/forestCrude.title
+#: cpLinear/results/orTable.columns.superTitle
+#: cpLogistic/options/forestCrude.title
+#: cpLogistic/results/orTable.columns.superTitle
+msgid "Crude"
+msgstr "Cru"
+
+#: cpCox/options/crude.title
+#: cpLinear/options/crude.title
+#: cpLogistic/options/crude.title
+msgid "Crude and adjusted"
+msgstr "Crus i ajustats"
+
+#: R/cp_analysis_mi.R
+msgid "Crude and adjusted effects pooled over the imputations by Rubin's rules."
+msgstr "Efectes crus i ajustats combinats sobre les imputacions amb les regles de Rubin."
+
+#: R/cp_analysis.R
+msgid ""
+"Crude: each predictor alone, on the same rows. Adjusted: in the prediction "
+"model."
+msgstr "Cru: cada predictor sol, a les mateixes files. Ajustat: al model de predicció."
+
+#: R/cp_analysis.R
+msgid ""
+"Crude: each predictor alone. Adjusted (all predictors): the model with every "
+"candidate predictor, before selection. Selected model: the prediction model."
+msgstr "Cru: cada predictor sol. Ajustat (tots els predictors): el model amb tots els predictors candidats, abans de la selecció. Model seleccionat: el model de predicció."
+
+#: cpCox/results/modelFreqTable.columns.title
+#: cpLinear/results/modelFreqTable.columns.title
+#: cpLogistic/results/modelFreqTable.columns.title
+msgid "Cumulative"
+msgstr "Acumulat"
+
+#: R/cp_analysis.R
+msgid "CV fits"
+msgstr "Ajustos de VC"
+
+#: cpCox/results/samples.title
+#: cpLinear/results/samples.title
+#: cpLogistic/results/samples.title
+#: cpPublished/results/samples.title
+msgid "Data"
+msgstr "Dades"
+
+#: cpCox/results/samples.columns.title
+#: cpCox/results/incTable.columns.title
+#: cpCox/results/perfVal.columns.title
+#: cpCox/results/updTable.columns.title
+#: cpCox/results/nbTable.columns.title
+#: cpLinear/results/samples.columns.title
+#: cpLinear/results/incTable.columns.title
+#: cpLinear/results/perfVal.columns.title
+#: cpLinear/results/updTable.columns.title
+#: cpLogistic/results/samples.columns.title
+#: cpLogistic/results/incTable.columns.title
+#: cpLogistic/results/perfVal.columns.title
+#: cpLogistic/results/updTable.columns.title
+#: cpLogistic/results/confTable.columns.title
+#: cpLogistic/results/classTable.columns.title
+#: cpLogistic/results/nbTable.columns.title
+msgid "Data set"
+msgstr "Conjunt de dades"
+
+#: cpCox/options/dca.title
+#: cpLogistic/options/dca.title
+#: cpPublished/options/dca.title
+msgid "Decision curve"
+msgstr "Corba de decisió"
+
+#: cpLogistic/results/plots/dcaCurves.title
+#: cpPublished/results/plots/dcaCurves.title
+msgid "Decision Curve"
+msgstr "Corba de decisió"
+
+#: cpCox/results/plots/incDca.title
+#: cpLogistic/results/plots/incDca.title
+msgid "Decision Curve — Baseline and Full Model"
+msgstr "Corba de decisió — model base i complet"
+
+#: cpCox/results/plots/dcaCurves.title
+msgid "Decision Curve (at the Horizon)"
+msgstr "Corba de decisió (a l'horitzó)"
+
+#: cpCox/options/descTable.title
+#: cpLinear/options/descTable.title
+#: cpLogistic/options/descTable.title
+msgid "Descriptive table"
+msgstr "Taula descriptiva"
+
+#: cpCox/results/descTable.title
+#: cpLinear/results/descTable.title
+#: cpLogistic/results/descTable.title
+msgid "Descriptives (Development Data)"
+msgstr "Descriptius (dades de desenvolupament)"
+
+#: cpCox/results/extCheck.columns.title
+#: cpLinear/results/extCheck.columns.title
+#: cpLogistic/results/extCheck.columns.title
+#: cpPublished/results/check.columns.title
+msgid "Details"
+msgstr "Detalls"
+
+#: package/analyses/cpLogistic.menuSubtitle
+#: package/analyses/cpLinear.menuSubtitle
+#: package/analyses/cpCox.menuSubtitle
+msgid "Develop and validate"
+msgstr "Desenvolupar i validar"
+
+#: package/analyses/cpCox.description
+#: cpCox/options.description.main
+msgid ""
+"Develop and validate a Cox prediction model for the risk of an event by a "
+"time horizon: concordance, time-dependent AUC, calibration at the horizon, "
+"Brier score, Royston's D, net benefit, internal validation by bootstrap or "
+"cross-validation, validation in a subset of the data or in an external data "
+"file, variable importance (Shapley R² decomposition, permutation importance, "
+"SHAP) and the stability of individual predictions."
+msgstr "Desenvolupa i valida un model de Cox per al risc d'un esdeveniment fins a un horitzó temporal: concordança, AUC dependent del temps, calibratge a l'horitzó, puntuació de Brier, D de Royston, benefici net, validació interna per bootstrap o validació creuada, validació en un subconjunt de les dades o en un fitxer de dades extern, importància de les variables (descomposició de Shapley de l'R², importància per permutació, SHAP) i estabilitat de les prediccions individuals."
+
+#: package/analyses/cpLinear.description
+#: cpLinear/options.description.main
+msgid ""
+"Develop and validate a linear prediction model for a continuous outcome: R², "
+"RMSE, MAE and calibration, internal validation by bootstrap or "
+"cross-validation, validation in a subset of the data or in an external data "
+"file, model updating, variable importance (Shapley R² decomposition, "
+"permutation importance, SHAP) and the stability of individual predictions."
+msgstr "Desenvolupa i valida un model de predicció lineal per a un desenllaç continu: R², RMSE, MAE i calibratge, validació interna per bootstrap o validació creuada, validació en un subconjunt de les dades o en un fitxer de dades extern, actualització del model, importància de les variables (descomposició de Shapley de l'R², importància per permutació, SHAP) i estabilitat de les prediccions individuals."
+
+#: package/analyses/cpLogistic.description
+#: cpLogistic/options.description.main
+msgid ""
+"Develop and validate a logistic prediction model for a binary outcome: "
+"discrimination, calibration, overall performance and clinical utility, "
+"internal validation by bootstrap or cross-validation, validation in a subset "
+"of the data or in an external data file, variable importance (Shapley R² "
+"decomposition, permutation importance, SHAP) and the stability of individual "
+"predictions."
+msgstr "Desenvolupa i valida un model de predicció logístic per a un desenllaç binari: discriminació, calibratge, rendiment global i utilitat clínica, validació interna per bootstrap o validació creuada, validació en un subconjunt de les dades o en un fitxer de dades extern, importància de les variables (descomposició de Shapley de l'R², importància per permutació, SHAP) i estabilitat de les prediccions individuals."
+
+#: R/cplogistic.b.R
+msgid "Develop and validate a prediction model for a binary outcome."
+msgstr "Desenvolupeu i valideu un model de predicció per a un desenllaç binari."
+
+#: R/cplinear.b.R
+msgid ""
+"Develop and validate a prediction model for a continuous outcome (linear "
+"regression)."
+msgstr "Desenvolupeu i valideu un model de predicció per a un desenllaç continu (regressió lineal)."
+
+#: R/cpcox.b.R
+msgid ""
+"Develop and validate a prediction model for the risk of an event by a time "
+"horizon (Cox regression)."
+msgstr "Desenvolupeu i valideu un model de predicció per al risc d'un esdeveniment fins a un horitzó temporal (regressió de Cox)."
+
+#: package.description
+msgid ""
+"Develop and validate clinical prediction models (TRIPOD+AI) for binary, "
+"continuous and time-to-event outcomes: discrimination, calibration, net "
+"benefit, bootstrap and cross-validation, external validation from a data "
+"file or a subset of the data, model updating, sample size, Shapley and SHAP "
+"importance, and prediction stability."
+msgstr "Desenvolupament i validació de models de predicció clínica (TRIPOD+AI) per a desenllaços binaris, continus i de temps fins a l'esdeveniment: discriminació, calibratge, benefici net, bootstrap i validació creuada, validació externa amb un fitxer de dades o un subconjunt de les dades, actualització del model, mida mostral, importància de Shapley i SHAP, i estabilitat de les prediccions."
+
+#: R/cp_analysis.R
+#: cpCox/results/caseMix.columns.title
+#: cpLinear/results/caseMix.columns.title
+#: cpLogistic/results/caseMix.columns.title
+msgid "Development"
+msgstr "Desenvolupament"
+
+#: R/cplogistic.b.R
+msgid ""
+"Development rows, before excluding missing values; percentages of the "
+"non-missing values."
+msgstr "Files de desenvolupament, abans d'excloure els valors perduts; percentatges dels valors no perduts."
+
+#: R/cpcox.b.R
+msgid ""
+"Development rows, before excluding missing values; percentages of the "
+"non-missing values. Event: during the whole follow-up."
+msgstr "Files de desenvolupament, abans d'excloure els valors perduts; percentatges dels valors no perduts. Esdeveniment: durant tot el seguiment."
+
+#: R/cplinear.b.R
+msgid ""
+"Development rows, before excluding missing values. Outcome: its mean (SD) "
+"overall and in each factor level, and its Pearson correlation with each "
+"numeric predictor."
+msgstr "Files de desenvolupament, abans d'excloure els valors perduts. Desenllaç: la seva mitjana (DE) global i en cada nivell dels factors, i la seva correlació de Pearson amb cada predictor numèric."
+
+#: cpCox/results/testTable.columns.title
+#: cpCox/results/intTable.columns.title
+#: cpCox/results/selTable.columns.title
+#: cpCox/results/updTable.columns.title
+#: cpLinear/results/intTable.columns.title
+#: cpLinear/results/selTable.columns.title
+#: cpLinear/results/updTable.columns.title
+#: cpLogistic/results/testTable.columns.title
+#: cpLogistic/results/intTable.columns.title
+#: cpLogistic/results/selTable.columns.title
+#: cpLogistic/results/updTable.columns.title
+#: cpPublished/results/updTable.columns.title
+msgid "df"
+msgstr "gl"
+
+#: cpLinear/results/testTable.columns.title
+msgid "df1"
+msgstr "gl1"
+
+#: cpLinear/results/testTable.columns.title
+msgid "df2"
+msgstr "gl2"
+
+#: R/cp_plots.R
+msgid "Diamonds: mean predicted at the horizon"
+msgstr "Rombes: mitjana predita a l'horitzó"
+
+#: R/cplinear.b.R
+msgid "Difference in the mean outcome"
+msgstr "Diferència en la mitjana del desenllaç"
+
+#: R/cplinear.b.R
+msgid ""
+"Difference in the mean outcome for each variable of an interaction at the "
+"levels (factor) or quartiles (covariate) of the other; other predictors at "
+"their reference level or median."
+msgstr "Diferència en la mitjana del desenllaç per a cada variable d'una interacció en els nivells (factor) o quartils (covariable) de l'altra; els altres predictors al seu nivell de referència o mediana."
+
+#: R/cp_family_binary.R
+msgid "Discrimination"
+msgstr "Discriminació"
+
+#: R/cp_family_binary.R
+msgid "Discrimination slope"
+msgstr "Pendent de discriminació"
+
+#: R/cp_family_binary.R
+msgid "E50"
+msgstr "E50"
+
+#: R/cp_family_binary.R
+msgid "E90"
+msgstr "E90"
+
+#: R/cp_plots.R
+msgid "Each line: a bootstrap model applied to the development data"
+msgstr "Cada línia: un model bootstrap aplicat a les dades de desenvolupament"
+
+#: R/cp_analysis.R
+msgid ""
+"Each test drops the term from the model (a predictor with its non-linear and "
+"interaction terms)."
+msgstr "Cada prova elimina el terme del model (un predictor amb els seus termes no lineals i d'interacció)."
+
+#: cpCox/results/subTable.columns.title
+#: cpLinear/ui[3]/covScales.columns.label
+#: cpLinear/results/subTable.columns.title
+#: cpLogistic/results/subTable.columns.title
+msgid "Effect"
+msgstr "Efecte"
+
+#: cpLinear/options/oddsRatios.title
+msgid "Effects (β)"
+msgstr "Efectes (β)"
+
+#: cpLinear/results/orTable.title
+msgid "Effects on the Outcome"
+msgstr "Efectes sobre el desenllaç"
+
+#: cpCox/results/subTable.title
+#: cpLinear/results/subTable.title
+#: cpLogistic/results/subTable.title
+msgid "Effects Within Subgroups"
+msgstr "Efectes dins de subgrups"
+
+#: cpCox/results/plots/enetCv.title
+#: cpLinear/results/plots/enetCv.title
+#: cpLogistic/results/plots/enetCv.title
+msgid "Elastic Net — Cross-Validated Deviance"
+msgstr "Elastic net — desviació per validació creuada"
+
+#: cpCox/options/selMode/enet.title
+#: cpLinear/options/selMode/enet.title
+#: cpLogistic/options/selMode/enet.title
+msgid "Elastic net (penalised)"
+msgstr "Elastic net (penalitzat)"
+
+#: R/cp_analysis.R
+msgid ""
+"Elastic net, mixing α = %s, λ = %s (%s, %d-fold cross-validation); baseline "
+"covariates are not penalised. A predictor is kept when any of its "
+"coefficients is not shrunk to 0; all candidate interactions enter the "
+"penalised model."
+msgstr "Elastic net, barreja α = %s, λ = %s (%s, validació creuada amb %d grups); les covariables de base no es penalitzen. Un predictor es manté si algun dels seus coeficients no es contrau a 0; totes les interaccions candidates entren al model penalitzat."
+
+#: R/cp_family_binary.R
+msgid "Emax"
+msgstr "Emax"
+
+#: R/cpcox.b.R
+#: R/cplinear.b.R
+#: R/cplogistic.b.R
+msgid "entered"
+msgstr "introduït"
+
+#: cpCox/results/bootCoefTable.columns.title
+#: cpCox/results/perfVal.columns.title
+#: cpLinear/results/bootCoefTable.columns.title
+#: cpLinear/results/perfVal.columns.title
+#: cpLogistic/results/bootCoefTable.columns.title
+#: cpLogistic/results/perfVal.columns.title
+#: cpLogistic/results/classTable.columns.title
+#: cpPublished/results/modelTable.columns.title
+#: cpPublished/results/perf.columns.title
+#: cpPublished/results/classTable.columns.title
+msgid "Estimate"
+msgstr "Estimació"
+
+#: R/cpcox.b.R
+#: R/cplogistic.b.R
+#: R/cppublished.b.R
+#: cpCox/options/status.title
+#: cpCox/ui[0][1].label
+#: cpCox/results/descTable.columns.title
+#: cpLogistic/ui[0][0]/eventLevel.label
+#: cpLogistic/results/descTable.columns.title
+msgid "Event"
+msgstr "Esdeveniment"
+
+#: R/cppublished.b.R
+msgid "event"
+msgstr "esdeveniment"
+
+#: cpCox/options/eventLevel.title
+#: cpCox/ui[0][1]/eventLevel.label
+#: cpLogistic/options/eventLevel.title
+#: cpPublished/options/eventLevel.title
+#: cpPublished/ui[1][0]/eventLevel.label
+msgid "Event level"
+msgstr "Nivell de l'esdeveniment"
+
+#: R/cp_external.R
+msgid "event level '%s' never occurs"
+msgstr "el nivell de l'esdeveniment '%s' no apareix mai"
+
+#: R/cp_plots.R
+msgid "Event-free (Kaplan–Meier)"
+msgstr "Lliure d'esdeveniment (Kaplan–Meier)"
+
+#: R/cp_analysis.R
+#: R/cpcox.b.R
+#: R/cplogistic.b.R
+#: cpCox/results/samples.columns.title
+#: cpLogistic/results/samples.columns.title
+#: cpPublished/results/samples.columns.title
+msgid "Events"
+msgstr "Esdeveniments"
+
+#: cpCox/results/ssTable.columns.title
+#: cpLogistic/results/ssTable.columns.title
+msgid "Events per parameter"
+msgstr "Esdeveniments per paràmetre"
+
+#: R/cp_analysis.R
+msgid "Every row is a validation row; no data are left to develop the model."
+msgstr "Totes les files són de validació; no queden dades per desenvolupar el model."
+
+#: cpCox/results/samples.columns.title
+#: cpLinear/results/samples.columns.title
+#: cpLogistic/results/samples.columns.title
+#: cpPublished/results/samples.columns.title
+msgid "Excluded (missing)"
+msgstr "Exclosos (perduts)"
+
+#: cpCox/options/shapRow.title
+#: cpLinear/options/shapRow.title
+#: cpLogistic/options/shapRow.title
+msgid "Explain the prediction for row"
+msgstr "Explica la predicció de la fila"
+
+#: cpCox/results/plots/shapPatient.title
+#: cpLinear/results/plots/shapPatient.title
+#: cpLogistic/results/plots/shapPatient.title
+msgid "Explanation of One Prediction"
+msgstr "Explicació d'una predicció"
+
+#: cpCox/options/explain.title
+#: cpLinear/options/explain.title
+#: cpLogistic/options/explain.title
+#: cpPublished/options/explain.title
+msgid "Explanations"
+msgstr "Explicacions"
+
+#: cpCox/ui[12][0][2].label
+#: cpLinear/ui[10][0][2].label
+#: cpLogistic/ui[11][0][2].label
+msgid "Export"
+msgstr "Exporta"
+
+#: cpCox/options/exportModel.title
+#: cpLinear/options/exportModel.title
+#: cpLogistic/options/exportModel.title
+msgid "Export model (JSON)"
+msgstr "Exporta el model (JSON)"
+
+#: cpCox/results/caseMix.columns.title
+#: cpCox/results/missTable.columns.title
+#: cpLinear/results/caseMix.columns.title
+#: cpLinear/results/missTable.columns.title
+#: cpLogistic/results/caseMix.columns.title
+#: cpLogistic/results/missTable.columns.title
+msgid "External"
+msgstr "Extern"
+
+#: R/cp_analysis.R
+msgid "External (%s)"
+msgstr "Extern (%s)"
+
+#: cpCox/results/extCheck.title
+#: cpLinear/results/extCheck.title
+#: cpLogistic/results/extCheck.title
+msgid "External Data — Variable Check"
+msgstr "Dades externes — comprovació de variables"
+
+#: cpCox/ui[8][0][1].label
+#: cpLinear/ui[7][0][1].label
+#: cpLogistic/ui[7][0][1].label
+msgid "External validation"
+msgstr "Validació externa"
+
+#: cpCox/options/extFile.title
+#: cpLinear/options/extFile.title
+#: cpLogistic/options/extFile.title
+msgid "External validation data"
+msgstr "Dades de validació externa"
+
+#: R/cp_analysis.R
+msgid "F test of the added predictors (df = %d, %d)"
+msgstr "Prova F dels predictors afegits (gl = %d, %d)"
+
+#: cpLinear/results/testTable.title
+msgid "F Tests"
+msgstr "Proves F"
+
+#: cpLinear/options/predTests.title
+msgid "F tests per predictor"
+msgstr "Proves F per predictor"
+
+#: cpCox/ui[3]/refLevels.columns.label
+#: cpLinear/ui[2]/refLevels.columns.label
+#: cpLogistic/ui[2]/refLevels.columns.label
+msgid "Factor"
+msgstr "Factor"
+
+#: R/cp_data.R
+msgid "Factor '%s' has a single level in the complete cases; remove it."
+msgstr "El factor '%s' té un sol nivell en els casos complets; elimineu-lo."
+
+#: cpCox/options/factors.title
+#: cpCox/ui[0][4].label
+#: cpLinear/options/factors.title
+#: cpLinear/ui[0][3].label
+#: cpLogistic/options/factors.title
+#: cpLogistic/ui[0][3].label
+msgid "Factors"
+msgstr "Factors"
+
+#: R/cp_analysis_mi.R
+msgid "Fewer than 3 development rows have the outcome."
+msgstr "Menys de 3 files de desenvolupament tenen el desenllaç."
+
+#: R/cppublished.b.R
+msgid "Fewer than 3 rows have the outcome and every predictor of the model."
+msgstr "Menys de 3 files tenen el desenllaç i tots els predictors del model."
+
+#: R/cp_external.R
+msgid "Files of type '.%s' cannot be read. Use csv, tsv, txt, omv, xlsx or sav."
+msgstr "No es poden llegir fitxers de tipus '.%s'. Feu servir csv, tsv, txt, omv, xlsx o sav."
+
+#: cpCox/results/modelFreqTable.columns.title
+#: cpLinear/results/modelFreqTable.columns.title
+#: cpLogistic/results/modelFreqTable.columns.title
+msgid "Fits"
+msgstr "Ajustos"
+
+#: cpLogistic/results/confTable.columns.title
+#: cpPublished/results/confTable.columns.title
+msgid "FN"
+msgstr "FN"
+
+#: cpCox/options/nFolds.title
+#: cpLinear/options/nFolds.title
+#: cpLogistic/options/nFolds.title
+msgid "Folds"
+msgstr "Grups"
+
+#: cpCox/options/enetFolds.title
+#: cpLinear/options/enetFolds.title
+#: cpLogistic/options/enetFolds.title
+msgid "Folds for λ"
+msgstr "Grups per a λ"
+
+#: cpCox/options/forest.title
+#: cpLinear/options/forest.title
+#: cpLogistic/options/forest.title
+msgid "Forest plot"
+msgstr "Forest plot"
+
+#: cpCox/results/plots/forestPlot.title
+#: cpLinear/results/plots/forestPlot.title
+#: cpLogistic/results/plots/forestPlot.title
+msgid "Forest Plot"
+msgstr "Forest plot"
+
+#: cpCox/options/selMode/forward.title
+#: cpLinear/options/selMode/forward.title
+#: cpLogistic/options/selMode/forward.title
+msgid "Forward selection"
+msgstr "Selecció cap endavant"
+
+#: R/cp_analysis.R
+msgid ""
+"Forward selection (%s): from the baseline covariates, at each step the "
+"predictor that improves the criterion most enters."
+msgstr "Selecció cap endavant (%s): des de les covariables de base, a cada pas entra el predictor que més millora el criteri."
+
+#: cpCox/options/intMode/aic.title
+#: cpLinear/options/intMode/aic.title
+#: cpLogistic/options/intMode/aic.title
+msgid "Forward selection, AIC"
+msgstr "Selecció cap endavant, AIC"
+
+#: cpCox/options/intMode/bic.title
+#: cpLinear/options/intMode/bic.title
+#: cpLogistic/options/intMode/bic.title
+msgid "Forward selection, BIC"
+msgstr "Selecció cap endavant, BIC"
+
+#: cpCox/options/intMode/lrt.title
+#: cpLinear/options/intMode/lrt.title
+#: cpLogistic/options/intMode/lrt.title
+msgid "Forward selection, LR test"
+msgstr "Selecció cap endavant, prova de RV"
+
+#: R/cp_analysis.R
+msgid ""
+"Forward selection: at each step the term that lowers the AIC most enters, "
+"while the AIC decreases."
+msgstr "Selecció cap endavant: a cada pas entra el terme que més redueix l'AIC, mentre l'AIC disminueixi."
+
+#: R/cp_analysis.R
+msgid ""
+"Forward selection: at each step the term that lowers the BIC most enters, "
+"while the BIC decreases."
+msgstr "Selecció cap endavant: a cada pas entra el terme que més redueix el BIC, mentre el BIC disminueixi."
+
+#: R/cp_analysis.R
+msgid ""
+"Forward selection: at each step the term with the smallest likelihood ratio "
+"p enters, while p < %s."
+msgstr "Selecció cap endavant: a cada pas entra el terme amb la p de raó de versemblances més petita, mentre p < %s."
+
+#: cpLogistic/results/confTable.columns.title
+#: cpPublished/results/confTable.columns.title
+msgid "FP"
+msgstr "FP"
+
+#: cpCox/options/ssSource/model.title
+#: cpLinear/options/ssSource/model.title
+#: cpLogistic/options/ssSource/model.title
+msgid "From this model"
+msgstr "D'aquest model"
+
+#: cpCox/results/incTable.columns.title
+#: cpLinear/results/incTable.columns.title
+#: cpLogistic/results/incTable.columns.title
+msgid "Full"
+msgstr "Complet"
+
+#: R/cp_plots.R
+msgid "Full model"
+msgstr "Model complet"
+
+#: cpCox/results/nbTable.columns.title
+#: cpLogistic/results/nbTable.columns.title
+#: cpPublished/results/nbTable.columns.title
+msgid "Gain"
+msgstr "Guany"
+
+#: cpCox/results/missTable.columns.title
+#: cpLinear/results/missTable.columns.title
+#: cpLogistic/results/missTable.columns.title
+msgid "Group 0"
+msgstr "Grup 0"
+
+#: cpCox/results/missTable.columns.title
+#: cpLinear/results/missTable.columns.title
+#: cpLogistic/results/missTable.columns.title
+msgid "Group 1"
+msgstr "Grup 1"
+
+#: cpCox/options/kmGroups.title
+#: cpPublished/options/kmGroups.title
+msgid "Groups"
+msgstr "Grups"
+
+#: R/cp_family_binary.R
+#: cpCox/results/updTable.columns.title
+#: cpPublished/results/updTable.columns.title
+msgid "Harrell's C"
+msgstr "C de Harrell"
+
+#: R/cpcox.b.R
+msgid ""
+"Harrell's C: probability that, of two comparable patients, the one with the "
+"event first has the higher predicted risk. Uno's C: the same, weighted for "
+"censoring and restricted to the horizon. Time-dependent AUC: discrimination "
+"between events by t = %s and patients event-free at t (censoring weighted). "
+"Royston's D: separation in log hazard between the halves of the prognostic "
+"index. O/E: observed (Kaplan–Meier) / mean predicted risk at t. Calibration "
+"slope: 1 is ideal; below 1 the predictions are too extreme. ICI, E50, E90: "
+"mean, median and 90th percentile absolute difference between predicted and "
+"observed risk at t (smoothed by a Cox model on a spline of the predicted "
+"risk). Brier: censoring-weighted mean squared error at t; scaled Brier "
+"(index of prediction accuracy): 1 − Brier / Brier of the Kaplan–Meier risk."
+msgstr "C de Harrell: probabilitat que, de dos pacients comparables, el que presenta abans l'esdeveniment tingui el risc predit més alt. C d'Uno: el mateix, ponderat per la censura i restringit a l'horitzó. AUC dependent del temps: discriminació entre els esdeveniments fins a t = %s i els pacients lliures d'esdeveniment a t (ponderada per la censura). D de Royston: separació en el log hazard entre les meitats de l'índex pronòstic. O/E: risc observat (Kaplan–Meier) / risc predit mitjà a t. Pendent de calibratge: 1 és l'ideal; per sota d'1 les prediccions són massa extremes. ICI, E50, E90: mitjana, mediana i percentil 90 de la diferència absoluta entre el risc predit i l'observat a t (suavitzat amb un model de Cox sobre un spline del risc predit). Brier: error quadràtic mitjà a t ponderat per la censura; Brier escalat (índex de precisió de la predicció): 1 − Brier / Brier del risc de Kaplan–Meier."
+
+#: cpCox/ui[4]/covScales.columns.label
+#: cpCox/results/coefTable.columns.title
+msgid "Hazard ratio"
+msgstr "Hazard ratio"
+
+#: R/cpcox.b.R
+msgid "Hazard ratio (log scale)"
+msgstr "Hazard ratio (escala logarítmica)"
+
+#: R/cpcox.b.R
+msgid ""
+"Hazard ratio of each variable of an interaction at the levels (factor) or "
+"quartiles (covariate) of the other; other predictors at their reference "
+"level or median."
+msgstr "Hazard ratio de cada variable d'una interacció en els nivells (factor) o quartils (covariable) de l'altra; els altres predictors al seu nivell de referència o mediana."
+
+#: cpCox/options/oddsRatios.title
+msgid "Hazard ratios"
+msgstr "Hazard ratios"
+
+#: cpCox/results/orTable.title
+msgid "Hazard Ratios"
+msgstr "Hazard ratios"
+
+#: package/datasets/Heartcohort(simulated).name
+msgid "Heart cohort (simulated)"
+msgstr "Cohort cardíaca (simulada)"
+
+#: R/cp_analysis.R
+msgid "Heuristic shrinkage factor (van Houwelingen)"
+msgstr "Factor de contracció heurístic (van Houwelingen)"
+
+#: R/cp_plots.R
+msgid "High"
+msgstr "Alt"
+
+#: R/cppublished.b.R
+#: cpCox/results/orTable.columns.title
+#: cpCox/results/subTable.columns.title
+msgid "HR"
+msgstr "HR"
+
+#: R/cp_family_binary.R
+#: cpLogistic/results/updTable.columns.title
+#: cpPublished/results/updTable.columns.title
+msgid "ICI"
+msgstr "ICI"
+
+#: R/cp_analysis.R
+msgid "IDI"
+msgstr "IDI"
+
+#: cpCox/results/shapTable.title
+msgid "Importance — Mean |SHAP| (log hazard)"
+msgstr "Importància — mitjana |SHAP| (log hazard)"
+
+#: cpLogistic/results/shapTable.title
+msgid "Importance — Mean |SHAP| (log-odds)"
+msgstr "Importància — mitjana |SHAP| (log-odds)"
+
+#: cpLinear/results/shapTable.title
+msgid "Importance — Mean |SHAP| (outcome units)"
+msgstr "Importància — mitjana |SHAP| (unitats del desenllaç)"
+
+#: cpCox/results/permTable.title
+#: cpLinear/results/permTable.title
+#: cpLogistic/results/permTable.title
+msgid "Importance — Permutation"
+msgstr "Importància — permutació"
+
+#: cpCox/results/shapleyTable.title
+#: cpLinear/results/shapleyTable.title
+#: cpLogistic/results/shapleyTable.title
+msgid "Importance — Shapley Decomposition of R²"
+msgstr "Importància — descomposició de Shapley de l'R²"
+
+#: cpCox/options/miM.title
+#: cpLinear/options/miM.title
+#: cpLogistic/options/miM.title
+msgid "Imputations"
+msgstr "Imputacions"
+
+#: cpCox/results/intTable.columns.title
+#: cpLinear/results/intTable.columns.title
+#: cpLogistic/results/intTable.columns.title
+msgid "In model"
+msgstr "Al model"
+
+#: cpCox/results/bootCoefTable.columns.title
+#: cpLinear/results/bootCoefTable.columns.title
+#: cpLogistic/results/bootCoefTable.columns.title
+msgid "Inclusion"
+msgstr "Inclusió"
+
+#: cpCox/options/incremental.title
+#: cpLinear/options/incremental.title
+#: cpLogistic/options/incremental.title
+msgid "Incremental value over the baseline model"
+msgstr "Valor incremental sobre el model base"
+
+#: cpCox/results/incTable.title
+#: cpLinear/results/incTable.title
+#: cpLogistic/results/incTable.title
+msgid "Incremental Value over the Baseline Model"
+msgstr "Valor incremental sobre el model base"
+
+#: cpCox/results/instructions.title
+#: cpLinear/results/instructions.title
+#: cpLogistic/results/instructions.title
+#: cpPublished/results/instructions.title
+msgid "Instructions"
+msgstr "Instruccions"
+
+#: cpCox/options/interactions.title
+#: cpLinear/options/interactions.title
+#: cpLogistic/options/interactions.title
+msgid "Interaction terms"
+msgstr "Termes d'interacció"
+
+#: cpCox/ui[7].label
+#: cpLinear/ui[6].label
+#: cpLogistic/ui[6].label
+msgid "Interactions"
+msgstr "Interaccions"
+
+#: cpCox/results/intTable.title
+#: cpLinear/results/intTable.title
+#: cpLogistic/results/intTable.title
+msgid "Interactions — Screening and Selection"
+msgstr "Interaccions — cribratge i selecció"
+
+#: cpCox/options/intMode.title
+#: cpLinear/options/intMode.title
+#: cpLogistic/options/intMode.title
+msgid "Interactions to keep"
+msgstr "Interaccions que es mantenen"
+
+#: R/cp_analysis.R
+#: R/cppublished.b.R
+#: cpLinear/results/updTable.columns.title
+#: cpLogistic/results/updTable.columns.title
+#: cpPublished/results/updTable.columns.title
+msgid "Intercept"
+msgstr "Constant"
+
+#: cpCox/options/validation.title
+#: cpCox/ui[8][0][0].label
+#: cpLinear/options/validation.title
+#: cpLinear/ui[7][0][0].label
+#: cpLogistic/options/validation.title
+#: cpLogistic/ui[7][0][0].label
+msgid "Internal validation"
+msgstr "Validació interna"
+
+#: cpCox/results/nbTable.columns.title
+#: cpLogistic/results/nbTable.columns.title
+#: cpPublished/results/nbTable.columns.title
+msgid "Interventions avoided per 100"
+msgstr "Intervencions evitades per 100"
+
+#: cpCox/options/miIter.title
+#: cpLinear/options/miIter.title
+#: cpLogistic/options/miIter.title
+msgid "Iterations"
+msgstr "Iteracions"
+
+#: package/analyses/cpPublished.menuSubtitle
+msgid "JSON or table of coefficients"
+msgstr "JSON o taula de coeficients"
+
+#: cpCox/options/kmPlot.title
+#: cpPublished/options/kmPlot.title
+msgid "Kaplan–Meier by risk group"
+msgstr "Kaplan–Meier per grup de risc"
+
+#: cpCox/results/plots/kmCurves.title
+#: cpPublished/results/plots/kmCurves.title
+msgid "Kaplan–Meier by Risk Group"
+msgstr "Kaplan–Meier per grup de risc"
+
+#: R/cp_analysis.R
+#: R/cp_analysis_mi.R
+msgid "kept"
+msgstr "mantingut"
+
+#: R/cp_analysis_mi.R
+msgid ""
+"Kept: selected in at least half of the %d imputations (tests from the "
+"first). Selected in each imputation: %s."
+msgstr "Mantingut: seleccionat en almenys la meitat de les %d imputacions (proves de la primera). Seleccionat en cada imputació: %s."
+
+#: R/cp_analysis.R
+msgid "Largest individual absolute prediction error"
+msgstr "Error absolut de predicció individual més gran"
+
+#: cpCox/options/enetRule/1se.title
+#: cpLinear/options/enetRule/1se.title
+#: cpLogistic/options/enetRule/1se.title
+msgid "Largest within 1 SE (sparser)"
+msgstr "Més gran a 1 EE (més parsimoniós)"
+
+#: R/cp_analysis.R
+msgid "largest within 1 SE of the minimum deviance"
+msgstr "el més gran a 1 EE de la desviació mínima"
+
+#: R/cp_published.R
+msgid "level '%s' not in the data (its indicator is always 0)"
+msgstr "el nivell '%s' no és a les dades (el seu indicador és sempre 0)"
+
+#: R/cp_external.R
+msgid "levels not observed: %s"
+msgstr "nivells no observats: %s"
+
+#: cpCox/options/predTests.title
+#: cpLogistic/options/predTests.title
+msgid "Likelihood ratio tests"
+msgstr "Proves de raó de versemblances"
+
+#: cpCox/results/testTable.title
+#: cpLogistic/results/testTable.title
+msgid "Likelihood Ratio Tests"
+msgstr "Proves de raó de versemblances"
+
+#: R/cp_analysis.R
+#: cpLogistic/options/predLP.title
+#: cpLogistic/results/predLP.title
+#: cpPublished/options/predLP.title
+#: cpPublished/results/predLP.title
+msgid "Linear predictor"
+msgstr "Predictor lineal"
+
+#: R/cpcox.b.R
+msgid "Log cumulative hazard at t = %s"
+msgstr "Log del hazard acumulat a t = %s"
+
+#: R/cp_plots.R
+#: R/cplogistic.b.R
+msgid "Log-odds"
+msgstr "Log-odds"
+
+#: R/cplogistic.b.R
+msgid "log-odds(%s = %s) ="
+msgstr "log-odds(%s = %s) ="
+
+#: R/cp_plots.R
+#: R/cplogistic.b.R
+msgid "Loss in AUC when permuted (mean ± SD)"
+msgstr "Pèrdua d'AUC en permutar (mitjana ± DE)"
+
+#: R/cpcox.b.R
+msgid "Loss in Harrell's C when permuted (mean ± SD)"
+msgstr "Pèrdua de C de Harrell en permutar (mitjana ± DE)"
+
+#: R/cplinear.b.R
+msgid "Loss in R² when permuted (mean ± SD)"
+msgstr "Pèrdua d'R² en permutar (mitjana ± DE)"
+
+#: R/cp_plots.R
+msgid "Low"
+msgstr "Baix"
+
+#: cpCox/results/orTable.columns.title
+#: cpCox/results/incTable.columns.title
+#: cpCox/results/subTable.columns.title
+#: cpCox/results/coefTable.columns.title
+#: cpCox/results/perfDev.columns.title
+#: cpCox/results/perfVal.columns.title
+#: cpLinear/results/orTable.columns.title
+#: cpLinear/results/incTable.columns.title
+#: cpLinear/results/subTable.columns.title
+#: cpLinear/results/coefTable.columns.title
+#: cpLinear/results/perfDev.columns.title
+#: cpLinear/results/perfVal.columns.title
+#: cpLogistic/results/orTable.columns.title
+#: cpLogistic/results/incTable.columns.title
+#: cpLogistic/results/subTable.columns.title
+#: cpLogistic/results/coefTable.columns.title
+#: cpLogistic/results/perfDev.columns.title
+#: cpLogistic/results/perfVal.columns.title
+#: cpLogistic/results/classTable.columns.title
+#: cpPublished/results/modelTable.columns.title
+#: cpPublished/results/perf.columns.title
+#: cpPublished/results/classTable.columns.title
+msgid "Lower"
+msgstr "Inferior"
+
+#: R/cp_plots.R
+#: R/cpcox.b.R
+#: R/cplogistic.b.R
+msgid "Lowers risk"
+msgstr "Redueix el risc"
+
+#: R/cplinear.b.R
+msgid "Lowers the prediction"
+msgstr "Redueix la predicció"
+
+#: cpCox/options/selCrit/lrt.title
+#: cpLinear/options/selCrit/lrt.title
+#: cpLogistic/options/selCrit/lrt.title
+msgid "LR test"
+msgstr "Prova de RV"
+
+#: R/cp_analysis.R
+msgid "LR test of the added predictors (χ², df = %d)"
+msgstr "Prova de RV dels predictors afegits (χ², gl = %d)"
+
+#: R/cp_analysis.R
+msgid "LR test, α = %s"
+msgstr "Prova de RV, α = %s"
+
+#: R/cp_family_binary.R
+msgid "MAE"
+msgstr "MAE"
+
+#: R/cp_analysis.R
+msgid "main effect removed"
+msgstr "efecte principal eliminat"
+
+#: R/cp_plots.R
+msgid "MAPE %.3f; dashed: 2.5th and 97.5th percentiles"
+msgstr "MAPE %.3f; discontínues: percentils 2,5 i 97,5"
+
+#: R/cp_external.R
+msgid "matched to column '%s'"
+msgstr "aparellada amb la columna '%s'"
+
+#: cpCox/options/dcaMax.title
+#: cpLogistic/options/dcaMax.title
+#: cpPublished/options/dcaMax.title
+msgid "Maximum threshold"
+msgstr "Llindar màxim"
+
+#: cpCox/options/shapleyMeasure/r2mf.title
+#: cpLogistic/options/shapleyMeasure/r2mf.title
+msgid "McFadden (deviance)"
+msgstr "McFadden (desviació)"
+
+#: R/cp_analysis.R
+msgid "McFadden R²"
+msgstr "R² de McFadden"
+
+#: cpLinear/results/samples.columns.title
+#: cpPublished/results/samples.columns.title
+msgid "Mean"
+msgstr "Mitjana"
+
+#: R/cp_analysis.R
+#: R/cp_explain.R
+#: R/cpcox.b.R
+#: R/cplinear.b.R
+#: R/cplogistic.b.R
+msgid "mean (SD)"
+msgstr "mitjana (DE)"
+
+#: cpCox/options/descStat/meanSD.title
+#: cpLinear/options/descStat/meanSD.title
+#: cpLogistic/options/descStat/meanSD.title
+msgid "Mean (SD)"
+msgstr "Mitjana (DE)"
+
+#: R/cp_plots.R
+msgid "mean %.2f → this person %.2f, risk %.1f%%"
+msgstr "mitjana %.2f → aquesta persona %.2f, risc %.1f%%"
+
+#: cpCox/results/shapTable.columns.title
+#: cpLinear/results/shapTable.columns.title
+#: cpLogistic/results/shapTable.columns.title
+msgid "Mean |SHAP|"
+msgstr "Mitjana |SHAP|"
+
+#: R/cp_analysis.R
+msgid "Mean absolute prediction error (MAPE)"
+msgstr "Error absolut mitjà de predicció (MAPE)"
+
+#: R/cp_analysis.R
+msgid "Mean squared error"
+msgstr "Error quadràtic mitjà"
+
+#: cpCox/results/incTable.columns.title
+#: cpCox/results/perfDev.columns.title
+#: cpCox/results/perfVal.columns.title
+#: cpCox/results/stabTable.columns.title
+#: cpLinear/results/incTable.columns.title
+#: cpLinear/results/perfDev.columns.title
+#: cpLinear/results/perfVal.columns.title
+#: cpLinear/results/stabTable.columns.title
+#: cpLogistic/results/incTable.columns.title
+#: cpLogistic/results/perfDev.columns.title
+#: cpLogistic/results/perfVal.columns.title
+#: cpLogistic/results/stabTable.columns.title
+#: cpLogistic/results/classTable.columns.title
+#: cpPublished/results/perf.columns.title
+#: cpPublished/results/classTable.columns.title
+msgid "Measure"
+msgstr "Mesura"
+
+#: R/cp_explain.R
+#: R/cpcox.b.R
+#: R/cplinear.b.R
+#: R/cplogistic.b.R
+msgid "median"
+msgstr "mediana"
+
+#: cpCox/results/bootCoefTable.columns.title
+#: cpLinear/results/bootCoefTable.columns.title
+#: cpLogistic/results/bootCoefTable.columns.title
+msgid "Median"
+msgstr "Mediana"
+
+#: R/cp_analysis.R
+msgid "Membership c-statistic"
+msgstr "Estadístic c de pertinença"
+
+#: R/cplogistic.b.R
+msgid ""
+"Membership c-statistic: how well the predictors and the outcome distinguish "
+"validation from development rows (Debray et al. 2015). Near 0.5: similar "
+"case-mix (reproducibility); high: different populations (transportability). "
+"A larger SD of the linear predictor means a more heterogeneous case-mix, "
+"which by itself raises the AUC."
+msgstr "Estadístic c de pertinença: en quina mesura els predictors i el desenllaç distingeixen les files de validació de les de desenvolupament (Debray et al. 2015). Prop de 0,5: case-mix similar (reproductibilitat); alt: poblacions diferents (transportabilitat). Una DE més gran del predictor lineal indica un case-mix més heterogeni, que per si sol augmenta l'AUC."
+
+#: R/cpcox.b.R
+msgid ""
+"Membership c-statistic: how well the predictors and the outcome distinguish "
+"validation from development rows (Debray et al. 2015). Near 0.5: similar "
+"case-mix (reproducibility); high: different populations (transportability). "
+"A larger SD of the linear predictor means a more heterogeneous case-mix, "
+"which by itself raises the concordance."
+msgstr "Estadístic c de pertinença: en quina mesura els predictors i el desenllaç distingeixen les files de validació de les de desenvolupament (Debray et al. 2015). Prop de 0,5: case-mix similar (reproductibilitat); alt: poblacions diferents (transportabilitat). Una DE més gran del predictor lineal indica un case-mix més heterogeni, que per si sol augmenta la concordança."
+
+#: R/cplinear.b.R
+msgid ""
+"Membership c-statistic: how well the predictors and the outcome distinguish "
+"validation from development rows (Debray et al. 2015). Near 0.5: similar "
+"case-mix (reproducibility); high: different populations (transportability). "
+"A larger SD of the predictions means a more heterogeneous case-mix, which by "
+"itself raises the R²."
+msgstr "Estadístic c de pertinença: en quina mesura els predictors i el desenllaç distingeixen les files de validació de les de desenvolupament (Debray et al. 2015). Prop de 0,5: case-mix similar (reproductibilitat); alt: poblacions diferents (transportabilitat). Una DE més gran de les prediccions indica un case-mix més heterogeni, que per si sol augmenta l'R²."
+
+#: cpCox/results/updTable.columns.title
+#: cpLinear/results/updTable.columns.title
+#: cpLogistic/results/updTable.columns.title
+#: cpPublished/results/updTable.columns.title
+msgid "Method"
+msgstr "Mètode"
+
+#: cpCox/options/enetRule/min.title
+#: cpLinear/options/enetRule/min.title
+#: cpLogistic/options/enetRule/min.title
+msgid "Minimum CV deviance"
+msgstr "Desviació mínima de VC"
+
+#: R/cp_analysis.R
+msgid "minimum deviance"
+msgstr "desviació mínima"
+
+#: R/cpcox.b.R
+#: R/cplinear.b.R
+#: R/cplogistic.b.R
+msgid "Minimum required"
+msgstr "Mínim requerit"
+
+#: R/cp_external.R
+#: cpCox/results/missTable.columns.title
+#: cpCox/results/missPatterns.columns.title
+#: cpCox/results/descTable.columns.title
+#: cpLinear/results/missTable.columns.title
+#: cpLinear/results/missPatterns.columns.title
+#: cpLinear/results/descTable.columns.title
+#: cpLogistic/results/missTable.columns.title
+#: cpLogistic/results/missPatterns.columns.title
+#: cpLogistic/results/descTable.columns.title
+msgid "Missing"
+msgstr "Perduts"
+
+#: cpCox/options/missMethod/category.title
+#: cpLinear/options/missMethod/category.title
+#: cpLogistic/options/missMethod/category.title
+msgid "Missing category / indicator"
+msgstr "Categoria / indicador de perdut"
+
+#: R/cp_analysis.R
+msgid ""
+"Missing predictor values imputed once by chained equations (predictive mean "
+"matching, %d iterations; the outcome in the imputation models): %d "
+"development rows. Validation data are imputed in the same way, separately. "
+"Rows with a missing outcome are excluded."
+msgstr "Valors perduts dels predictors imputats una vegada per equacions encadenades (aparellament per mitjana predictiva, %d iteracions; el desenllaç als models d'imputació): %d files de desenvolupament. Les dades de validació s'imputen de la mateixa manera, per separat. Les files sense desenllaç s'exclouen."
+
+#: cpCox/results/missPatterns.title
+#: cpLinear/results/missPatterns.title
+#: cpLogistic/results/missPatterns.title
+msgid "Missing Value Patterns"
+msgstr "Patrons de valors perduts"
+
+#: R/cp_analysis.R
+#: cpCox/ui[6].label
+#: cpLinear/ui[5].label
+#: cpLogistic/ui[5].label
+msgid "Missing Values"
+msgstr "Valors perduts"
+
+#: cpCox/options/missMethod.title
+#: cpLinear/options/missMethod.title
+#: cpLogistic/options/missMethod.title
+msgid "Missing values"
+msgstr "Valors perduts"
+
+#: cpCox/results/missTable.title
+#: cpLinear/results/missTable.title
+#: cpLogistic/results/missTable.title
+msgid "Missing Values (Development Data)"
+msgstr "Valors perduts (dades de desenvolupament)"
+
+#: cpCox/options/missExplore.title
+#: cpLinear/options/missExplore.title
+#: cpLogistic/options/missExplore.title
+msgid "Missing values (exploration)"
+msgstr "Valors perduts (exploració)"
+
+#: R/cp_analysis.R
+msgid ""
+"Missing values: a '(missing)' level for %s; for %s, the development median "
+"and an indicator predictor."
+msgstr "Valors perduts: un nivell '(missing)' per a %s; per a %s, la mediana de desenvolupament i un predictor indicador."
+
+#: cpCox/options/enetAlpha.title
+#: cpLinear/options/enetAlpha.title
+#: cpLogistic/options/enetAlpha.title
+msgid "Mixing (1 = lasso, 0 = ridge)"
+msgstr "Barreja (1 = lasso, 0 = ridge)"
+
+#: R/cp_plots.R
+#: cpCox/ui[2].label
+#: cpCox/results/nbTable.columns.title
+#: cpLinear/ui[1].label
+#: cpLogistic/ui[1].label
+#: cpLogistic/results/nbTable.columns.title
+#: cpPublished/ui[0][0].label
+#: cpPublished/results/modelTable.title
+#: cpPublished/results/nbTable.columns.title
+msgid "Model"
+msgstr "Model"
+
+#: cpCox/results/coefTable.title
+#: cpLinear/results/coefTable.title
+#: cpLogistic/results/coefTable.title
+msgid "Model Coefficients"
+msgstr "Coeficients del model"
+
+#: cpCox/options/coefs.title
+#: cpLinear/options/coefs.title
+#: cpLogistic/options/coefs.title
+msgid "Model coefficients (β)"
+msgstr "Coeficients del model (β)"
+
+#: cpCox/options/equation.title
+#: cpLinear/options/equation.title
+#: cpLogistic/options/equation.title
+msgid "Model equation"
+msgstr "Equació del model"
+
+#: cpCox/results/equationText.title
+#: cpLinear/results/equationText.title
+#: cpLogistic/results/equationText.title
+msgid "Model Equation"
+msgstr "Equació del model"
+
+#: cpPublished/options/modelFile.title
+msgid "Model file"
+msgstr "Fitxer del model"
+
+#: R/cp_analysis.R
+#: R/cppublished.b.R
+msgid "Model revision"
+msgstr "Revisió del model"
+
+#: cpPublished/options/family.title
+msgid "Model type"
+msgstr "Tipus de model"
+
+#: cpPublished/results/updTable.title
+msgid "Model Updating"
+msgstr "Actualització del model"
+
+#: cpLinear/options/updating.title
+#: cpLogistic/options/updating.title
+#: cpPublished/options/updating.title
+msgid "Model updating (closed testing)"
+msgstr "Actualització del model (prova tancada)"
+
+#: cpCox/options/updating.title
+msgid "Model updating (sequential tests)"
+msgstr "Actualització del model (proves seqüencials)"
+
+#: cpCox/results/updTable.title
+#: cpLinear/results/updTable.title
+#: cpLogistic/results/updTable.title
+msgid "Model Updating in the Validation Data"
+msgstr "Actualització del model a les dades de validació"
+
+#: R/cp_analysis_mi.R
+msgid ""
+"Model updating is not available with multiple imputation (its tests are not "
+"defined across imputations); use single imputation or complete cases."
+msgstr "L'actualització del model no està disponible amb imputació múltiple (les seves proves no estan definides entre imputacions); feu servir imputació simple o casos complets."
+
+#: cpCox/results/modelFreqTable.title
+#: cpLinear/results/modelFreqTable.title
+#: cpLogistic/results/modelFreqTable.title
+msgid "Most Frequent Selected Models (Bootstrap)"
+msgstr "Models seleccionats més freqüents (bootstrap)"
+
+#: cpCox/options/missMethod/mi.title
+#: cpLinear/options/missMethod/mi.title
+#: cpLogistic/options/missMethod/mi.title
+msgid "Multiple imputation"
+msgstr "Imputació múltiple"
+
+#: R/cp_analysis_mi.R
+msgid ""
+"Multiple imputation: %d imputations by chained equations (predictive mean "
+"matching, %d iterations; the outcome in the imputation models) of %d "
+"development rows with a missing predictor; validation data imputed "
+"separately. Coefficients pooled by Rubin's rules, performance averaged over "
+"the imputations. Rows with a missing outcome are excluded."
+msgstr "Imputació múltiple: %d imputacions per equacions encadenades (aparellament per mitjana predictiva, %d iteracions; el desenllaç als models d'imputació) de %d files de desenvolupament amb algun predictor perdut; dades de validació imputades per separat. Coeficients combinats amb les regles de Rubin, rendiment mitjà sobre les imputacions. Les files sense desenllaç s'exclouen."
+
+#: cpCox/options/shapleyMeasure/r2n.title
+#: cpLogistic/options/shapleyMeasure/r2n.title
+msgid "Nagelkerke"
+msgstr "Nagelkerke"
+
+#: R/cp_analysis.R
+#: R/cp_family_binary.R
+msgid "Nagelkerke R²"
+msgstr "R² de Nagelkerke"
+
+#: R/cp_plots.R
+msgid "Net benefit"
+msgstr "Benefici net"
+
+#: cpLogistic/results/nbTable.title
+#: cpPublished/results/nbTable.title
+msgid "Net Benefit"
+msgstr "Benefici net"
+
+#: cpCox/results/nbTable.title
+msgid "Net Benefit (at the Horizon)"
+msgstr "Benefici net (a l'horitzó)"
+
+#: R/cplogistic.b.R
+msgid ""
+"Net benefit = true positives/N − false positives/N × t/(1 − t), at threshold "
+"t. Gain: over the better of treating all and treating none. Interventions "
+"avoided per 100: fewer false positives than treating all, at the same "
+"benefit."
+msgstr "Benefici net = vertaders positius/N − falsos positius/N × t/(1 − t), amb llindar t. Guany: sobre la millor de les opcions tractar tothom i no tractar ningú. Intervencions evitades per 100: falsos positius menys que tractant tothom, amb el mateix benefici."
+
+#: cpCox/options/nbThresholds.title
+#: cpLogistic/options/nbThresholds.title
+#: cpPublished/options/nbThresholds.title
+msgid "Net benefit at"
+msgstr "Benefici net a"
+
+#: R/cp_analysis.R
+msgid "Net benefit at %s"
+msgstr "Benefici net a %s"
+
+#: R/cpcox.b.R
+msgid ""
+"Net benefit at t = %s, with the event risks above each threshold estimated "
+"by Kaplan–Meier (censoring accounted for): true positives/N − false "
+"positives/N × p/(1 − p) at threshold p. Gain: over the better of treating "
+"all and treating none."
+msgstr "Benefici net a t = %s, amb els riscos de l'esdeveniment per sobre de cada llindar estimats per Kaplan–Meier (tenint en compte la censura): vertaders positius/N − falsos positius/N × p/(1 − p) amb llindar p. Guany: sobre la millor de les opcions tractar tothom i no tractar ningú."
+
+#: R/cp_analysis.R
+msgid "no"
+msgstr "no"
+
+#: R/cppublished.b.R
+msgid "No event happens before the horizon (%s)."
+msgstr "Cap esdeveniment no passa abans de l'horitzó (%s)."
+
+#: R/cp_family_cox.R
+msgid "No event happens before the prediction horizon (%s); choose a later horizon."
+msgstr "Cap esdeveniment no passa abans de l'horitzó de predicció (%s); trieu un horitzó posterior."
+
+#: R/cp_analysis.R
+msgid "No interaction is in the model."
+msgstr "Cap interacció no és al model."
+
+#: R/cp_analysis.R
+msgid "No row has %s = %s."
+msgstr "Cap fila no té %s = %s."
+
+#: R/cp_published.R
+msgid ""
+"No variable matches the model terms %s. Add the variables the model uses to "
+"Predictor variables, and name each term after one of them (e.g. 'age', 'sex "
+"= male', 'log(crp)', 'age * sex = male')."
+msgstr "Cap variable no coincideix amb els termes del model %s. Afegiu les variables que fa servir el model a Variables predictores, i anomeneu cada terme segons una d'elles (p. ex. 'age', 'sex = male', 'log(crp)', 'age * sex = male')."
+
+#: R/cppublished.b.R
+msgid "Nobody is followed beyond the horizon (%s)."
+msgstr "Ningú no té seguiment més enllà de l'horitzó (%s)."
+
+#: R/cp_family_cox.R
+msgid ""
+"Nobody is followed beyond the prediction horizon (%s); choose an earlier "
+"horizon."
+msgstr "Ningú no té seguiment més enllà de l'horitzó de predicció (%s); trieu un horitzó anterior."
+
+#: package/datasets/Breastcancer,Rotterdam(development).description
+msgid ""
+"Node-positive breast cancer (survival::rotterdam): 1546 women, "
+"recurrence-free survival in years (years, rfs), eight predictors."
+msgstr "Càncer de mama amb ganglis positius (survival::rotterdam): 1546 dones, supervivència lliure de recidiva en anys (years, rfs), vuit predictors."
+
+#: cpLogistic/results/descTable.columns.title
+msgid "Non-event"
+msgstr "No esdeveniment"
+
+#: R/cp_analysis.R
+msgid "Non-events"
+msgstr "No esdeveniments"
+
+#: cpCox/options/validation/none.title
+#: cpLinear/options/validation/none.title
+#: cpLogistic/options/validation/none.title
+msgid "None (apparent only)"
+msgstr "Cap (només aparent)"
+
+#: R/cp_analysis.R
+msgid "none (complete)"
+msgstr "cap (complet)"
+
+#: cpCox/options/selMode/none.title
+#: cpLinear/options/selMode/none.title
+#: cpLogistic/options/selMode/none.title
+msgid "None (keep every predictor)"
+msgstr "Cap (mantenir tots els predictors)"
+
+#: R/cplogistic.b.R
+msgid "Not %s"
+msgstr "No %s"
+
+#: R/cp_analysis.R
+msgid "not added"
+msgstr "no afegit"
+
+#: R/cp_external.R
+msgid "not in the file"
+msgstr "no és al fitxer"
+
+#: R/cp_analysis.R
+msgid ""
+"Not shown for a penalised model: standard errors, CIs and p values, "
+"likelihood ratio tests, the Shapley decomposition and the heuristic "
+"shrinkage factor (a relaxed lasso has them)."
+msgstr "No es mostren en un model penalitzat: errors estàndard, IC i valors p, proves de raó de versemblances, la descomposició de Shapley i el factor de contracció heurístic (un lasso relaxat sí que els té)."
+
+#: R/cplogistic.b.R
+#: R/cppublished.b.R
+msgid "NPV"
+msgstr "VPN"
+
+#: R/cp_analysis.R
+msgid "NRI (continuous)"
+msgstr "NRI (continu)"
+
+#: R/cp_analysis.R
+msgid "NRI (risk categories cut at %s)"
+msgstr "NRI (categories de risc amb talls a %s)"
+
+#: R/cp_analysis.R
+msgid ""
+"NRI and IDI are reported for completeness; they can favour miscalibrated "
+"models (Pepe et al. 2015) and say less than ΔAUC, the LR test and Δ net "
+"benefit."
+msgstr "NRI i IDI es presenten per completesa; poden afavorir models mal calibrats (Pepe et al. 2015) i diuen menys que l'ΔAUC, la prova de RV i l'Δ del benefici net."
+
+#: R/cp_plots.R
+msgid "Numbers: non-zero coefficients"
+msgstr "Nombres: coeficients diferents de zero"
+
+#: cpCox/options/descStat.title
+#: cpLinear/options/descStat.title
+#: cpLogistic/options/descStat.title
+msgid "Numeric predictors"
+msgstr "Predictors numèrics"
+
+#: cpCox/results/updTable.columns.title
+#: cpPublished/results/updTable.columns.title
+msgid "O/E"
+msgstr "O/E"
+
+#: R/cp_family_binary.R
+msgid "O/E ratio"
+msgstr "Raó O/E"
+
+#: R/cp_family_binary.R
+msgid "O/E ratio (at the horizon)"
+msgstr "Raó O/E (a l'horitzó)"
+
+#: cpCox/results/missTable.columns.title
+#: cpLinear/results/missTable.columns.title
+#: cpLogistic/results/missTable.columns.title
+msgid "Observed"
+msgstr "Observat"
+
+#: R/cp_plots.R
+msgid "Observed proportion"
+msgstr "Proporció observada"
+
+#: R/cp_plots.R
+#: R/cplogistic.b.R
+msgid "Observed proportion (smoothed)"
+msgstr "Proporció observada (suavitzada)"
+
+#: R/cpcox.b.R
+#: R/cppublished.b.R
+msgid "Observed risk (Kaplan–Meier)"
+msgstr "Risc observat (Kaplan–Meier)"
+
+#: R/cpcox.b.R
+msgid "Observed risk (smoothed)"
+msgstr "Risc observat (suavitzat)"
+
+#: R/cp_plots.R
+msgid "Observed value"
+msgstr "Valor observat"
+
+#: R/cplinear.b.R
+msgid "Observed value (smoothed)"
+msgstr "Valor observat (suavitzat)"
+
+#: cpLogistic/ui[3]/covScales.columns.label
+#: cpLogistic/results/coefTable.columns.title
+msgid "Odds ratio"
+msgstr "Odds ratio"
+
+#: R/cplogistic.b.R
+msgid "Odds ratio (log scale)"
+msgstr "Odds ratio (escala logarítmica)"
+
+#: R/cplogistic.b.R
+msgid ""
+"Odds ratio of each variable of an interaction at the levels (factor) or "
+"quartiles (covariate) of the other; other predictors at their reference "
+"level or median."
+msgstr "Odds ratio de cada variable d'una interacció en els nivells (factor) o quartils (covariable) de l'altra; els altres predictors al seu nivell de referència o mediana."
+
+#: cpLogistic/options/oddsRatios.title
+msgid "Odds ratios"
+msgstr "Odds ratios"
+
+#: cpLogistic/results/orTable.title
+msgid "Odds Ratios"
+msgstr "Odds ratios"
+
+#: R/cp_external.R
+msgid "OK"
+msgstr "OK"
+
+#: cpCox/results/perfDev.columns.title
+#: cpLinear/results/perfDev.columns.title
+#: cpLogistic/results/perfDev.columns.title
+msgid "Optimism"
+msgstr "Optimisme"
+
+#: cpCox/results/incTable.columns.superTitle
+#: cpLinear/results/incTable.columns.superTitle
+#: cpLogistic/results/incTable.columns.superTitle
+msgid "Optimism-corrected"
+msgstr "Corregit per optimisme"
+
+#: R/cpcox.b.R
+#: R/cplinear.b.R
+#: R/cplogistic.b.R
+msgid "optimism-corrected, this model"
+msgstr "corregit per optimisme, aquest model"
+
+#: R/cp_analysis.R
+msgid ""
+"Optimism-corrected: each model validated on the same resamples; the full "
+"model's validation repeats its selection."
+msgstr "Corregit per optimisme: cada model validat en els mateixos remostratges; la validació del model complet repeteix la seva selecció."
+
+#: R/cppublished.b.R
+#: cpLogistic/results/orTable.columns.title
+#: cpLogistic/results/subTable.columns.title
+msgid "OR"
+msgstr "OR"
+
+#: R/cp_analysis.R
+#: R/cppublished.b.R
+msgid "Original model"
+msgstr "Model original"
+
+#: R/cpcox.b.R
+#: R/cplogistic.b.R
+msgid "Other levels"
+msgstr "Altres nivells"
+
+#: R/cp_analysis.R
+#: R/cp_external.R
+#: R/cppublished.b.R
+#: cpLinear/options/dep.title
+#: cpLinear/ui[0][0].label
+#: cpLinear/results/samples.columns.superTitle
+#: cpLinear/results/descTable.columns.title
+#: cpLogistic/options/dep.title
+#: cpLogistic/ui[0][0].label
+#: cpPublished/results/samples.columns.superTitle
+msgid "Outcome"
+msgstr "Desenllaç"
+
+#: cpPublished/options/dep.title
+#: cpPublished/ui[1][0].label
+msgid "Outcome / event"
+msgstr "Desenllaç / esdeveniment"
+
+#: R/cp_analysis.R
+msgid ""
+"Outcome mean in the rows where the predictor is observed and where it is "
+"missing (Welch's t test): a difference means that missingness depends on the "
+"outcome (not missing completely at random)."
+msgstr "Mitjana del desenllaç a les files on el predictor s'observa i on falta (prova t de Welch): una diferència indica que la manca de dades depèn del desenllaç (no són perduts completament a l'atzar)."
+
+#: cpCox/results/missTable.columns.superTitle
+#: cpLinear/results/missTable.columns.superTitle
+#: cpLogistic/results/missTable.columns.superTitle
+msgid "Outcome mean when the variable is"
+msgstr "Mitjana del desenllaç quan la variable està"
+
+#: cpLogistic/options/thrMethod/prevalence.title
+#: cpPublished/options/thrMethod/prevalence.title
+msgid "Outcome prevalence"
+msgstr "Prevalença del desenllaç"
+
+#: cpCox/results/shapleyTable.columns.superTitle
+#: cpLinear/results/shapleyTable.columns.superTitle
+#: cpLogistic/results/shapleyTable.columns.superTitle
+msgid "Over the baseline model"
+msgstr "Sobre el model base"
+
+#: R/cp_analysis.R
+msgid ""
+"Over the baseline model: the gain in %s from %.4f (baseline covariates only) "
+"to %.4f, shared among the other predictors with the baseline covariates in "
+"every model."
+msgstr "Sobre el model base: el guany en %s de %.4f (només covariables de base) a %.4f, repartit entre els altres predictors amb les covariables de base en tots els models."
+
+#: R/cp_family_binary.R
+msgid "Overall"
+msgstr "Global"
+
+#: cpCox/options/orP.title
+#: cpLinear/options/orP.title
+#: cpLogistic/options/orP.title
+msgid "p values"
+msgstr "Valors p"
+
+#: cpCox/results/updTable.columns.title
+#: cpLinear/results/updTable.columns.title
+#: cpLogistic/results/updTable.columns.title
+#: cpPublished/results/updTable.columns.title
+msgid "Parameters"
+msgstr "Paràmetres"
+
+#: R/cp_analysis.R
+msgid "Partial likelihood deviance"
+msgstr "Desviació de la versemblança parcial"
+
+#: R/cp_analysis.R
+#: R/cp_explain.R
+#: R/cpcox.b.R
+#: R/cplinear.b.R
+#: R/cplogistic.b.R
+msgid "Patients"
+msgstr "Pacients"
+
+#: R/cp_analysis.R
+msgid ""
+"Penalised (elastic net) estimates: they have no standard errors, confidence "
+"intervals or p values; their uncertainty is in the internal validation."
+msgstr "Estimacions penalitzades (elastic net): no tenen errors estàndard, intervals de confiança ni valors p; la seva incertesa és a la validació interna."
+
+#: R/cp_analysis.R
+#: cpCox/options/covScales.template/scale/sd.title
+#: cpLinear/options/covScales.template/scale/sd.title
+#: cpLogistic/options/covScales.template/scale/sd.title
+msgid "per 1 SD"
+msgstr "per 1 DE"
+
+#: R/cp_data.R
+msgid "per 1 SD (%s)"
+msgstr "per 1 DE (%s)"
+
+#: R/cp_analysis.R
+#: R/cp_data.R
+#: cpCox/options/covScales.template/scale/ten.title
+#: cpLinear/options/covScales.template/scale/ten.title
+#: cpLogistic/options/covScales.template/scale/ten.title
+msgid "per 10 units"
+msgstr "per 10 unitats"
+
+#: R/cp_analysis.R
+#: R/cp_data.R
+#: cpCox/options/covScales.template/scale/hundred.title
+#: cpLinear/options/covScales.template/scale/hundred.title
+#: cpLogistic/options/covScales.template/scale/hundred.title
+msgid "per 100 units"
+msgstr "per 100 unitats"
+
+#: R/cp_analysis.R
+#: R/cp_data.R
+#: cpCox/options/covScales.template/scale/thousand.title
+#: cpLinear/options/covScales.template/scale/thousand.title
+#: cpLogistic/options/covScales.template/scale/thousand.title
+msgid "per 1000 units"
+msgstr "per 1000 unitats"
+
+#: R/cp_analysis.R
+#: R/cp_data.R
+#: cpCox/options/covScales.template/scale/unit.title
+#: cpLinear/options/covScales.template/scale/unit.title
+#: cpLogistic/options/covScales.template/scale/unit.title
+msgid "per unit"
+msgstr "per unitat"
+
+#: R/cp_analysis.R
+msgid ""
+"Percentile intervals describe the variability of the whole procedure; they "
+"are not exact confidence intervals, least of all for coefficients often "
+"shrunk or selected to 0."
+msgstr "Els intervals de percentils descriuen la variabilitat de tot el procediment; no són intervals de confiança exactes, sobretot per a coeficients sovint contrets o seleccionats a 0."
+
+#: cpPublished/results/perf.title
+msgid "Performance in the Data"
+msgstr "Rendiment a les dades"
+
+#: cpCox/results/perfDev.title
+#: cpLinear/results/perfDev.title
+#: cpLogistic/results/perfDev.title
+msgid "Performance in the Development Data"
+msgstr "Rendiment a les dades de desenvolupament"
+
+#: cpCox/results/perfVal.title
+#: cpLinear/results/perfVal.title
+#: cpLogistic/results/perfVal.title
+msgid "Performance in the Validation Data"
+msgstr "Rendiment a les dades de validació"
+
+#: cpCox/options/permImp.title
+#: cpLinear/options/permImp.title
+#: cpLogistic/options/permImp.title
+msgid "Permutation importance"
+msgstr "Importància per permutació"
+
+#: cpCox/results/plots/permBar.title
+#: cpLinear/results/plots/permBar.title
+#: cpLogistic/results/plots/permBar.title
+msgid "Permutation Importance"
+msgstr "Importància per permutació"
+
+#: cpCox/options/nPerm.title
+#: cpLinear/options/nPerm.title
+#: cpLogistic/options/nPerm.title
+msgid "Permutations"
+msgstr "Permutacions"
+
+#: package/datasets/Pimadiabetes(development+validation).name
+msgid "Pima diabetes (development + validation)"
+msgstr "Diabetis Pima (desenvolupament + validació)"
+
+#: package/datasets/Pimadiabetes(development).name
+msgid "Pima diabetes (development)"
+msgstr "Diabetis Pima (desenvolupament)"
+
+#: package/datasets/Pimadiabetes(development).description
+msgid ""
+"Pima women, Arizona (MASS::Pima.tr): 200 women, diabetes (type) and seven "
+"clinical predictors. Develop a model here."
+msgstr "Dones pima, Arizona (MASS::Pima.tr): 200 dones, diabetis (type) i set predictors clínics. Desenvolupeu-hi un model."
+
+#: package/datasets/Pimadiabetes(development+validation).description
+msgid ""
+"Pima.tr and Pima.te stacked (532 women); 'sample' marks the 332 validation "
+"rows, for the Validation split box."
+msgstr "Pima.tr i Pima.te apilats (532 dones); 'sample' marca les 332 files de validació, per a la casella de divisió de validació."
+
+#: cpCox/ui[9].label
+#: cpCox/results/plots.title
+#: cpLinear/ui[8].label
+#: cpLinear/results/plots.title
+#: cpLogistic/ui[8].label
+#: cpLogistic/results/plots.title
+#: cpPublished/ui[4].label
+#: cpPublished/results/plots.title
+msgid "Plots"
+msgstr "Gràfics"
+
+#: R/cp_analysis_mi.R
+msgid "Pooled Wald test of the added predictors (D1, df = %d, %.1f)"
+msgstr "Prova de Wald combinada dels predictors afegits (D1, gl = %d, %.1f)"
+
+#: R/cp_analysis_mi.R
+msgid "Pooled Wald tests (D1) over the imputations; χ² = D1 × df, p from F(df, df2)."
+msgstr "Proves de Wald combinades (D1) sobre les imputacions; χ² = D1 × gl, p de F(gl, gl2)."
+
+#: R/cplogistic.b.R
+#: R/cppublished.b.R
+msgid "PPV"
+msgstr "VPP"
+
+#: R/cplinear.b.R
+msgid "predicted %.4g"
+msgstr "predit %.4g"
+
+#: R/cplinear.b.R
+msgid "Predicted %s"
+msgstr "%s predit"
+
+#: R/cplinear.b.R
+msgid "predicted %s ="
+msgstr "%s predit ="
+
+#: R/cp_plots.R
+#: R/cpcox.b.R
+#: R/cplogistic.b.R
+#: R/cppublished.b.R
+#: cpLogistic/options/predRisk.title
+#: cpLogistic/results/predRisk.title
+msgid "Predicted risk"
+msgstr "Risc predit"
+
+#: cpCox/options/predRisk.title
+#: cpCox/results/predRisk.title
+msgid "Predicted risk at the horizon"
+msgstr "Risc predit a l'horitzó"
+
+#: R/cp_plots.R
+#: R/cplinear.b.R
+#: cpLinear/options/predValue.title
+#: cpLinear/results/predValue.title
+msgid "Predicted value"
+msgstr "Valor predit"
+
+#: package/analyses/cpLogistic.menuGroup
+#: package/analyses/cpLinear.menuGroup
+#: package/analyses/cpCox.menuGroup
+#: package/analyses/cpPublished.menuGroup
+#: cpCox/options.menuGroup
+#: cpLinear/options.menuGroup
+#: cpLogistic/options.menuGroup
+#: cpPublished/options.menuGroup
+#: cpPublished/results/pred.title
+msgid "Prediction"
+msgstr "Predicció"
+
+#: cpPublished/options/pred.title
+msgid "Prediction (risk or value)"
+msgstr "Predicció (risc o valor)"
+
+#: R/cplinear.b.R
+msgid "Prediction from bootstrap models"
+msgstr "Predicció dels models bootstrap"
+
+#: R/cplinear.b.R
+msgid "Prediction from the developed model"
+msgstr "Predicció del model desenvolupat"
+
+#: cpCox/options/horizon.title
+#: cpPublished/options/horizon.title
+msgid "Prediction horizon"
+msgstr "Horitzó de predicció"
+
+#: cpCox/results/plots/instability.title
+#: cpLinear/results/plots/instability.title
+#: cpLogistic/results/plots/instability.title
+msgid "Prediction Instability"
+msgstr "Inestabilitat de la predicció"
+
+#: cpCox/options/stability.title
+#: cpLinear/options/stability.title
+#: cpLogistic/options/stability.title
+msgid "Prediction stability (bootstrap)"
+msgstr "Estabilitat de la predicció (bootstrap)"
+
+#: R/cp_analysis.R
+#: R/cp_external.R
+#: cpCox/ui[5]/baseline.columns.label
+#: cpCox/results/selTable.columns.title
+#: cpCox/results/coefTable.columns.title
+#: cpCox/results/shapleyTable.columns.title
+#: cpCox/results/permTable.columns.title
+#: cpCox/results/shapTable.columns.title
+#: cpLinear/ui[4]/baseline.columns.label
+#: cpLinear/results/selTable.columns.title
+#: cpLinear/results/coefTable.columns.title
+#: cpLinear/results/shapleyTable.columns.title
+#: cpLinear/results/permTable.columns.title
+#: cpLinear/results/shapTable.columns.title
+#: cpLogistic/ui[4]/baseline.columns.label
+#: cpLogistic/results/selTable.columns.title
+#: cpLogistic/results/coefTable.columns.title
+#: cpLogistic/results/shapleyTable.columns.title
+#: cpLogistic/results/permTable.columns.title
+#: cpLogistic/results/shapTable.columns.title
+msgid "Predictor"
+msgstr "Predictor"
+
+#: cpCox/results/selTable.title
+#: cpLinear/results/selTable.title
+#: cpLogistic/results/selTable.title
+msgid "Predictor Selection"
+msgstr "Selecció de predictors"
+
+#: R/cp_plots.R
+msgid "Predictor value"
+msgstr "Valor del predictor"
+
+#: cpPublished/options/covs.title
+#: cpPublished/ui[1][1].label
+msgid "Predictor variables"
+msgstr "Variables predictores"
+
+#: R/cp_plots.R
+#: cpCox/ui[7]/interactionSupplier.label
+#: cpLinear/ui[6]/interactionSupplier.label
+#: cpLogistic/ui[6]/interactionSupplier.label
+msgid "Predictors"
+msgstr "Predictors"
+
+#: R/cp_analysis.R
+msgid ""
+"Predictors removed by the selection are not in the model: their importance "
+"is 0."
+msgstr "Els predictors eliminats per la selecció no són al model: la seva importància és 0."
+
+#: R/cp_external.R
+msgid "Problem"
+msgstr "Problema"
+
+#: cpCox/options/predLP.title
+#: cpCox/results/predLP.title
+msgid "Prognostic index"
+msgstr "Índex pronòstic"
+
+#: R/cpcox.b.R
+msgid "Prognostic index PI ="
+msgstr "Índex pronòstic PI ="
+
+#: R/cpcox.b.R
+msgid ""
+"Put the follow-up time in <b>Time</b> and the event indicator in "
+"<b>Event</b>, and choose the level that marks an event."
+msgstr "Poseu el temps de seguiment a <b>Temps</b> i l'indicador d'esdeveniment a <b>Esdeveniment</b>, i trieu el nivell que marca un esdeveniment."
+
+#: R/cplogistic.b.R
+msgid "Put the outcome in <b>Outcome</b> and choose the event level."
+msgstr "Poseu el desenllaç a <b>Desenllaç</b> i trieu el nivell de l'esdeveniment."
+
+#: R/cplinear.b.R
+msgid "Put the outcome in <b>Outcome</b>."
+msgstr "Poseu el desenllaç a <b>Desenllaç</b>."
+
+#: cpCox/options/descStat/medianIQR.title
+#: cpLinear/options/descStat/medianIQR.title
+#: cpLogistic/options/descStat/medianIQR.title
+msgctxt "Q1, Q3"
+msgid "Median"
+msgstr "Mediana"
+
+#: R/cp_analysis.R
+msgid "Q3 vs Q1"
+msgstr "Q3 davant Q1"
+
+#: R/cp_explain.R
+msgid "Q3 vs Q1 (%s vs %s)"
+msgstr "Q3 davant Q1 (%s davant %s)"
+
+#: R/cp_analysis.R
+#: R/cp_family_binary.R
+#: cpLinear/results/updTable.columns.title
+#: cpPublished/results/updTable.columns.title
+msgid "R²"
+msgstr "R²"
+
+#: cpCox/results/shapleyTable.columns.title
+#: cpLinear/results/shapleyTable.columns.title
+#: cpLogistic/results/shapleyTable.columns.title
+msgid "R² gain share"
+msgstr "Proporció del guany d'R²"
+
+#: cpLinear/results/permTable.columns.title
+msgid "R² loss"
+msgstr "Pèrdua d'R²"
+
+#: cpCox/options/shapleyMeasure.title
+#: cpLogistic/options/shapleyMeasure.title
+msgid "R² measure"
+msgstr "Mesura d'R²"
+
+#: cpCox/results/shapleyTable.columns.title
+#: cpLinear/results/shapleyTable.columns.title
+#: cpLogistic/results/shapleyTable.columns.title
+msgid "R² share"
+msgstr "Proporció de l'R²"
+
+#: R/cplinear.b.R
+msgid ""
+"R²: 1 − residual sum of squares / total sum of squares around the mean of "
+"the data in which it is measured (can be negative outside the development "
+"data). RMSE: root mean squared error; MAE: mean absolute error, in the units "
+"of the outcome (lower is better). Calibration-in-the-large: mean of observed "
+"− predicted, 0 is ideal. Calibration slope: of the regression of the "
+"observed on the predicted outcome, 1 is ideal; below 1 the predictions are "
+"too extreme (overfitting)."
+msgstr "R²: 1 − suma de quadrats residual / suma de quadrats total al voltant de la mitjana de les dades on es mesura (pot ser negatiu fora de les dades de desenvolupament). RMSE: arrel de l'error quadràtic mitjà; MAE: error absolut mitjà, en les unitats del desenllaç (més baix és millor). Calibratge global: mitjana d'observat − predit, 0 és l'ideal. Pendent de calibratge: de la regressió del desenllaç observat sobre el predit, 1 és l'ideal; per sota d'1 les prediccions són massa extremes (sobreajust)."
+
+#: R/cp_plots.R
+#: R/cpcox.b.R
+#: R/cplogistic.b.R
+msgid "Raises risk"
+msgstr "Augmenta el risc"
+
+#: R/cplinear.b.R
+msgid "Raises the prediction"
+msgstr "Augmenta la predicció"
+
+#: cpCox/options/seed.title
+#: cpLinear/options/seed.title
+#: cpLogistic/options/seed.title
+msgid "Random seed"
+msgstr "Llavor aleatòria"
+
+#: cpCox/results/shapleyTable.columns.title
+#: cpLinear/results/shapleyTable.columns.title
+#: cpLogistic/results/shapleyTable.columns.title
+msgid "Rank"
+msgstr "Rang"
+
+#: cpPublished/results/modelTable.columns.title
+msgid "Ratio"
+msgstr "Raó"
+
+#: R/cppublished.b.R
+msgid "Read from %s (%s)."
+msgstr "Llegit de %s (%s)."
+
+#: R/cp_analysis.R
+#: R/cppublished.b.R
+msgid "Recalibration"
+msgstr "Recalibratge"
+
+#: R/cp_analysis.R
+#: R/cppublished.b.R
+msgid "Recalibration in the large"
+msgstr "Recalibratge global"
+
+#: R/cpcox.b.R
+msgid ""
+"Recalibration in the large re-estimates the baseline risk at the horizon "
+"(the original linear predictor as offset); recalibration also its slope; "
+"revision refits every coefficient. Shift and slope: of the original linear "
+"predictor in the updated model. The partial likelihood does not involve the "
+"baseline risk, so the closed testing procedure is adapted into sequential "
+"tests (each p in the row of the more complex method): revision vs "
+"recalibration and slope = 1 by partial likelihood ratio, O/E at the horizon "
+"= 1 by a Wald test; the most complex method whose test is significant at α = "
+"%s is chosen (✓). Performance of an updated model is measured in the data "
+"used to update it, so it is optimistic, most of all for revision."
+msgstr "El recalibratge global reestima el risc basal a l'horitzó (amb el predictor lineal original com a offset); el recalibratge també el seu pendent; la revisió reajusta tots els coeficients. Desplaçament i pendent: del predictor lineal original al model actualitzat. La versemblança parcial no inclou el risc basal, per la qual cosa el procediment de prova tancada s'adapta en proves seqüencials (cada p a la fila del mètode més complex): revisió davant recalibratge i pendent = 1 per raó de versemblances parcial, O/E a l'horitzó = 1 per una prova de Wald; es tria el mètode més complex la prova del qual és significativa amb α = %s (✓). El rendiment d'un model actualitzat es mesura a les dades usades per actualitzar-lo, per la qual cosa és optimista, sobretot per a la revisió."
+
+#: R/cppublished.b.R
+msgid ""
+"Recalibration in the large re-estimates the baseline risk at the horizon; "
+"recalibration also the slope of the published linear predictor; revision "
+"re-estimates every coefficient. Sequential tests (each p in the row of the "
+"more complex method): revision vs recalibration and slope = 1 by partial "
+"likelihood ratio, O/E at the horizon = 1 by a Wald test; the most complex "
+"method whose test is significant at α = %s is chosen (✓). Performance of an "
+"updated model is measured in the data used to update it, so it is optimistic."
+msgstr "El recalibratge global reestima el risc basal a l'horitzó; el recalibratge també el pendent del predictor lineal publicat; la revisió reestima tots els coeficients. Proves seqüencials (cada p a la fila del mètode més complex): revisió davant recalibratge i pendent = 1 per raó de versemblances parcial, O/E a l'horitzó = 1 per una prova de Wald; es tria el mètode més complex la prova del qual és significativa amb α = %s (✓). El rendiment d'un model actualitzat es mesura a les dades usades per actualitzar-lo, per la qual cosa és optimista."
+
+#: R/cplogistic.b.R
+msgid ""
+"Recalibration re-estimates the intercept and the slope of the original "
+"prediction; intercept and slope: of the original linear predictor (log-odds) "
+"in the updated model. Each test compares a method with model revision "
+"(likelihood ratio); the closed testing procedure (Vergouwe et al. 2017) "
+"keeps the first method, from the original model up, not significantly worse "
+"than revision at α = %s (✓). Performance of an updated model is measured in "
+"the data used to update it, so it is optimistic, most of all for revision."
+msgstr "El recalibratge reestima la constant i el pendent de la predicció original; constant i pendent: del predictor lineal original (log-odds) al model actualitzat. Cada prova compara un mètode amb la revisió del model (raó de versemblances); el procediment de prova tancada (Vergouwe et al. 2017) tria el primer mètode, des del model original cap amunt, que no és significativament pitjor que la revisió amb α = %s (✓). El rendiment d'un model actualitzat es mesura a les dades usades per actualitzar-lo, per la qual cosa és optimista, sobretot per a la revisió."
+
+#: R/cplinear.b.R
+msgid ""
+"Recalibration re-estimates the intercept and the slope of the original "
+"prediction; intercept and slope: of the original prediction in the updated "
+"model. Each test compares a method with model revision (F test); the closed "
+"testing procedure (Vergouwe et al. 2017) keeps the first method, from the "
+"original model up, not significantly worse than revision at α = %s (✓). "
+"Performance of an updated model is measured in the data used to update it, "
+"so it is optimistic, most of all for revision."
+msgstr "El recalibratge reestima la constant i el pendent de la predicció original; constant i pendent: de la predicció original al model actualitzat. Cada prova compara un mètode amb la revisió del model (prova F); el procediment de prova tancada (Vergouwe et al. 2017) tria el primer mètode, des del model original cap amunt, que no és significativament pitjor que la revisió amb α = %s (✓). El rendiment d'un model actualitzat es mesura a les dades usades per actualitzar-lo, per la qual cosa és optimista, sobretot per a la revisió."
+
+#: R/cppublished.b.R
+msgid ""
+"Recalibration re-estimates the intercept and the slope of the published "
+"linear predictor; revision re-estimates every coefficient. Each test "
+"compares a method with revision; the closed testing procedure (Vergouwe et "
+"al. 2017) keeps the first method, from the original model up, not "
+"significantly worse than revision at α = %s (✓). Performance of an updated "
+"model is measured in the data used to update it, so it is optimistic."
+msgstr "El recalibratge reestima la constant i el pendent del predictor lineal publicat; la revisió reestima tots els coeficients. Cada prova compara un mètode amb la revisió; el procediment de prova tancada (Vergouwe et al. 2017) tria el primer mètode, des del model original cap amunt, que no és significativament pitjor que la revisió amb α = %s (✓). El rendiment d'un model actualitzat es mesura a les dades usades per actualitzar-lo, per la qual cosa és optimista."
+
+#: cpCox/ui[3]/refLevels.columns.label
+#: cpLinear/ui[2]/refLevels.columns.label
+#: cpLogistic/ui[2]/refLevels.columns.label
+msgid "Reference Level"
+msgstr "Nivell de referència"
+
+#: R/cp_analysis.R
+msgid "Reference levels"
+msgstr "Nivells de referència"
+
+#: cpCox/options/refLevels.title
+#: cpCox/ui[3].label
+#: cpLinear/options/refLevels.title
+#: cpLinear/ui[2].label
+#: cpLogistic/options/refLevels.title
+#: cpLogistic/ui[2].label
+msgid "Reference Levels"
+msgstr "Nivells de referència"
+
+#: cpCox/options/enetRelax.title
+#: cpLinear/options/enetRelax.title
+#: cpLogistic/options/enetRelax.title
+msgid "Refit the selected predictors without penalty (relaxed lasso)"
+msgstr "Reajusta sense penalització els predictors seleccionats (lasso relaxat)"
+
+#: cpCox/results/bootCoefTable.columns.title
+#: cpLinear/results/bootCoefTable.columns.title
+#: cpLogistic/results/bootCoefTable.columns.title
+msgid "Rel. cond. bias"
+msgstr "Biaix cond. rel."
+
+#: R/cp_analysis.R
+msgid ""
+"Relaxed lasso: the model is the unpenalised refit of the terms the elastic "
+"net kept (also in every resampled fit)."
+msgstr "Lasso relaxat: el model és el reajust sense penalització dels termes que va mantenir l'elastic net (també en cada ajust remostrejat)."
+
+#: R/cp_analysis.R
+#: R/cp_analysis_mi.R
+msgid "removed"
+msgstr "eliminat"
+
+#: cpCox/options/enetTune.title
+#: cpLinear/options/enetTune.title
+#: cpLogistic/options/enetTune.title
+msgid "Repeat the λ tuning in each resampled fit"
+msgstr "Repeteix l'ajust de λ en cada ajust remostrejat"
+
+#: cpCox/options/nRepeats.title
+#: cpLinear/options/nRepeats.title
+#: cpLogistic/options/nRepeats.title
+msgid "Repeats"
+msgstr "Repeticions"
+
+#: cpCox/results/ssTable.columns.title
+#: cpLogistic/results/ssTable.columns.title
+msgid "Required events"
+msgstr "Esdeveniments requerits"
+
+#: cpCox/results/ssTable.columns.title
+#: cpLinear/results/ssTable.columns.title
+#: cpLogistic/results/ssTable.columns.title
+msgid "Required N"
+msgstr "N requerit"
+
+#: cpCox/results/intTable.columns.title
+#: cpCox/results/selTable.columns.title
+#: cpLinear/results/intTable.columns.title
+#: cpLinear/results/selTable.columns.title
+#: cpLogistic/results/intTable.columns.title
+#: cpLogistic/results/selTable.columns.title
+msgid "Resampled fits"
+msgstr "Ajustos remostrejats"
+
+#: R/cp_analysis.R
+msgid ""
+"Resampled fits use the λ of the final model (the tuning itself is not "
+"validated); the last column is the share of fits that kept the predictor."
+msgstr "Els ajustos remostrejats fan servir la λ del model final (l'ajust de λ no es valida); l'última columna és la proporció d'ajustos que van mantenir el predictor."
+
+#: R/cplogistic.b.R
+msgid "risk %.1f%%"
+msgstr "risc %.1f%%"
+
+#: R/cpcox.b.R
+msgid "risk %.1f%% by t = %s"
+msgstr "risc %.1f%% fins a t = %s"
+
+#: R/cplogistic.b.R
+msgid "risk = 1 / (1 + exp(−log-odds))"
+msgstr "risc = 1 / (1 + exp(−log-odds))"
+
+#: cpCox/results/samples.columns.title
+#: cpPublished/results/samples.columns.title
+msgid "Risk by horizon (KM)"
+msgstr "Risc fins a l'horitzó (KM)"
+
+#: cpLogistic/options/riskPlot.title
+msgid "Risk distribution"
+msgstr "Distribució del risc"
+
+#: cpLogistic/results/plots/riskDist.title
+msgid "Risk Distribution"
+msgstr "Distribució del risc"
+
+#: R/cp_plots.R
+#: R/cpcox.b.R
+#: R/cplogistic.b.R
+msgid "Risk from bootstrap models"
+msgstr "Risc dels models bootstrap"
+
+#: R/cp_plots.R
+#: R/cpcox.b.R
+#: R/cplogistic.b.R
+msgid "Risk from the developed model"
+msgstr "Risc del model desenvolupat"
+
+#: R/cp_plots.R
+msgid "Risk group"
+msgstr "Grup de risc"
+
+#: cpCox/options/calGroups.title
+#: cpLogistic/options/calGroups.title
+#: cpPublished/options/calGroups.title
+msgid "Risk groups"
+msgstr "Grups de risc"
+
+#: R/cpcox.b.R
+msgid "Risk of %s = %s by t = %s:  1 − S0^exp(PI),  S0 = %.6g"
+msgstr "Risc de %s = %s fins a t = %s:  1 − S0^exp(PI),  S0 = %.6g"
+
+#: cpLogistic/options/threshold.title
+#: cpPublished/options/threshold.title
+msgid "Risk threshold"
+msgstr "Llindar de risc"
+
+#: R/cpcox.b.R
+msgid "Risks are predicted by the horizon t = %s%s."
+msgstr "Els riscos es prediuen fins a l'horitzó t = %s%s."
+
+#: R/cppublished.b.R
+msgid "Risks by the horizon t = %s%s."
+msgstr "Riscos fins a l'horitzó t = %s%s."
+
+#: cpCox/results/bootCoefTable.columns.title
+#: cpLinear/results/bootCoefTable.columns.title
+#: cpLogistic/results/bootCoefTable.columns.title
+msgid "RMSD ratio"
+msgstr "Raó RMSD"
+
+#: R/cp_family_binary.R
+#: cpLinear/results/updTable.columns.title
+#: cpPublished/results/updTable.columns.title
+msgid "RMSE"
+msgstr "RMSE"
+
+#: cpLinear/results/permTable.columns.title
+msgid "RMSE increase"
+msgstr "Augment de l'RMSE"
+
+#: cpLogistic/options/rocPlot.title
+#: cpPublished/options/rocPlot.title
+msgid "ROC curve"
+msgstr "Corba ROC"
+
+#: cpLogistic/results/plots/roc.title
+#: cpPublished/results/plots/roc.title
+msgid "ROC Curve"
+msgstr "Corba ROC"
+
+#: cpLogistic/results/plots/incRoc.title
+msgid "ROC Curves — Baseline and Full Model"
+msgstr "Corbes ROC — model base i complet"
+
+#: cpCox/results/extCheck.columns.title
+#: cpCox/results/missTable.columns.title
+#: cpLinear/results/extCheck.columns.title
+#: cpLinear/results/missTable.columns.title
+#: cpLogistic/results/extCheck.columns.title
+#: cpLogistic/results/missTable.columns.title
+#: cpPublished/results/check.columns.title
+msgid "Role"
+msgstr "Rol"
+
+#: package/datasets/Breastcancer,Rotterdam+GBSG(development+validation).description
+msgid ""
+"Rotterdam and 686 GBSG trial women (survival::gbsg) stacked; 'cohort' marks "
+"the GBSG rows for the Validation split box."
+msgstr "Rotterdam i 686 dones de l'assaig GBSG (survival::gbsg) apilades; 'cohort' marca les files GBSG per a la casella de divisió de validació."
+
+#: R/cp_analysis.R
+msgid "Row %d"
+msgstr "Fila %d"
+
+#: R/cp_analysis.R
+msgid ""
+"Row %d has missing predictor values (or does not exist), so its prediction "
+"cannot be explained."
+msgstr "La fila %d té valors perduts als predictors (o no existeix), per la qual cosa no se'n pot explicar la predicció."
+
+#: cpCox/results/missPatterns.columns.title
+#: cpLinear/results/missPatterns.columns.title
+#: cpLogistic/results/missPatterns.columns.title
+msgid "Rows"
+msgstr "Files"
+
+#: R/cplinear.b.R
+#: R/cplogistic.b.R
+msgid ""
+"Rows with a missing outcome or predictor are excluded (complete-case "
+"analysis)."
+msgstr "Les files amb el desenllaç o algun predictor perdut s'exclouen (anàlisi de casos complets)."
+
+#: R/cpcox.b.R
+msgid ""
+"Rows with a missing time, event or predictor are excluded (complete-case "
+"analysis)."
+msgstr "Les files amb el temps, l'esdeveniment o algun predictor perdut s'exclouen (anàlisi de casos complets)."
+
+#: R/cp_family_binary.R
+msgid "Royston's D"
+msgstr "D de Royston"
+
+#: R/cp_family_binary.R
+msgid "Royston's R²_D"
+msgstr "R²_D de Royston"
+
+#: cpLinear/results/ssTable.title
+msgid "Sample Size Adequacy (Riley et al. 2019)"
+msgstr "Adequació de la mida mostral (Riley et al. 2019)"
+
+#: cpCox/results/ssTable.title
+#: cpLogistic/results/ssTable.title
+msgid "Sample Size Adequacy (Riley et al. 2020)"
+msgstr "Adequació de la mida mostral (Riley et al. 2020)"
+
+#: cpCox/options/sampleSize.title
+#: cpLinear/options/sampleSize.title
+#: cpLogistic/options/sampleSize.title
+msgid "Sample size adequacy (Riley)"
+msgstr "Adequació de la mida mostral (Riley)"
+
+#: cpCox/ui[12].label
+#: cpLinear/ui[10].label
+#: cpLogistic/ui[11].label
+#: cpPublished/ui[6].label
+msgid "Save and Explain"
+msgstr "Desa i explica"
+
+#: cpCox/ui[12][0][0].label
+#: cpLinear/ui[10][0][0].label
+#: cpLogistic/ui[11][0][0].label
+#: cpPublished/ui[6][0][0].label
+msgid "Save to the data"
+msgstr "Desa a les dades"
+
+#: R/cp_family_binary.R
+msgid "Scaled Brier score"
+msgstr "Puntuació de Brier escalada"
+
+#: R/cp_family_binary.R
+msgid "Scaled Brier score (IPA)"
+msgstr "Puntuació de Brier escalada (IPA)"
+
+#: R/cp_analysis_mi.R
+msgid ""
+"Screening shown in the first imputed data set; the terms in the model are "
+"those kept in most imputations."
+msgstr "Cribratge mostrat al primer conjunt imputat; els termes del model són els mantinguts a la majoria de les imputacions."
+
+#: cpCox/results/permTable.columns.title
+#: cpLinear/results/samples.columns.title
+#: cpLinear/results/permTable.columns.title
+#: cpLogistic/results/permTable.columns.title
+#: cpPublished/results/samples.columns.title
+msgid "SD"
+msgstr "DE"
+
+#: cpCox/results/coefTable.columns.title
+#: cpLinear/results/coefTable.columns.title
+#: cpLogistic/results/coefTable.columns.title
+#: cpPublished/results/modelTable.columns.title
+msgid "SE"
+msgstr "EE"
+
+#: R/cp_plots.R
+#: cpCox/options/forestSel.title
+#: cpCox/results/orTable.columns.superTitle
+#: cpLinear/options/forestSel.title
+#: cpLinear/results/orTable.columns.superTitle
+#: cpLogistic/options/forestSel.title
+#: cpLogistic/results/orTable.columns.superTitle
+msgid "Selected model"
+msgstr "Model seleccionat"
+
+#: cpCox/options/selMode.title
+#: cpLinear/options/selMode.title
+#: cpLogistic/options/selMode.title
+msgid "Selection of the other predictors"
+msgstr "Selecció dels altres predictors"
+
+#: R/cp_plots.R
+#: R/cplogistic.b.R
+#: R/cppublished.b.R
+msgid "Sensitivity"
+msgstr "Sensibilitat"
+
+#: R/cppublished.b.R
+#: cpCox/results/updTable.columns.superTitle
+msgid "Sequential test"
+msgstr "Prova seqüencial"
+
+#: R/cpcox.b.R
+msgid ""
+"Set the <b>prediction horizon</b> in the units of the time variable (0 uses "
+"the median follow-up)."
+msgstr "Fixeu l'<b>horitzó de predicció</b> en les unitats de la variable de temps (0 fa servir la mediana de seguiment)."
+
+#: cpCox/results/plots/shapSummary.title
+#: cpLinear/results/plots/shapSummary.title
+#: cpLogistic/results/plots/shapSummary.title
+msgid "SHAP Summary"
+msgstr "Resum SHAP"
+
+#: R/cpcox.b.R
+msgid "SHAP value (contribution to the log hazard)"
+msgstr "Valor SHAP (contribució al log hazard)"
+
+#: R/cp_plots.R
+#: R/cplogistic.b.R
+msgid "SHAP value (contribution to the log-odds)"
+msgstr "Valor SHAP (contribució als log-odds)"
+
+#: R/cplinear.b.R
+msgid "SHAP value (contribution to the predicted outcome)"
+msgstr "Valor SHAP (contribució al desenllaç predit)"
+
+#: cpCox/options/shap.title
+#: cpLinear/options/shap.title
+#: cpLogistic/options/shap.title
+msgid "SHAP values"
+msgstr "Valors SHAP"
+
+#: R/cpcox.b.R
+msgid ""
+"SHAP: the contribution of each predictor to an individual's log cumulative "
+"hazard at the horizon (equivalently, log relative hazard), relative to the "
+"average individual of the development data (exact for this additive model)."
+msgstr "SHAP: contribució de cada predictor al log del hazard acumulat d'un individu a l'horitzó (equivalentment, al log del hazard relatiu), respecte a l'individu mitjà de les dades de desenvolupament (exacta en aquest model additiu)."
+
+#: R/cplogistic.b.R
+msgid ""
+"SHAP: the contribution of each predictor to an individual's log-odds, "
+"relative to the average individual of the development data (exact for this "
+"additive model)."
+msgstr "SHAP: contribució de cada predictor als log-odds d'un individu, respecte a l'individu mitjà de les dades de desenvolupament (exacta en aquest model additiu)."
+
+#: R/cplinear.b.R
+msgid ""
+"SHAP: the contribution of each predictor to an individual's predicted "
+"outcome, relative to the average individual of the development data (exact "
+"for this additive model), in the units of the outcome."
+msgstr "SHAP: contribució de cada predictor al desenllaç predit d'un individu, respecte a l'individu mitjà de les dades de desenvolupament (exacta en aquest model additiu), en les unitats del desenllaç."
+
+#: cpCox/results/plots/shapleyBar.title
+#: cpLinear/results/plots/shapleyBar.title
+#: cpLogistic/results/plots/shapleyBar.title
+msgid "Shapley Decomposition of R²"
+msgstr "Descomposició de Shapley de l'R²"
+
+#: cpCox/options/shapley.title
+#: cpLinear/options/shapley.title
+#: cpLogistic/options/shapley.title
+msgid "Shapley R² decomposition"
+msgstr "Descomposició de Shapley de l'R²"
+
+#: R/cp_plots.R
+msgid "Share of %s"
+msgstr "Proporció del %s"
+
+#: R/cp_analysis.R
+msgid ""
+"Share of rows with the predictor missing among non-events and events "
+"(chi-square test): a difference means that missingness depends on the "
+"outcome (not missing completely at random)."
+msgstr "Proporció de files amb el predictor perdut entre no esdeveniments i esdeveniments (prova khi quadrat): una diferència indica que la manca de dades depèn del desenllaç (no són perduts completament a l'atzar)."
+
+#: cpCox/results/updTable.columns.title
+msgid "Shift"
+msgstr "Desplaçament"
+
+#: R/cp_analysis.R
+msgid "shrunk to 0"
+msgstr "contret a 0"
+
+#: cpCox/options/missMethod/single.title
+#: cpLinear/options/missMethod/single.title
+#: cpLogistic/options/missMethod/single.title
+msgid "Single imputation"
+msgstr "Imputació simple"
+
+#: cpCox/results/updTable.columns.title
+#: cpLinear/results/updTable.columns.title
+#: cpLogistic/results/updTable.columns.title
+#: cpPublished/results/updTable.columns.title
+msgid "Slope"
+msgstr "Pendent"
+
+#: R/cplinear.b.R
+#: R/cplogistic.b.R
+msgid ""
+"Some predicted risks are numerically 0 or 1 (quasi-complete separation): "
+"coefficients and their intervals may be unreliable."
+msgstr "Alguns riscos predits són numèricament 0 o 1 (separació gairebé completa): els coeficients i els seus intervals poden no ser fiables."
+
+#: R/cplogistic.b.R
+#: R/cppublished.b.R
+msgid "Specificity"
+msgstr "Especificitat"
+
+#: cpCox/options/knots.title
+#: cpLinear/options/knots.title
+#: cpLogistic/options/knots.title
+msgid "Spline knots"
+msgstr "Nodes de l'spline"
+
+#: R/cp_analysis.R
+msgid "Spline of %s, knots t1..t%d = %s"
+msgstr "Spline de %s, nodes t1..t%d = %s"
+
+#: R/cplinear.b.R
+msgid ""
+"Spline predictors: difference in the mean outcome between the third and the "
+"first quartile; the p is the F test of the whole (non-linear) association."
+msgstr "Predictors amb spline: diferència en la mitjana del desenllaç entre el tercer i el primer quartil; la p és la prova F de tota l'associació (no lineal)."
+
+#: R/cpcox.b.R
+msgid ""
+"Spline predictors: hazard ratio between the third and the first quartile; "
+"the p is the likelihood ratio test of the whole (non-linear) association."
+msgstr "Predictors amb spline: hazard ratio entre el tercer i el primer quartil; la p és la prova de raó de versemblances de tota l'associació (no lineal)."
+
+#: R/cplogistic.b.R
+msgid ""
+"Spline predictors: odds ratio between the third and the first quartile; the "
+"p is the likelihood ratio test of the whole (non-linear) association."
+msgstr "Predictors amb spline: odds ratio entre el tercer i el primer quartil; la p és la prova de raó de versemblances de tota l'associació (no lineal)."
+
+#: R/cplinear.b.R
+msgid ""
+"Spline terms (', '') are the non-linear parts of a restricted cubic spline; "
+"their coefficients have no direct interpretation (see the effects, Q3 vs Q1, "
+"or SHAP)."
+msgstr "Els termes d'spline (', '') són les parts no lineals d'un spline cúbic restringit; els seus coeficients no tenen interpretació directa (vegeu els efectes, Q3 davant Q1, o SHAP)."
+
+#: R/cpcox.b.R
+msgid ""
+"Spline terms (', '') are the non-linear parts of a restricted cubic spline; "
+"their coefficients have no direct interpretation (see the hazard ratios, Q3 "
+"vs Q1, or SHAP)."
+msgstr "Els termes d'spline (', '') són les parts no lineals d'un spline cúbic restringit; els seus coeficients no tenen interpretació directa (vegeu els hazard ratios, Q3 davant Q1, o SHAP)."
+
+#: R/cplogistic.b.R
+msgid ""
+"Spline terms (', '') are the non-linear parts of a restricted cubic spline; "
+"their coefficients have no direct interpretation (see the odds ratios, Q3 vs "
+"Q1, or SHAP)."
+msgstr "Els termes d'spline (', '') són les parts no lineals d'un spline cúbic restringit; els seus coeficients no tenen interpretació directa (vegeu les odds ratios, Q3 davant Q1, o SHAP)."
+
+#: cpCox/results/missTable.columns.title
+#: cpLinear/results/missTable.columns.title
+#: cpLogistic/results/missTable.columns.title
+msgid "Split"
+msgstr "Divisió"
+
+#: cpCox/results/stabTable.title
+#: cpLinear/results/stabTable.title
+#: cpLogistic/results/stabTable.title
+msgid "Stability and Shrinkage (Bootstrap)"
+msgstr "Estabilitat i contracció (bootstrap)"
+
+#: cpCox/results/extCheck.columns.title
+#: cpCox/results/selTable.columns.title
+#: cpLinear/results/extCheck.columns.title
+#: cpLinear/results/selTable.columns.title
+#: cpLogistic/results/extCheck.columns.title
+#: cpLogistic/results/selTable.columns.title
+#: cpPublished/results/check.columns.title
+msgid "Status"
+msgstr "Estat"
+
+#: cpCox/results/selTable.columns.title
+#: cpLinear/results/selTable.columns.title
+#: cpLogistic/results/selTable.columns.title
+msgid "Step"
+msgstr "Pas"
+
+#: R/cp_analysis.R
+msgid "step %d"
+msgstr "pas %d"
+
+#: cpLinear/results/ssTable.columns.title
+msgid "Subjects per parameter"
+msgstr "Subjectes per paràmetre"
+
+#: cpCox/results/testTable.columns.title
+#: cpCox/results/intTable.columns.title
+#: cpLinear/results/testTable.columns.title
+#: cpLinear/results/intTable.columns.title
+#: cpLogistic/results/testTable.columns.title
+#: cpLogistic/results/intTable.columns.title
+#: cpPublished/results/modelTable.columns.title
+msgid "Term"
+msgstr "Terme"
+
+#: R/cppublished.b.R
+msgid ""
+"Terms name variables of the data: <code>age</code>, <code>sex = male</code>, "
+"<code>log(crp)</code>, <code>age^2</code>, <code>age/10</code>, <code>age * "
+"sex = male</code>; a row <code>Intercept</code>. For Cox models, rows "
+"<code>baseline survival</code> (at the horizon), <code>horizon</code> and, "
+"when the published prognostic index is centred, <code>centre</code>."
+msgstr "Els termes anomenen variables de les dades: <code>age</code>, <code>sex = male</code>, <code>log(crp)</code>, <code>age^2</code>, <code>age/10</code>, <code>age * sex = male</code>; una fila <code>Intercept</code>. Per a models de Cox, files <code>baseline survival</code> (a l'horitzó), <code>horizon</code> i, quan l'índex pronòstic publicat està centrat, <code>centre</code>."
+
+#: cpCox/results/modelFreqTable.columns.title
+#: cpLinear/results/modelFreqTable.columns.title
+#: cpLogistic/results/modelFreqTable.columns.title
+msgid "Terms selected"
+msgstr "Termes seleccionats"
+
+#: R/cp_analysis.R
+msgid "Test of the added predictors"
+msgstr "Prova dels predictors afegits"
+
+#: R/cp_analysis.R
+msgid ""
+"The %d most frequent sets of selected terms among the bootstrap fits (%d "
+"distinct sets)."
+msgstr "Els %d conjunts de termes seleccionats més freqüents entre els ajustos bootstrap (%d conjunts diferents)."
+
+#: R/cplinear.b.R
+msgid ""
+"The anticipated adjusted R² must be positive; enter a value under Sample "
+"size adequacy."
+msgstr "L'R² ajustat previst ha de ser positiu; introduïu un valor a Adequació de la mida mostral."
+
+#: R/cpcox.b.R
+#: R/cplogistic.b.R
+msgid ""
+"The anticipated Cox–Snell R² must be positive; enter a value under Sample "
+"size adequacy."
+msgstr "L'R² de Cox–Snell previst ha de ser positiu; introduïu un valor a Adequació de la mida mostral."
+
+#: R/cp_published.R
+msgid "The baseline survival must be a probability between 0 and 1 (it is %s)."
+msgstr "La supervivència basal ha de ser una probabilitat entre 0 i 1 (és %s)."
+
+#: R/cppublished.b.R
+msgid "The data need both events and non-events (there are %s events among %s rows)."
+msgstr "Les dades necessiten esdeveniments i no esdeveniments (hi ha %s esdeveniments entre %s files)."
+
+#: R/cpcox.b.R
+#: R/cplinear.b.R
+#: R/cplogistic.b.R
+msgid ""
+"The development data are %d short of the minimum sample size: expect "
+"overfitting; consider fewer parameters or penalisation."
+msgstr "A les dades de desenvolupament els falten %d subjectes per a la mida mostral mínima: cal esperar sobreajust; considereu menys paràmetres o penalització."
+
+#: R/cpcox.b.R
+#: R/cplinear.b.R
+#: R/cplogistic.b.R
+msgid "The development data meet the minimum sample size."
+msgstr "Les dades de desenvolupament assoleixen la mida mostral mínima."
+
+#: R/cplinear.b.R
+msgid ""
+"The development model is applied unchanged to the validation data. A "
+"calibration-in-the-large far from 0 means the mean outcome differs between "
+"the populations; a slope below 1, that the predictions are too extreme there."
+msgstr "El model de desenvolupament s'aplica sense canvis a les dades de validació. Un calibratge global lluny de 0 indica que la mitjana del desenllaç difereix entre les poblacions; un pendent per sota d'1, que allà les prediccions són massa extremes."
+
+#: R/cplogistic.b.R
+msgid ""
+"The development model is applied unchanged to the validation data. A "
+"calibration-in-the-large far from 0 means the overall risk differs between "
+"the populations; a slope below 1, that the predictions are too extreme there."
+msgstr "El model de desenvolupament s'aplica sense canvis a les dades de validació. Un calibratge global lluny de 0 indica que el risc global difereix entre les poblacions; un pendent per sota d'1, que allà les prediccions són massa extremes."
+
+#: R/cpcox.b.R
+msgid ""
+"The development model, with its baseline hazard, is applied unchanged to the "
+"validation data. An O/E far from 1 means the overall risk at the horizon "
+"differs between the populations; a slope below 1, that the predictions are "
+"too extreme there."
+msgstr "El model de desenvolupament, amb el seu hazard basal, s'aplica sense canvis a les dades de validació. Una O/E lluny d'1 indica que el risc global a l'horitzó difereix entre les poblacions; un pendent per sota d'1, que allà les prediccions són massa extremes."
+
+#: R/cp_select.R
+msgid ""
+"The elastic net has nothing to select: every predictor is a baseline "
+"covariate. Choose no selection, or leave some predictors out of the baseline."
+msgstr "L'elastic net no té res a seleccionar: tots els predictors són covariables de base. Trieu cap selecció, o deixeu alguns predictors fora de la base."
+
+#: R/cppublished.b.R
+msgid "The event level '%s' does not occur in '%s'."
+msgstr "El nivell de l'esdeveniment '%s' no apareix a '%s'."
+
+#: R/cp_family_binary.R
+#: R/cp_family_cox.R
+msgid "The event level '%s' does not occur in the complete cases."
+msgstr "El nivell de l'esdeveniment '%s' no apareix en els casos complets."
+
+#: R/cp_family_cox.R
+msgid "The event variable '%s' has a single level in the complete cases."
+msgstr "La variable d'esdeveniment '%s' té un sol nivell en els casos complets."
+
+#: R/cp_external.R
+msgid "The file '%s' could not be read as %s."
+msgstr "El fitxer '%s' no s'ha pogut llegir com a %s."
+
+#: R/cp_external.R
+msgid "The file '%s' has no rows."
+msgstr "El fitxer '%s' no té files."
+
+#: R/cp_published.R
+msgid ""
+"The file '%s' is not a model exported by clinpred. A published model can "
+"also be entered as a table with the columns term, estimate and (optionally) "
+"SE."
+msgstr "El fitxer '%s' no és un model exportat per clinpred. Un model publicat també es pot introduir com una taula amb les columnes term, estimate i (opcionalment) SE."
+
+#: R/cp_published.R
+msgid "The file '%s' is not valid JSON."
+msgstr "El fitxer '%s' no és un JSON vàlid."
+
+#: R/cp_analysis.R
+#: R/cp_analysis_mi.R
+msgid ""
+"The full model has no predictor beyond the baseline covariates (the "
+"selection removed all of them)."
+msgstr "El model complet no té cap predictor a més de les covariables de base (la selecció els va eliminar tots)."
+
+#: R/cp_utils.R
+msgid ""
+"The model could not be computed with these data and options. Check that the "
+"outcome has enough events, that each factor level has observations in both "
+"outcome groups, and that the predictors vary."
+msgstr "No s'ha pogut calcular el model amb aquestes dades i opcions. Comproveu que el desenllaç té prou esdeveniments, que cada nivell dels factors té observacions en tots dos grups del desenllaç i que els predictors varien."
+
+#: R/cp_analysis.R
+#: R/cp_analysis_mi.R
+msgid "The model could not be exported."
+msgstr "No s'ha pogut exportar el model."
+
+#: R/cp_analysis_mi.R
+msgid ""
+"The model did not converge in some imputed data (complete separation); "
+"remove or merge the predictor(s) involved."
+msgstr "El model no ha convergit en algun conjunt imputat (separació completa); elimineu o agrupeu els predictors implicats."
+
+#: R/cp_analysis.R
+msgid ""
+"The model did not converge. This usually means complete separation: some "
+"predictor, or a combination of them, predicts the outcome perfectly. Remove "
+"or merge the predictor(s) involved."
+msgstr "El model no ha convergit. Sol ser per una separació completa: algun predictor, o una combinació d'ells, prediu perfectament el desenllaç. Elimineu o agrupeu els predictors implicats."
+
+#: R/cp_published.R
+msgid "The model file '%s' is damaged: its coefficients do not match its predictors."
+msgstr "El fitxer del model '%s' està malmès: els seus coeficients no corresponen als seus predictors."
+
+#: R/cppublished.b.R
+msgid "The model file holds a model of type %s: choose that model type."
+msgstr "El fitxer conté un model de tipus %s: trieu aquest tipus de model."
+
+#: R/cppublished.b.R
+msgid ""
+"The model gives a baseline survival but not its time: add a row 'horizon' to "
+"the model table, or set the prediction horizon."
+msgstr "El model dona una supervivència basal però no el seu temps: afegiu una fila 'horizon' a la taula del model, o fixeu l'horitzó de predicció."
+
+#: R/cppublished.b.R
+msgid ""
+"The model gives no baseline survival: it was estimated from these data, so "
+"the O/E ratio is close to 1 by construction and calibration-in-the-large is "
+"not assessed."
+msgstr "El model no dona supervivència basal: s'ha estimat amb aquestes dades, per la qual cosa la raó O/E és propera a 1 per construcció i el calibratge global no s'avalua."
+
+#: R/cp_published.R
+msgid "The model table '%s' has no predictor terms."
+msgstr "La taula del model '%s' no té termes predictors."
+
+#: R/cp_published.R
+msgid "The model table '%s' needs the columns term and estimate."
+msgstr "La taula del model '%s' necessita les columnes term i estimate."
+
+#: R/cp_published.R
+msgid "The model table '%s': the estimate of '%s' is not a number."
+msgstr "La taula del model '%s': l'estimació de '%s' no és un nombre."
+
+#: R/cppublished.b.R
+msgid ""
+"The model table has no intercept: 0 is used, so calibration-in-the-large "
+"will be poor. Add a row 'Intercept'."
+msgstr "La taula del model no té constant: es fa servir 0, per la qual cosa el calibratge global serà dolent. Afegiu una fila 'Intercept'."
+
+#: R/cp_published.R
+msgid "The model uses %s: add the variables to Predictor variables."
+msgstr "El model fa servir %s: afegiu les variables a Variables predictores."
+
+#: R/cp_analysis.R
+msgid ""
+"The model was selected in these data: its confidence intervals and p values "
+"do not account for the selection, so they are too narrow (see the bootstrap "
+"coefficients)."
+msgstr "El model es va seleccionar en aquestes dades: els seus intervals de confiança i valors p no tenen en compte la selecció, per la qual cosa són massa estrets (vegeu els coeficients bootstrap)."
+
+#: R/cp_analysis.R
+msgid "The model with all predictors could not be fitted (e.g. separation)."
+msgstr "No s'ha pogut ajustar el model amb tots els predictors (p. ex., per separació)."
+
+#: R/cppublished.b.R
+msgid ""
+"The model's baseline survival is for t = %s; set the horizon to 0 (from the "
+"model file) or to %s."
+msgstr "La supervivència basal del model és per a t = %s; fixeu l'horitzó a 0 (del fitxer del model) o a %s."
+
+#: R/cp_analysis.R
+msgid ""
+"The most frequent combinations of missing variables in the development rows "
+"(at most 10)."
+msgstr "Les combinacions més freqüents de variables perdudes a les files de desenvolupament (com a màxim 10)."
+
+#: R/cp_family_gaussian.R
+msgid "The outcome '%s' does not vary in the complete cases."
+msgstr "El desenllaç '%s' no varia en els casos complets."
+
+#: R/cp_family_binary.R
+msgid "The outcome '%s' has a single level in the complete cases."
+msgstr "El desenllaç '%s' té un sol nivell en els casos complets."
+
+#: R/cp_family_gaussian.R
+msgid "The outcome '%s' has values that are not numbers."
+msgstr "El desenllaç '%s' té valors que no són nombres."
+
+#: R/cp_data.R
+msgid "The outcome cannot also be a predictor."
+msgstr "El desenllaç no pot ser també un predictor."
+
+#: R/cppublished.b.R
+msgid "The outcome does not vary."
+msgstr "El desenllaç no varia."
+
+#: R/cp_analysis.R
+msgid "The outcome has %d levels: '%s' is modelled against all the others combined."
+msgstr "El desenllaç té %d nivells: '%s' es modelitza davant de tots els altres junts."
+
+#: R/cp_family_binary.R
+msgid "The outcome needs at least 2 events and 2 non-events; there are %s and %s."
+msgstr "El desenllaç necessita almenys 2 esdeveniments i 2 no esdeveniments; n'hi ha %s i %s."
+
+#: R/cplinear.b.R
+msgid "The p on a factor's reference row is the F test of the factor."
+msgstr "La p a la fila de referència d'un factor és la prova F del factor."
+
+#: R/cpcox.b.R
+#: R/cplogistic.b.R
+msgid "The p on a factor's reference row is the likelihood ratio test of the factor."
+msgstr "La p a la fila de referència d'un factor és la prova de raó de versemblances del factor."
+
+#: R/cpcox.b.R
+msgid ""
+"The partial likelihood has no maximum for some coefficient (monotone "
+"likelihood): a predictor, or a combination of them, separates patients with "
+"and without events. Coefficients and their intervals are unreliable."
+msgstr "La versemblança parcial no té màxim per a algun coeficient (versemblança monòtona): un predictor, o una combinació d'ells, separa els pacients amb i sense esdeveniments. Els coeficients i els seus intervals no són fiables."
+
+#: R/cp_analysis.R
+msgid ""
+"The penalised Cox model uses Breslow's handling of tied times (the "
+"unpenalised one, Efron's)."
+msgstr "El model de Cox penalitzat tracta els temps empatats amb el mètode de Breslow (el no penalitzat, amb el d'Efron)."
+
+#: R/cp_analysis.R
+msgid ""
+"The predictor column '%s' is redundant (a combination of other predictors); "
+"remove one of the predictors involved."
+msgstr "La columna de predictor '%s' és redundant (combinació d'altres predictors); elimineu un dels predictors implicats."
+
+#: R/cppublished.b.R
+msgid ""
+"The published model is applied unchanged. Calibration-in-the-large (or O/E) "
+"far from its ideal means that the overall risk differs from the population "
+"where the model was developed; a calibration slope below 1, that its "
+"predictions are too extreme here."
+msgstr "El model publicat s'aplica sense canvis. Un calibratge global (o O/E) lluny del seu valor ideal indica que el risc global difereix del de la població on es va desenvolupar el model; un pendent de calibratge per sota d'1, que aquí les seves prediccions són massa extremes."
+
+#: R/cp_analysis.R
+msgid ""
+"The revised model could not be fitted in the validation data (too few events "
+"or separation), so the closed testing procedure was not run."
+msgstr "No s'ha pogut ajustar el model revisat a les dades de validació (pocs esdeveniments o separació), per la qual cosa no s'ha aplicat el procediment de prova tancada."
+
+#: R/cppublished.b.R
+msgid ""
+"The revised model could not be fitted in these data, so the closed testing "
+"procedure was not run."
+msgstr "No s'ha pogut ajustar el model revisat en aquestes dades, per la qual cosa no s'ha aplicat el procediment de prova tancada."
+
+#: R/cp_analysis.R
+msgid ""
+"The selection is repeated in every resampled fit, so the internal validation "
+"includes its optimism; the last column is the share of fits that kept the "
+"predictor."
+msgstr "La selecció es repeteix en cada ajust remostrejat, per la qual cosa la validació interna n'inclou l'optimisme; l'última columna és la proporció d'ajustos que van mantenir el predictor."
+
+#: R/cp_analysis.R
+msgid ""
+"The selection is repeated in every resampled fit, so the internal validation "
+"includes its optimism; the last column is the share of fits that selected "
+"the term."
+msgstr "La selecció es repeteix en cada ajust remostrejat, per la qual cosa la validació interna n'inclou l'optimisme; l'última columna és la proporció d'ajustos que van seleccionar el terme."
+
+#: R/cp_analysis.R
+#: R/cp_analysis_mi.R
+msgid ""
+"The selection removed every predictor. Mark baseline covariates under "
+"Variable Selection, or use a less strict criterion."
+msgstr "La selecció va eliminar tots els predictors. Marqueu covariables de base a Selecció de variables, o feu servir un criteri menys estricte."
+
+#: R/cp_published.R
+msgid ""
+"The term '%s' gives values that are not finite (e.g. the log of 0 or of a "
+"negative value)."
+msgstr "El terme '%s' dona valors no finits (p. ex., el logaritme de 0 o d'un valor negatiu)."
+
+#: R/cp_analysis.R
+msgid "The test ignores that the added predictors were selected: its p is too small."
+msgstr "La prova ignora que els predictors afegits van ser seleccionats: la seva p és massa petita."
+
+#: R/cplogistic.b.R
+msgid ""
+"The threshold is derived from the development data and applied unchanged to "
+"the validation data."
+msgstr "El llindar s'obté de les dades de desenvolupament i s'aplica sense canvis a les dades de validació."
+
+#: R/cp_family_cox.R
+msgid "The time variable '%s' has negative values."
+msgstr "La variable de temps '%s' té valors negatius."
+
+#: R/cp_family_cox.R
+msgid "There are fewer than 2 events in the complete cases."
+msgstr "Hi ha menys de 2 esdeveniments en els casos complets."
+
+#: R/cppublished.b.R
+msgid "There are no events in the data."
+msgstr "No hi ha esdeveniments a les dades."
+
+#: R/cppublished.b.R
+msgid "These data"
+msgstr "Aquestes dades"
+
+#: R/cpcox.b.R
+#: R/cplinear.b.R
+#: R/cplogistic.b.R
+msgid "This development data"
+msgstr "Aquestes dades de desenvolupament"
+
+#: cpCox/results/nbTable.columns.title
+#: cpLogistic/options/thrMethod.title
+#: cpLogistic/results/confTable.columns.title
+#: cpLogistic/results/nbTable.columns.title
+#: cpPublished/options/thrMethod.title
+#: cpPublished/results/confTable.columns.title
+#: cpPublished/results/nbTable.columns.title
+msgid "Threshold"
+msgstr "Llindar"
+
+#: R/cp_plots.R
+msgid "Threshold probability"
+msgstr "Probabilitat llindar"
+
+#: R/cp_analysis.R
+#: R/cp_analysis_mi.R
+msgid ""
+"Tick the baseline covariates under Variable Selection: they form the "
+"baseline model."
+msgstr "Marqueu les covariables de base a Selecció de variables: formen el model base."
+
+#: R/cp_plots.R
+#: R/cppublished.b.R
+#: cpCox/options/time.title
+#: cpCox/ui[0][0].label
+#: cpPublished/options/time.title
+msgid "Time"
+msgstr "Temps"
+
+#: cpPublished/ui[1][2].label
+msgid "Time (Cox)"
+msgstr "Temps (Cox)"
+
+#: R/cp_published.R
+#: cpPublished/options/family/cox.title
+msgid "Time to event (Cox)"
+msgstr "Temps fins a l'esdeveniment (Cox)"
+
+#: package/analyses/cpCox.title
+#: package/analyses/cpCox.menuTitle
+#: cpCox/options.title
+#: cpCox/ui.title
+#: cpCox/results.title
+msgid "Time to Event (Cox)"
+msgstr "Temps fins a l'esdeveniment (Cox)"
+
+#: R/cp_family_binary.R
+msgid "Time-dependent AUC (at the horizon)"
+msgstr "AUC dependent del temps (a l'horitzó)"
+
+#: cpLogistic/results/confTable.columns.title
+#: cpPublished/results/confTable.columns.title
+msgid "TN"
+msgstr "VN"
+
+#: cpCox/results/descTable.columns.title
+#: cpLogistic/results/descTable.columns.title
+msgid "Total"
+msgstr "Total"
+
+#: cpLogistic/results/confTable.columns.title
+#: cpPublished/results/confTable.columns.title
+msgid "TP"
+msgstr "VP"
+
+#: R/cp_plots.R
+#: cpCox/results/nbTable.columns.title
+#: cpLogistic/results/nbTable.columns.title
+#: cpPublished/results/nbTable.columns.title
+msgid "Treat all"
+msgstr "Tractar tothom"
+
+#: R/cp_plots.R
+msgid "Treat none"
+msgstr "No tractar ningú"
+
+#: R/cpcox.b.R
+#: R/cplinear.b.R
+#: R/cplogistic.b.R
+msgid ""
+"Under <b>Validation</b>, choose bootstrap or cross-validation; optionally a "
+"split variable marking validation rows, or an external data file with the "
+"same variable names."
+msgstr "A <b>Validació</b>, trieu bootstrap o validació creuada; opcionalment una variable de divisió que marqui les files de validació, o un fitxer de dades extern amb els mateixos noms de variables."
+
+#: R/cp_analysis.R
+msgid "Uniform shrinkage factor (mean bootstrap calibration slope)"
+msgstr "Factor de contracció uniforme (pendent de calibratge bootstrap mitjà)"
+
+#: R/cp_family_binary.R
+msgid "Unknown model family."
+msgstr "Família de model desconeguda."
+
+#: R/cp_external.R
+msgid "unknown values: %s"
+msgstr "valors desconeguts: %s"
+
+#: R/cp_family_binary.R
+msgid "Uno's C (to the horizon)"
+msgstr "C d'Uno (fins a l'horitzó)"
+
+#: cpCox/results/orTable.columns.title
+#: cpCox/results/incTable.columns.title
+#: cpCox/results/subTable.columns.title
+#: cpCox/results/coefTable.columns.title
+#: cpCox/results/perfDev.columns.title
+#: cpCox/results/perfVal.columns.title
+#: cpLinear/results/orTable.columns.title
+#: cpLinear/results/incTable.columns.title
+#: cpLinear/results/subTable.columns.title
+#: cpLinear/results/coefTable.columns.title
+#: cpLinear/results/perfDev.columns.title
+#: cpLinear/results/perfVal.columns.title
+#: cpLogistic/results/orTable.columns.title
+#: cpLogistic/results/incTable.columns.title
+#: cpLogistic/results/subTable.columns.title
+#: cpLogistic/results/coefTable.columns.title
+#: cpLogistic/results/perfDev.columns.title
+#: cpLogistic/results/perfVal.columns.title
+#: cpLogistic/results/classTable.columns.title
+#: cpPublished/results/modelTable.columns.title
+#: cpPublished/results/perf.columns.title
+#: cpPublished/results/classTable.columns.title
+msgid "Upper"
+msgstr "Superior"
+
+#: package/analyses/cpPublished.title
+#: package/analyses/cpPublished.menuTitle
+#: cpPublished/options.title
+#: cpPublished/ui.title
+#: cpPublished/results.title
+msgid "Validate a Published Model"
+msgstr "Validar un model publicat"
+
+#: R/cppublished.b.R
+msgid "Validate a published prediction model in the current data."
+msgstr "Valideu un model de predicció publicat a les dades actuals."
+
+#: package/analyses/cpPublished.description
+#: cpPublished/options.description.main
+msgid ""
+"Validate a published prediction model, or one exported by clinpred, in the "
+"current data: the model is read from a JSON file exported by clinpred or "
+"from a table of coefficients (term, estimate, SE), applied unchanged, and "
+"its discrimination, calibration, overall performance and clinical utility "
+"are measured; the model can be updated (recalibrated or revised) by the "
+"closed testing procedure."
+msgstr "Valida un model de predicció publicat, o exportat per clinpred, a les dades actuals: el model es llegeix d'un fitxer JSON exportat per clinpred o d'una taula de coeficients (term, estimate, SE), s'aplica sense canvis i se'n mesuren la discriminació, el calibratge, el rendiment global i la utilitat clínica; el model es pot actualitzar (recalibrar o revisar) amb el procediment de prova tancada."
+
+#: cpCox/ui[8].label
+#: cpLinear/ui[7].label
+#: cpLogistic/ui[7].label
+#: cpPublished/ui[3].label
+msgid "Validation"
+msgstr "Validació"
+
+#: R/cp_analysis.R
+msgid "Validation (%s = %s)"
+msgstr "Validació (%s = %s)"
+
+#: cpCox/results/caseMix.columns.title
+#: cpLinear/results/caseMix.columns.title
+#: cpLogistic/results/caseMix.columns.title
+msgid "Validation (rows)"
+msgstr "Validació (files)"
+
+#: R/cp_analysis.R
+msgid ""
+"Validation data: the share missing in each variable; in an external file, "
+"after matching its values to the development coding (unknown levels count as "
+"missing)."
+msgstr "Dades de validació: proporció de perduts en cada variable; en un fitxer extern, després d'aparellar els seus valors amb la codificació de desenvolupament (els nivells desconeguts compten com a perduts)."
+
+#: cpCox/options/splitLevel.title
+#: cpCox/ui[0][5]/splitLevel.label
+#: cpLinear/options/splitLevel.title
+#: cpLinear/ui[0][4]/splitLevel.label
+#: cpLogistic/options/splitLevel.title
+#: cpLogistic/ui[0][4]/splitLevel.label
+msgid "Validation rows"
+msgstr "Files de validació"
+
+#: cpCox/options/splitVar.title
+#: cpLinear/options/splitVar.title
+#: cpLogistic/options/splitVar.title
+msgid "Validation split"
+msgstr "Divisió de validació"
+
+#: cpCox/ui[0][5].label
+#: cpLinear/ui[0][4].label
+#: cpLogistic/ui[0][4].label
+msgid "Validation split (optional)"
+msgstr "Divisió de validació (opcional)"
+
+#: cpCox/options/ssSource/value.title
+#: cpCox/results/stabTable.columns.title
+#: cpLinear/options/ssSource/value.title
+#: cpLinear/results/descTable.columns.title
+#: cpLinear/results/stabTable.columns.title
+#: cpLogistic/options/ssSource/value.title
+#: cpLogistic/options/thrMethod/value.title
+#: cpLogistic/results/stabTable.columns.title
+#: cpPublished/options/thrMethod/value.title
+msgid "Value"
+msgstr "Valor"
+
+#: cpCox/results/extCheck.columns.title
+#: cpCox/results/missTable.columns.title
+#: cpLinear/results/extCheck.columns.title
+#: cpLinear/results/missTable.columns.title
+#: cpLogistic/results/extCheck.columns.title
+#: cpLogistic/results/missTable.columns.title
+#: cpPublished/results/check.columns.title
+msgid "Variable"
+msgstr "Variable"
+
+#: cpCox/ui[11].label
+#: cpLinear/ui[9].label
+#: cpLogistic/ui[10].label
+msgid "Variable Importance"
+msgstr "Importància de les variables"
+
+#: cpCox/ui[5].label
+#: cpLinear/ui[4].label
+#: cpLogistic/ui[4].label
+msgid "Variable Selection"
+msgstr "Selecció de variables"
+
+#: cpCox/results/missPatterns.columns.title
+#: cpLinear/results/missPatterns.columns.title
+#: cpLogistic/results/missPatterns.columns.title
+#: cpPublished/results/check.title
+msgid "Variables"
+msgstr "Variables"
+
+#: cpCox/results/selTable.columns.superTitle
+#: cpLinear/results/selTable.columns.superTitle
+#: cpLogistic/results/selTable.columns.superTitle
+msgid "vs final model"
+msgstr "davant el model final"
+
+#: cpLinear/results/updTable.columns.superTitle
+#: cpLogistic/results/updTable.columns.superTitle
+#: cpPublished/results/updTable.columns.superTitle
+msgid "vs revision"
+msgstr "davant la revisió"
+
+#: R/cp_external.R
+msgid "Warning"
+msgstr "Avís"
+
+#: R/cplinear.b.R
+msgid ""
+"With interactions, an adjusted effect is the effect at the reference level "
+"(factor) or median (covariate) of the variables it interacts with; see "
+"Effects Within Subgroups."
+msgstr "Amb interaccions, un efecte ajustat és l'efecte al nivell de referència (factor) o la mediana (covariable) de les variables amb què interactua; vegeu Efectes dins de subgrups."
+
+#: R/cpcox.b.R
+msgid ""
+"With interactions, an adjusted hazard ratio is the effect at the reference "
+"level (factor) or median (covariate) of the variables it interacts with; see "
+"Effects Within Subgroups."
+msgstr "Amb interaccions, una hazard ratio ajustada és l'efecte al nivell de referència (factor) o la mediana (covariable) de les variables amb què interactua; vegeu Efectes dins de subgrups."
+
+#: R/cplogistic.b.R
+msgid ""
+"With interactions, an adjusted odds ratio is the effect at the reference "
+"level (factor) or median (covariate) of the variables it interacts with; see "
+"Effects Within Subgroups."
+msgstr "Amb interaccions, una odds ratio ajustada és l'efecte al nivell de referència (factor) o la mediana (covariable) de les variables amb què interactua; vegeu Efectes dins de subgrups."
+
+#: cpCox/results/subTable.columns.title
+#: cpLinear/results/subTable.columns.title
+#: cpLogistic/results/subTable.columns.title
+msgid "Within"
+msgstr "Dins de"
+
+#: R/cp_analysis.R
+msgid "yes"
+msgstr "sí"
+
+#: cpLogistic/options/thrMethod/youden.title
+msgid "Youden (data-driven)"
+msgstr "Youden (segons les dades)"
+
+#: cpCox/options/intAlpha.title
+#: cpLinear/options/intAlpha.title
+#: cpLogistic/options/intAlpha.title
+msgid "α to enter"
+msgstr "α per entrar"
+
+#: cpCox/results/incTable.columns.superTitle
+#: cpLinear/results/incTable.columns.superTitle
+#: cpLogistic/results/incTable.columns.superTitle
+msgid "Δ CI"
+msgstr "IC de Δ"
+
+#: cpCox/results/intTable.columns.title
+#: cpLinear/results/intTable.columns.title
+#: cpLogistic/results/intTable.columns.title
+msgid "ΔAIC"
+msgstr "ΔAIC"
+
+#: cpCox/results/intTable.columns.title
+#: cpLinear/results/intTable.columns.title
+#: cpLogistic/results/intTable.columns.title
+msgid "ΔBIC"
+msgstr "ΔBIC"
+
+#: R/cp_analysis.R
+msgid ""
+"λ is tuned again by cross-validation in every resampled fit, so the internal "
+"validation includes the tuning (slow: untick it for a quick look); the last "
+"column is the share of fits that kept the predictor."
+msgstr "λ es torna a ajustar per validació creuada en cada ajust remostrejat, per la qual cosa la validació interna inclou l'ajust (lent: desmarqueu-ho per a una exploració ràpida); l'última columna és la proporció d'ajustos que van mantenir el predictor."
+
+#: R/cp_analysis.R
+msgid ""
+"χ², df, p: each predictor dropped from (if kept) or added to (if not) the "
+"final main-effects model; a factor or a spline is one term."
+msgstr "χ², gl, p: cada predictor eliminat del (si es manté) o afegit al (si no) model final d'efectes principals; un factor o un spline és un sol terme."
+
+#: R/cp_analysis.R
+msgid ""
+"χ², ΔAIC and ΔBIC: the term added alone to the main-effects model (negative "
+"Δ: the term improves the criterion)."
+msgstr "χ², ΔAIC i ΔBIC: el terme afegit sol al model d'efectes principals (Δ negatiu: el terme millora el criteri)."

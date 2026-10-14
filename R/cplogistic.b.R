@@ -21,8 +21,7 @@ cpLogisticClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class(
         .yOf = function(df, spec, key) {
             y <- as.integer(df[[spec$outcome$name]] == spec$outcome$event)
             if (sum(y) < 1 || sum(1 - y) < 1)
-                .fail(private$.sets()[[key]], ": the validation data need both events and non-events (there are ",
-                      sum(y), " events among ", length(y), " complete rows).")
+                .fail(sprintf(.("%s: the validation data need both events and non-events (there are %s events among %s complete rows)."), private$.sets()[[key]], sum(y), length(y)))
             y
         },
 
@@ -61,11 +60,11 @@ cpLogisticClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class(
             calX = .("Predicted risk"),
             calY = .("Observed proportion (smoothed)")),
 
-        .shapAxis = function(base, lp) c("Log-odds", sprintf("risk %.1f%%", 100 * stats::plogis(lp))),
+        .shapAxis = function(base, lp) c(.("Log-odds"), sprintf(.("risk %.1f%%"), 100 * stats::plogis(lp))),
 
         .equation = function(beta, spec) {
-            out <- c(sprintf("log-odds(%s = %s) =", spec$outcome$name, spec$outcome$event),
-                     private$.equationTerms(beta), "", "risk = 1 / (1 + exp(−log-odds))")
+            out <- c(sprintf(.("log-odds(%s = %s) ="), spec$outcome$name, spec$outcome$event),
+                     private$.equationTerms(beta), "", .("risk = 1 / (1 + exp(−log-odds))"))
             paste(c(out, private$.equationVars(spec)), collapse = "\n")
         },
 
@@ -80,7 +79,7 @@ cpLogisticClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class(
             t$getColumn("g1")$setTitle(if (length(other) == 1) other else .("Other levels"))
             t$getColumn("g2")$setTitle(ev)
             t$addRow(rowKey = "n", values = list(var = .("Patients"), level = "n"))
-            stat <- if (self$options$descStat == "meanSD") .("mean (SD)") else .("median [Q1, Q3]")
+            stat <- if (self$options$descStat == "meanSD") .("mean (SD)") else paste(.("median"), "[Q1, Q3]")
             for (v in c(self$options$covs, self$options$splineVars))
                 t$addRow(rowKey = v, values = list(var = v, level = stat))
             for (v in self$options$factors)
@@ -168,7 +167,7 @@ cpLogisticClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class(
             # entered, or this model's (optimism-corrected when validated)
             r2 <- if (o$ssSource == "value") o$ssR2 else
                 if (!is.null(iv)) iv$corrected[["r2cs"]] else private$.fam$metrics(y, lp)[["r2cs"]]
-            if (!is.finite(r2) || r2 <= 0) .fail("The anticipated Cox–Snell R² must be positive; enter a value under Sample size adequacy.")
+            if (!is.finite(r2) || r2 <= 0) .fail(.("The anticipated Cox–Snell R² must be positive; enter a value under Sample size adequacy."))
             ss <- cp_binary_samplesize(p, phi, r2)
             t <- self$results$ssTable
             for (k in names(ss$n))
@@ -194,7 +193,7 @@ cpLogisticClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class(
                     c(rp, list(key = k, label = sets[[k]], auc = .auc_delong(all[[k]]$y, all[[k]]$p)$auc))
                 }))
             if (o$riskPlot && is.null(pl$riskDist$state)) {
-                lev <- c(paste0("Not ", private$.eventLabel()), private$.eventLabel())
+                lev <- c(sprintf(.("Not %s"), private$.eventLabel()), private$.eventLabel())
                 pl$riskDist$setState(lapply(names(all), function(k)
                     list(label = sets[[k]], p = round(all[[k]]$p, 4),
                          outcome = factor(lev[all[[k]]$y + 1], lev))))

@@ -7,14 +7,13 @@ cp_binary_outcome <- function(prep, eventLevel = "") {
     x <- droplevels(x)
     lev <- levels(x)
     if (length(lev) < 2)
-        .fail("The outcome '", prep$spec$outcome$name, "' has a single level in the complete cases.")
+        .fail(sprintf(.("The outcome '%s' has a single level in the complete cases."), prep$spec$outcome$name))
     if (is.null(eventLevel) || !nzchar(eventLevel)) eventLevel <- lev[2]
     if (!(eventLevel %in% lev))
-        .fail("The event level '", eventLevel, "' does not occur in the complete cases.")
+        .fail(sprintf(.("The event level '%s' does not occur in the complete cases."), eventLevel))
     y <- as.integer(x == eventLevel)
     if (sum(y) < 2 || sum(1 - y) < 2)
-        .fail("The outcome needs at least 2 events and 2 non-events; there are ",
-              sum(y), " and ", sum(1 - y), ".")
+        .fail(sprintf(.("The outcome needs at least 2 events and 2 non-events; there are %s and %s."), sum(y), sum(1 - y)))
     prep$spec$outcome$levels <- lev
     prep$spec$outcome$event <- eventLevel
     prep$y <- y
@@ -147,30 +146,30 @@ cp_metric_defs <- function(family) {
         binary = data.frame(
             key = c("auc", "dslope", "citl", "slope", "oe", "ici", "e50", "e90", "emax",
                     "brier", "sbrier", "r2n", "r2cs"),
-            label = c("C-statistic (AUC)", "Discrimination slope",
-                      "Calibration-in-the-large", "Calibration slope", "O/E ratio",
-                      "ICI", "E50", "E90", "Emax",
-                      "Brier score", "Scaled Brier score", "Nagelkerke R²", "Cox–Snell R²"),
-            group = c("Discrimination", "Discrimination",
-                      "Calibration", "Calibration", "Calibration", "Calibration",
-                      "Calibration", "Calibration", "Calibration",
-                      "Overall", "Overall", "Overall", "Overall"),
+            label = c(.("C-statistic (AUC)"), .("Discrimination slope"),
+                      .("Calibration-in-the-large"), .("Calibration slope"), .("O/E ratio"),
+                      .("ICI"), .("E50"), .("E90"), .("Emax"),
+                      .("Brier score"), .("Scaled Brier score"), .("Nagelkerke R²"), .("Cox–Snell R²")),
+            group = c(.("Discrimination"), .("Discrimination"),
+                      .("Calibration"), .("Calibration"), .("Calibration"), .("Calibration"),
+                      .("Calibration"), .("Calibration"), .("Calibration"),
+                      .("Overall"), .("Overall"), .("Overall"), .("Overall")),
             stringsAsFactors = FALSE),
         cox = data.frame(
             key = c("c", "uno", "auc", "d", "oe", "slope", "ici", "e50", "e90",
                     "brier", "sbrier", "r2d", "r2n", "r2cs"),
-            label = c("Harrell's C", "Uno's C (to the horizon)", "Time-dependent AUC (at the horizon)",
-                      "Royston's D", "O/E ratio (at the horizon)", "Calibration slope",
-                      "ICI", "E50", "E90", "Brier score (at the horizon)",
-                      "Scaled Brier score (IPA)", "Royston's R²_D", "Nagelkerke R²", "Cox–Snell R²"),
-            group = c(rep("Discrimination", 4), rep("Calibration", 5), rep("Overall", 5)),
+            label = c(.("Harrell's C"), .("Uno's C (to the horizon)"), .("Time-dependent AUC (at the horizon)"),
+                      .("Royston's D"), .("O/E ratio (at the horizon)"), .("Calibration slope"),
+                      .("ICI"), .("E50"), .("E90"), .("Brier score (at the horizon)"),
+                      .("Scaled Brier score (IPA)"), .("Royston's R²_D"), .("Nagelkerke R²"), .("Cox–Snell R²")),
+            group = c(rep(.("Discrimination"), 4), rep(.("Calibration"), 5), rep(.("Overall"), 5)),
             stringsAsFactors = FALSE),
         gaussian = data.frame(
             key = c("r2", "rmse", "mae", "citl", "slope"),
-            label = c("R²", "RMSE", "MAE", "Calibration-in-the-large", "Calibration slope"),
-            group = c("Overall", "Overall", "Overall", "Calibration", "Calibration"),
+            label = c(.("R²"), .("RMSE"), .("MAE"), .("Calibration-in-the-large"), .("Calibration slope")),
+            group = c(.("Overall"), .("Overall"), .("Overall"), .("Calibration"), .("Calibration")),
             stringsAsFactors = FALSE),
-        .fail("Unknown model family."))
+        .fail(.("Unknown model family.")))
 }
 
 # Classification at a risk threshold, with Wilson intervals
@@ -267,7 +266,7 @@ cp_family <- function(family, horizon = NULL) {
             bounded = TRUE),
         gaussian = .family_gaussian(),
         cox = .family_cox(horizon),
-        .fail("Unknown model family."))
+        .fail(.("Unknown model family.")))
 }
 
 # Cheaper R2 only (for the Shapley enumeration)

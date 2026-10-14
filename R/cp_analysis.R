@@ -83,12 +83,12 @@
 
     # data sets: development, validation rows (split variable), external file
     .sets = function() {
-        sets <- c(dev = "Development")
+        sets <- c(dev = .("Development"))
         sv <- self$options$splitVar
         if (!is.null(sv))
-            sets["split"] <- paste0("Validation (", sv, " = ", private$.level(sv, self$options$splitLevel), ")")
+            sets["split"] <- sprintf(.("Validation (%s = %s)"), sv, private$.level(sv, self$options$splitLevel))
         f <- self$options$extFile
-        if (!is.null(f)) sets["ext"] <- paste0("External (", basename(f$filename %||% f$path), ")")
+        if (!is.null(f)) sets["ext"] <- sprintf(.("External (%s)"), basename(f$filename %||% f$path))
         sets
     },
 
@@ -344,8 +344,8 @@
             sv <- as.character(data[[o$splitVar]])
             isVal <- !is.na(sv) & sv == sl
             isDev <- !is.na(sv) & !isVal
-            if (!any(isDev)) .fail("Every row is a validation row; no data are left to develop the model.")
-            if (!any(isVal)) .fail("No row has ", o$splitVar, " = ", sl, ".")
+            if (!any(isDev)) .fail(.("Every row is a validation row; no data are left to develop the model."))
+            if (!any(isVal)) .fail(sprintf(.("No row has %s = %s."), o$splitVar, sl))
         }
         if (o$descTable) private$.fillDesc(data[isDev, , drop = FALSE])
         if (o$missExplore) {
@@ -378,8 +378,7 @@
         XC <- cp_design(specC, prep$data)
         sel <- cp_fit_procedure(XC, y, specC, fam, private$.selOpts())
         if (!length(attr(sel, "vars")))
-            .fail("The selection removed every predictor. Mark baseline covariates under Variable Selection, ",
-                  "or use a less strict criterion.")
+            .fail(.("The selection removed every predictor. Mark baseline covariates under Variable Selection, or use a less strict criterion."))
         spec <- cp_with_terms(specC, attr(sel, "vars"), attr(sel, "ints"))
         penalized <- isTRUE(attr(sel, "penalized"))
         X <- cp_design(spec, prep$data)
@@ -390,11 +389,9 @@
             b
         } else fam$fit(X, y)
         if (anyNA(beta))
-            .fail("The predictor column '", names(beta)[is.na(beta)][1], "' is redundant (a combination of ",
-                  "other predictors); remove one of the predictors involved.")
+            .fail(sprintf(.("The predictor column '%s' is redundant (a combination of other predictors); remove one of the predictors involved."), names(beta)[is.na(beta)][1]))
         if (!isTRUE(attr(beta, "converged")))
-            .fail("The model did not converge. This usually means complete separation: some predictor, or a ",
-                  "combination of them, predicts the outcome perfectly. Remove or merge the predictor(s) involved.")
+            .fail(.("The model did not converge. This usually means complete separation: some predictor, or a combination of them, predicts the outcome perfectly. Remove or merge the predictor(s) involved."))
         if (isTRUE(attr(beta, "separation")))
             .show_warning(self, "separation", private$.text("separation"))
         lp <- fam$lp(beta, X); p <- fam$risk(lp)
@@ -415,7 +412,7 @@
             if (o$missExplore) private$.fillMissVal("ext", h$all)
             for (i in seq_len(nrow(h$check)))
                 r$extCheck$setRow(rowKey = h$check$var[i],
-                                  values = list(role = h$check$role[i], status = h$check$status[i],
+                                  values = list(role = .check_label(h$check$role[i]), status = .check_label(h$check$status[i]),
                                                 details = h$check$details[i]))
             e2 <- cp_split_data(private$.missVal(h$data), spec, outVars)
             vsets$ext <- private$.valSet(e2$data, spec, beta, "ext")
@@ -686,8 +683,8 @@
             if (!is.null(cv) && is.null(img$state))
                 img$setState(list(lambda = cv$lambda, cvm = cv$cvm, cvsd = cv$cvsd, imin = cv$imin, i1se = cv$i1se,
                                   nz = colSums(cv$path$beta != 0), chosen = lam,
-                                  ylab = if (identical(private$.famName, "gaussian")) "Mean squared error" else
-                                      if (identical(private$.famName, "cox")) "Partial likelihood deviance" else "Binomial deviance"))
+                                  ylab = if (identical(private$.famName, "gaussian")) .("Mean squared error") else
+                                      if (identical(private$.famName, "cox")) .("Partial likelihood deviance") else .("Binomial deviance")))
             return()
         }
         crit <- switch(o$selCrit, aic = "AIC", bic = "BIC", lrt = sprintf(.("LR test, α = %s"), .num(o$selAlpha)))
@@ -751,11 +748,11 @@
             if (info$role == "numeric" && info$scale != 1)
                 out <- c(out, "", sprintf("[%s] = %s / %s  (%s)", info$name, info$name, .num(info$scale, 5), info$scaleLabel))
             if (info$role == "factor")
-                out <- c(out, "", sprintf("[%s: level] = 1 if %s is that level, else 0 (reference: %s)",
+                out <- c(out, "", sprintf(.("[%s: level] = 1 if %s is that level, else 0 (reference: %s)"),
                                           info$name, info$name, info$levels[1]))
             if (info$role == "spline") {
                 kn <- info$knots; k <- length(kn)
-                out <- c(out, "", sprintf("Spline of %s, knots t1..t%d = %s", info$name, k,
+                out <- c(out, "", sprintf(.("Spline of %s, knots t1..t%d = %s"), info$name, k,
                                           paste(signif(kn, 5), collapse = ", ")),
                          sprintf("  [%s'] ... : ((x − tj)₊³ − (x − t%d)₊³ (t%d − tj)/(t%d − t%d) + (x − t%d)₊³ (t%d − tj)/(t%d − t%d)) / (t%d − t1)²,  j = 1..%d",
                                  info$name, k - 1, k, k, k - 1, k, k - 1, k, k - 1, k, k - 2))
@@ -1235,7 +1232,7 @@
         for (i in seq_len(nrow(sh)))
             private$.putRow(t, sh$var[i], list(var = sh$var[i], shapley = sh$shapley[i], share = sh$share[i], rank = sh$rank[i],
                                                shapley_b = "", share_b = ""))
-        lab <- switch(measure, r2mf = "McFadden R²", r2n = "Nagelkerke R²", "R²")
+        lab <- switch(measure, r2mf = .("McFadden R²"), r2n = .("Nagelkerke R²"), .("R²"))
         t$setNote("tot", sprintf(.("%s of the full model: %.4f, shared among the predictors by their average gain over all orders of entry (Shapley / LMG)%s."),
                                  lab, attr(sh, "total"), if (isTRUE(attr(sh, "exact"))) "" else .("; estimated from 200 random orders")))
         b <- st$base

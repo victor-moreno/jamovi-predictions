@@ -50,17 +50,17 @@ cp_cox_outcome <- function(prep, timeName, statusName, eventLevel = "", horizon 
     tm <- prep$data[[timeName]]
     if (is.factor(tm)) tm <- suppressWarnings(as.numeric(as.character(tm)))
     tm <- as.numeric(tm)
-    if (any(tm < 0)) .fail("The time variable '", timeName, "' has negative values.")
+    if (any(tm < 0)) .fail(sprintf(.("The time variable '%s' has negative values."), timeName))
     st <- factor(prep$data[[statusName]], ordered = FALSE)
     st <- droplevels(st)
     lev <- levels(st)
     if (length(lev) < 2)
-        .fail("The event variable '", statusName, "' has a single level in the complete cases.")
+        .fail(sprintf(.("The event variable '%s' has a single level in the complete cases."), statusName))
     if (is.null(eventLevel) || !nzchar(eventLevel)) eventLevel <- lev[2]
     if (!(eventLevel %in% lev))
-        .fail("The event level '", eventLevel, "' does not occur in the complete cases.")
+        .fail(sprintf(.("The event level '%s' does not occur in the complete cases."), eventLevel))
     status <- as.integer(st == eventLevel)
-    if (sum(status) < 2) .fail("There are fewer than 2 events in the complete cases.")
+    if (sum(status) < 2) .fail(.("There are fewer than 2 events in the complete cases."))
     if (is.null(horizon) || !is.finite(horizon) || horizon <= 0) {
         horizon <- .median_followup(tm, status)
         # a horizon with no event before it or nobody after it: the median observed time
@@ -68,9 +68,9 @@ cp_cox_outcome <- function(prep, timeName, statusName, eventLevel = "", horizon 
         auto <- TRUE
     } else auto <- FALSE
     if (!any(status == 1 & tm <= horizon))
-        .fail("No event happens before the prediction horizon (", .num(horizon), "); choose a later horizon.")
+        .fail(sprintf(.("No event happens before the prediction horizon (%s); choose a later horizon."), .num(horizon)))
     if (!any(tm > horizon))
-        .fail("Nobody is followed beyond the prediction horizon (", .num(horizon), "); choose an earlier horizon.")
+        .fail(sprintf(.("Nobody is followed beyond the prediction horizon (%s); choose an earlier horizon."), .num(horizon)))
     prep$data[[timeName]] <- tm
     prep$spec$outcome <- list(name = statusName, time = timeName, levels = lev, event = eventLevel,
                               horizon = horizon, autoHorizon = auto)
@@ -292,7 +292,7 @@ cp_net_benefit_surv <- function(y, p, thresholds, h) {
 cp_km_groups <- function(y, p, cuts, h, maxPts = 200) {
     g <- cut(p, c(-Inf, cuts, Inf), labels = FALSE)
     ng <- length(cuts) + 1
-    labs <- paste0(seq_len(ng), ifelse(seq_len(ng) == 1, " (lowest)", ifelse(seq_len(ng) == ng, " (highest)", "")))
+    labs <- paste0(seq_len(ng), ifelse(seq_len(ng) == 1, paste0(" ", .("(lowest)")), ifelse(seq_len(ng) == ng, paste0(" ", .("(highest)")), "")))
     curves <- list(); pts <- list()
     for (k in sort(unique(g))) {
         i <- which(g == k)

@@ -21,8 +21,7 @@ cpLinearClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class(
         .yOf = function(df, spec, key) {
             y <- as.numeric(df[[spec$outcome$name]])
             if (length(y) < 3 || stats::sd(y) == 0)
-                .fail(private$.sets()[[key]], ": the validation data need at least 3 complete rows with a varying outcome (there are ",
-                      length(y), ").")
+                .fail(sprintf(.("%s: the validation data need at least 3 complete rows with a varying outcome (there are %s)."), private$.sets()[[key]], length(y)))
             y
         },
 
@@ -58,11 +57,11 @@ cpLinearClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class(
             calX = .("Predicted value"),
             calY = .("Observed value (smoothed)")),
 
-        .shapAxis = function(base, lp) c(paste("Predicted", self$options$dep),
-                                         sprintf("predicted %.4g", lp)),
+        .shapAxis = function(base, lp) c(sprintf(.("Predicted %s"), self$options$dep),
+                                         sprintf(.("predicted %.4g"), lp)),
 
         .equation = function(beta, spec) {
-            out <- c(sprintf("predicted %s =", spec$outcome$name), private$.equationTerms(beta))
+            out <- c(sprintf(.("predicted %s ="), spec$outcome$name), private$.equationTerms(beta))
             paste(c(out, private$.equationVars(spec)), collapse = "\n")
         },
 
@@ -72,7 +71,7 @@ cpLinearClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class(
             if (!self$options$descTable) return()
             t <- self$results$descTable
             t$addRow(rowKey = "n", values = list(var = .("Patients"), level = "n"))
-            stat <- if (self$options$descStat == "meanSD") .("mean (SD)") else .("median [Q1, Q3]")
+            stat <- if (self$options$descStat == "meanSD") .("mean (SD)") else paste(.("median"), "[Q1, Q3]")
             for (v in c(self$options$covs, self$options$splineVars))
                 t$addRow(rowKey = v, values = list(var = v, level = stat))
             for (v in self$options$factors)
@@ -117,7 +116,7 @@ cpLinearClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class(
             r2 <- if (o$ssSource == "value") o$ssR2 else
                 if (!is.null(iv)) iv$corrected[["r2"]] else
                     1 - (1 - private$.fam$metrics(y, lp)[["r2"]]) * (n - 1) / (n - p - 1)
-            if (!is.finite(r2) || r2 <= 0) .fail("The anticipated adjusted R² must be positive; enter a value under Sample size adequacy.")
+            if (!is.finite(r2) || r2 <= 0) .fail(.("The anticipated adjusted R² must be positive; enter a value under Sample size adequacy."))
             ss <- cp_gaussian_samplesize(p, r2, mean(y), stats::sd(y))
             t <- self$results$ssTable
             for (k in names(ss$n)) t$setRow(rowKey = k, values = list(n = ss$n[[k]], spp = ss$n[[k]] / p))

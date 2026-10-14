@@ -9,8 +9,7 @@
     x <- x[!is.na(x)]
     nxu <- length(unique(x))
     if (nxu - 2 <= nk)
-        .fail("'", name, "' has only ", nxu, " distinct values, too few for a spline with ",
-              nk, " knots. Use fewer knots or enter it as a linear covariate.")
+        .fail(sprintf(.("'%s' has only %s distinct values, too few for a spline with %s knots. Use fewer knots or enter it as a linear covariate."), name, nxu, nk))
     outer <- if (nk > 6) 0.025 else if (nk > 3) 0.05 else 0.1
     knots <- unname(stats::quantile(x, seq(outer, 1 - outer, length.out = nk)))
     if (length(x) < 100) {
@@ -20,7 +19,7 @@
     }
     knots <- sort(unique(knots))
     if (length(knots) < 3)
-        .fail("Could not place 3 distinct knots for '", name, "': most of its values are tied.")
+        .fail(sprintf(.("Could not place 3 distinct knots for '%s': most of its values are tied."), name))
     knots
 }
 
@@ -43,8 +42,8 @@
 .scale_value <- function(key, x) switch(key %||% "unit",
     unit = 1, sd = stats::sd(x), ten = 10, hundred = 100, thousand = 1000, 1)
 .scale_label <- function(key, value) switch(key %||% "unit",
-    unit = "per unit", sd = sprintf("per 1 SD (%s)", .num(value, 3)), ten = "per 10 units",
-    hundred = "per 100 units", thousand = "per 1000 units", "per unit")
+    unit = .("per unit"), sd = sprintf(.("per 1 SD (%s)"), .num(value, 3)), ten = .("per 10 units"),
+    hundred = .("per 100 units"), thousand = .("per 1000 units"), .("per unit"))
 
 # The roles a variable can take and their checks.
 # covs: linear numeric; splineVars: numeric with RCS; factors: treatment dummies
@@ -55,12 +54,12 @@ cp_prepare <- function(data, outcome, covs = character(0), splineVars = characte
                        factors = character(0), nknots = 4, refLevels = list(),
                        scales = list(), interactions = list()) {
     preds <- c(covs, splineVars, factors)
-    if (length(preds) == 0) .fail("Add at least one predictor.")
+    if (length(preds) == 0) .fail(.("Add at least one predictor."))
     dup <- unique(preds[duplicated(preds)])
     if (length(dup))
-        .fail("'", dup[1], "' is entered more than once; each predictor goes in one box only.")
+        .fail(sprintf(.("'%s' is entered more than once; each predictor goes in one box only."), dup[1]))
     if (any(outcome %in% preds))
-        .fail("The outcome cannot also be a predictor.")
+        .fail(.("The outcome cannot also be a predictor."))
 
     keep <- c(outcome, preds)
     df <- data[, keep, drop = FALSE]
@@ -83,13 +82,13 @@ cp_prepare <- function(data, outcome, covs = character(0), splineVars = characte
         info <- list(name = v, role = role)
         if (role == "factor") {
             if (nlevels(x) < 2)
-                .fail("Factor '", v, "' has a single level in the complete cases; remove it.")
+                .fail(sprintf(.("Factor '%s' has a single level in the complete cases; remove it."), v))
             lev <- levels(x)
             ref <- refLevels[[v]]
             if (!is.null(ref) && ref %in% lev) lev <- c(ref, setdiff(lev, ref))
             info$levels <- lev
         } else {
-            if (stats::sd(x) == 0) .fail("'", v, "' does not vary in the complete cases; remove it.")
+            if (stats::sd(x) == 0) .fail(sprintf(.("'%s' does not vary in the complete cases; remove it."), v))
             info$range <- range(x)
             info$mean <- mean(x)
             info$sd <- stats::sd(x)

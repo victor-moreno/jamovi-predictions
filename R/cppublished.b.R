@@ -109,7 +109,7 @@ cpPublishedClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class
             famName <- o$family
             m <- private$.readModel()
             if (m$kind == "spec" && m$family != famName)
-                .fail("The model file holds a ", .cp_family_title[[m$family]], " model: choose that model type.")
+                .fail(sprintf(.("The model file holds a model of type %s: choose that model type."), .cp_family_title()[[m$family]]))
             data <- self$data
             des <- cp_model_design(m, data)
             okX <- stats::complete.cases(des$X)
@@ -122,7 +122,7 @@ cpPublishedClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class
                 okY <- !is.na(yv)
             } else {
                 sv <- as.character(data[[o$dep]])
-                if (!(ev %in% sv)) .fail("The event level '", ev, "' does not occur in '", o$dep, "'.")
+                if (!(ev %in% sv)) .fail(sprintf(.("The event level '%s' does not occur in '%s'."), ev, o$dep))
                 st <- ifelse(is.na(sv), NA_integer_, as.integer(sv == ev))
                 okY <- !is.na(st)
                 if (famName == "cox") {
@@ -131,25 +131,25 @@ cpPublishedClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class
                 }
             }
             ok <- okX & okY
-            if (sum(ok) < 3) .fail("Fewer than 3 rows have the outcome and every predictor of the model.")
+            if (sum(ok) < 3) .fail(.("Fewer than 3 rows have the outcome and every predictor of the model."))
             X <- des$X[ok, , drop = FALSE]
             y <- switch(famName, gaussian = yv[ok], binary = st[ok], cox = cbind(time = tm[ok], status = st[ok]))
             if (famName == "binary" && (sum(y) < 1 || sum(1 - y) < 1))
-                .fail("The data need both events and non-events (there are ", sum(y), " events among ", length(y), " rows).")
-            if (famName == "gaussian" && stats::sd(y) == 0) .fail("The outcome does not vary.")
+                .fail(sprintf(.("The data need both events and non-events (there are %s events among %s rows)."), sum(y), length(y)))
+            if (famName == "gaussian" && stats::sd(y) == 0) .fail(.("The outcome does not vary."))
 
             # Cox: the horizon, and the baseline (from the model, else from these data)
             h <- NULL; baseNote <- NULL
             beta <- cp_model_beta(m)
             if (famName == "cox") {
-                if (!any(y[, 2] == 1)) .fail("There are no events in the data.")
+                if (!any(y[, 2] == 1)) .fail(.("There are no events in the data."))
                 if (o$horizon > 0 && !is.null(m$baseline) && !is.null(m$horizon) && !isTRUE(all.equal(o$horizon, m$horizon)))
-                    .fail("The model's baseline survival is for t = ", .num(m$horizon), "; set the horizon to 0 (from the model file) or to ", .num(m$horizon), ".")
+                    .fail(sprintf(.("The model's baseline survival is for t = %s; set the horizon to 0 (from the model file) or to %s."), .num(m$horizon), .num(m$horizon)))
                 h <- if (o$horizon > 0) o$horizon else m$horizon %||% .median_followup(y[, 1], y[, 2])
                 if (!is.null(m$baseline) && is.null(m$horizon) && o$horizon <= 0)
-                    .fail("The model gives a baseline survival but not its time: add a row 'horizon' to the model table, or set the prediction horizon.")
-                if (!any(y[, 2] == 1 & y[, 1] <= h)) .fail("No event happens before the horizon (", .num(h), ").")
-                if (!any(y[, 1] > h)) .fail("Nobody is followed beyond the horizon (", .num(h), ").")
+                    .fail(.("The model gives a baseline survival but not its time: add a row 'horizon' to the model table, or set the prediction horizon."))
+                if (!any(y[, 2] == 1 & y[, 1] <= h)) .fail(sprintf(.("No event happens before the horizon (%s)."), .num(h)))
+                if (!any(y[, 1] > h)) .fail(sprintf(.("Nobody is followed beyond the horizon (%s)."), .num(h)))
                 if (is.na(beta[1])) {
                     eta <- drop(X %*% beta[-1])
                     beta[1] <- log(.cox_H0(y[, 1], y[, 2], eta, h))
@@ -220,7 +220,7 @@ cpPublishedClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class
                              details = if (o$family != "gaussian") paste0(.("event"), ": ", private$.level(o$dep, o$eventLevel)) else ""))
             if (o$family == "cox") add(".time", list(var = o$time, role = .("Time"), status = "OK", details = ""))
             for (i in seq_len(nrow(check)))
-                add(check$var[i], list(var = check$var[i], role = check$role[i], status = check$status[i], details = check$details[i]))
+                add(check$var[i], list(var = check$var[i], role = .check_label(check$role[i]), status = .check_label(check$status[i]), details = check$details[i]))
         },
 
         .fillUpd = function(fam, X, y, lp) {
@@ -309,7 +309,7 @@ cpPublishedClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class
             if (is.null(st)) return(FALSE)
             print(switch(st$family,
                 gaussian = cp_plot_cal_cont(st$sets, ggtheme),
-                cox = cp_plot_cal(st$sets, ggtheme, "Predicted risk", "Observed risk (Kaplan–Meier)"),
+                cox = cp_plot_cal(st$sets, ggtheme, .("Predicted risk"), .("Observed risk (Kaplan–Meier)")),
                 cp_plot_cal(st$sets, ggtheme)))
             TRUE
         },

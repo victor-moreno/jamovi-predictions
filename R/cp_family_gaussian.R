@@ -6,9 +6,9 @@ cp_gaussian_outcome <- function(prep) {
     y <- prep$data[[nm]]
     if (is.factor(y)) y <- suppressWarnings(as.numeric(as.character(y)))
     y <- as.numeric(y)
-    if (anyNA(y)) .fail("The outcome '", nm, "' has values that are not numbers.")
+    if (anyNA(y)) .fail(sprintf(.("The outcome '%s' has values that are not numbers."), nm))
     if (length(y) < 3 || stats::sd(y) == 0)
-        .fail("The outcome '", nm, "' does not vary in the complete cases.")
+        .fail(sprintf(.("The outcome '%s' does not vary in the complete cases."), nm))
     prep$data[[nm]] <- y
     prep$spec$outcome$mean <- mean(y)
     prep$spec$outcome$sd <- stats::sd(y)

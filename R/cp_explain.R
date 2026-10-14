@@ -104,7 +104,7 @@ cp_effect_defs <- function(spec, v) {
                             set1 = stats::setNames(list(info$quartiles[2] + info$scale), v),
                             set0 = stats::setNames(list(info$quartiles[2]), v))),
         spline = list(list(key = v,
-                           level = sprintf("Q3 vs Q1 (%s vs %s)", .num(info$quartiles[3], 4), .num(info$quartiles[1], 4)),
+                           level = sprintf(.("Q3 vs Q1 (%s vs %s)"), .num(info$quartiles[3], 4), .num(info$quartiles[1], 4)),
                            set1 = stats::setNames(list(info$quartiles[3]), v),
                            set0 = stats::setNames(list(info$quartiles[1]), v))))
 }
@@ -178,7 +178,7 @@ cp_crude <- function(spec, df, y, fam, conf = 0.95) {
         add(v, v, vapply(spec$colVars, function(vs) v %in% vs, TRUE))
         if (info$role == "spline") {
             nl <- paste0(v, strrep("'", seq_len(length(info$knots) - 2)))
-            add(paste(v, "nonlinear"), paste0("   ", v, ": non-linear"),
+            add(paste(v, "nonlinear"), paste0("   ", sprintf(.("%s: non-linear"), v)),
                 spec$columns %in% nl | vapply(spec$colParts, function(ab) any(ab %in% nl), TRUE))
         }
     }
@@ -225,7 +225,7 @@ cp_subgroups <- function(spec, beta, V, conf = 0.95, intercept = TRUE, exp = TRU
             ib <- spec$vars[[b]]
             within <- if (ib$role == "factor") stats::setNames(as.list(ib$levels), paste(b, "=", ib$levels))
                 else stats::setNames(as.list(ib$quartiles),
-                                     sprintf("%s = %s (%s)", b, .num(ib$quartiles, 4), c("Q1", "median", "Q3")))
+                                     sprintf("%s = %s (%s)", b, .num(ib$quartiles, 4), c("Q1", .("median"), "Q3")))
             for (d in cp_effect_defs(spec, a)) for (w in names(within)) {
                 s1 <- c(d$set1, stats::setNames(list(within[[w]]), b))
                 s0 <- c(d$set0, stats::setNames(list(within[[w]]), b))
@@ -253,10 +253,10 @@ cp_describe <- function(data, group, groupLevels, numVars, facVars, stat = "mean
         if (stat == "meanSD") sprintf("%.2f (%.2f)", mean(x), if (length(x) > 1) stats::sd(x) else NA)
         else { q <- stats::quantile(x, c(0.5, 0.25, 0.75)); sprintf("%.2f [%.2f, %.2f]", q[1], q[2], q[3]) }
     }
-    rows <- list(list(key = "n", var = "Patients", level = "n",
+    rows <- list(list(key = "n", var = .("Patients"), level = "n",
                       values = lapply(sets, function(i) as.character(length(i))), missing = ""))
     for (v in numVars)
-        rows[[length(rows) + 1]] <- list(key = v, var = v, level = if (stat == "meanSD") "mean (SD)" else "median [Q1, Q3]",
+        rows[[length(rows) + 1]] <- list(key = v, var = v, level = if (stat == "meanSD") .("mean (SD)") else paste(.("median"), "[Q1, Q3]"),
                                          values = lapply(sets, function(i) fmtNum(data[[v]][i])),
                                          missing = as.character(sum(is.na(data[[v]]))))
     for (v in facVars) {

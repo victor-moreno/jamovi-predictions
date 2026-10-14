@@ -35,9 +35,9 @@ cpCoxClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class(
             st <- as.integer(df[[spec$outcome$name]] == spec$outcome$event)
             h <- spec$outcome$horizon
             if (!any(st == 1 & tm <= h))
-                .fail(private$.sets()[[key]], ": no event happens before the horizon (", .num(h), ") in the validation data.")
+                .fail(sprintf(.("%s: no event happens before the horizon (%s) in the validation data."), private$.sets()[[key]], .num(h)))
             if (!any(tm > h))
-                .fail(private$.sets()[[key]], ": nobody is followed beyond the horizon (", .num(h), ") in the validation data.")
+                .fail(sprintf(.("%s: nobody is followed beyond the horizon (%s) in the validation data."), private$.sets()[[key]], .num(h)))
             cbind(time = tm, status = st)
         },
 
@@ -82,15 +82,15 @@ cpCoxClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class(
             calX = .("Predicted risk"),
             calY = .("Observed risk (smoothed)")),
 
-        .shapAxis = function(base, lp) c(sprintf("Log cumulative hazard at t = %s", private$.hText()),
-                                         sprintf("risk %.1f%% by t = %s", 100 * .cox_risk(lp), private$.hText())),
+        .shapAxis = function(base, lp) c(sprintf(.("Log cumulative hazard at t = %s"), private$.hText()),
+                                         sprintf(.("risk %.1f%% by t = %s"), 100 * .cox_risk(lp), private$.hText())),
 
         .equation = function(beta, spec) {
-            out <- c("Prognostic index PI =", private$.equationTerms(beta)[-1], "",
-                     sprintf("Risk of %s = %s by t = %s:  1 − S0^exp(PI),  S0 = %.6g",
+            out <- c(.("Prognostic index PI ="), private$.equationTerms(beta)[-1], "",
+                     sprintf(.("Risk of %s = %s by t = %s:  1 − S0^exp(PI),  S0 = %.6g"),
                              spec$outcome$name, spec$outcome$event, .num(spec$outcome$horizon, 5),
                              exp(-exp(beta[[1]]))),
-                     "(S0: event-free probability at t for PI = 0, i.e. every covariate 0 and factors at their reference level)")
+                     .("(S0: event-free probability at t for PI = 0, i.e. every covariate 0 and factors at their reference level)"))
             paste(c(out, private$.equationVars(spec)), collapse = "\n")
         },
 
@@ -105,7 +105,7 @@ cpCoxClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class(
             t$getColumn("g1")$setTitle(if (length(other) == 1) other else .("Other levels"))
             t$getColumn("g2")$setTitle(ev)
             t$addRow(rowKey = "n", values = list(var = .("Patients"), level = "n"))
-            stat <- if (self$options$descStat == "meanSD") .("mean (SD)") else .("median [Q1, Q3]")
+            stat <- if (self$options$descStat == "meanSD") .("mean (SD)") else paste(.("median"), "[Q1, Q3]")
             for (v in c(self$options$covs, self$options$splineVars))
                 t$addRow(rowKey = v, values = list(var = v, level = stat))
             for (v in self$options$factors)
@@ -161,7 +161,7 @@ cpCoxClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class(
             p <- cp_nparams(spec); E <- sum(y[, 2])
             r2 <- if (o$ssSource == "value") o$ssR2 else
                 if (!is.null(iv)) iv$corrected[["r2cs"]] else private$.fam$metrics(y, lp)[["r2cs"]]
-            if (!is.finite(r2) || r2 <= 0) .fail("The anticipated Cox–Snell R² must be positive; enter a value under Sample size adequacy.")
+            if (!is.finite(r2) || r2 <= 0) .fail(.("The anticipated Cox–Snell R² must be positive; enter a value under Sample size adequacy."))
             rate <- E / sum(y[, 1]); fu <- mean(y[, 1])
             ss <- cp_cox_samplesize(p, r2, rate, fu, private$.horizon)
             evRate <- rate * fu

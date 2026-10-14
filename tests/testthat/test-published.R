@@ -110,10 +110,10 @@ test_that("a clinpred JSON model (spline, factor) validated with cpPublished equ
     expect_equal(pp$est, pv$est, tolerance = 1e-8)
     r2 <- cpPublished(data = te, modelFile = list(path = f, filename = "pima.json"), family = "cox",
                       dep = "type", eventLevel = "Yes", covs = "bmi", time = "glu")
-    expect_match(r2$get("problem")$content, "binary \\(logistic\\) model")
+    expect_match(r2$get("problem")$content, "of type Binary \\(logistic\\)")
     r3 <- cpPublished(data = te, modelFile = list(path = f, filename = "pima.json"), family = "binary",
                       dep = "type", eventLevel = "Yes", covs = "bmi")
-    expect_match(r3$get("problem")$content, "add them to Predictor variables")
+    expect_match(r3$get("problem")$content, "add the variables to Predictor variables")
 })
 
 test_that("a Cox model from JSON keeps its horizon; without a baseline it is estimated from the data", {

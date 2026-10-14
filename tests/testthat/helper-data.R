@@ -1,3 +1,5 @@
+# results in English whatever the machine locale (the catalogues translate them otherwise)
+Sys.setenv(LANGUAGE = "en")
 pima_dev <- function() MASS::Pima.tr
 pima_val <- function() MASS::Pima.te
 pima_prep <- function(splines = "glu", factors = character(0), data = pima_dev()) {

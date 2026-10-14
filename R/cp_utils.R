@@ -1,5 +1,17 @@
 # Shared helpers: the module's own error messages, small formatting utilities.
 
+# Translation. jmvcore's `.()` finds the analysis as `self` in its caller only, so
+# the plain helpers (plots, checks, messages) could not translate; this one takes
+# the first analysis up the call stack. Outside an analysis (tests, scripts):
+# the English text.
+. <- function(text, n = 1) {
+    for (f in rev(sys.frames())) {
+        s <- get0("self", envir = f, inherits = TRUE)
+        if (inherits(s, "Analysis")) return(s$options$translate(text, n))
+    }
+    text
+}
+
 # A problem the user can fix: raised with a message written for the user
 .fail <- function(...) {
     stop(structure(class = c("cp_user_error", "error", "condition"),
@@ -17,10 +29,8 @@
     restart <- NULL
     msg <- tryCatch({ expr; NULL },
         cp_user_error = function(e) conditionMessage(e),
-        error = function(e) if (identical(e$code, "restart")) { restart <<- e; NULL } else paste(
-            "The model could not be computed with these data and options.",
-            "Check that the outcome has enough events, that each factor level",
-            "has observations in both outcome groups, and that the predictors vary."))
+        error = function(e) if (identical(e$code, "restart")) { restart <<- e; NULL } else
+            .("The model could not be computed with these data and options. Check that the outcome has enough events, that each factor level has observations in both outcome groups, and that the predictors vary."))
     if (!is.null(restart)) stop(restart)
     if (!is.null(msg)) .show_problem(analysis, msg)
     invisible(msg)
@@ -54,7 +64,7 @@
     parts <- trimws(strsplit(s, "[,; ]+")[[1]])
     parts <- parts[nzchar(parts)]
     x <- suppressWarnings(as.numeric(sub(",", ".", parts, fixed = TRUE)))
-    if (anyNA(x)) .fail("Could not read '", s, "' as a list of numbers separated by commas.")
+    if (anyNA(x)) .fail(sprintf(.("Could not read '%s' as a list of numbers separated by commas."), s))
     x
 }
 

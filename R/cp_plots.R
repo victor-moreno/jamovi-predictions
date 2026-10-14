@@ -28,7 +28,7 @@ cp_roc_points <- function(y, p, maxPts = 300) {
 cp_plot_roc <- function(sets, ggtheme) {
     df <- do.call(rbind, lapply(sets, function(s)
         data.frame(fpr = s$fpr, tpr = s$tpr, key = s$key,
-                   label = sprintf("%s (AUC %.3f)", s$label, s$auc))))
+                   label = sprintf(.("%s (AUC %.3f)"), s$label, s$auc))))
     df$label <- factor(df$label, levels = unique(df$label))
     cols <- stats::setNames(.set_colours[vapply(sets, `[[`, "", "key")], levels(df$label))
     ggplot2::ggplot(df, ggplot2::aes(.data$fpr, .data$tpr, colour = .data$label)) +
@@ -36,13 +36,13 @@ cp_plot_roc <- function(sets, ggtheme) {
         ggplot2::geom_step(direction = "vh", linewidth = 0.9) +
         ggplot2::scale_colour_manual(values = cols) +
         ggplot2::coord_equal(xlim = c(0, 1), ylim = c(0, 1)) +
-        ggplot2::labs(x = "1 − Specificity", y = "Sensitivity") +
+        ggplot2::labs(x = .("1 − Specificity"), y = .("Sensitivity")) +
         # one legend entry per line: data-set labels are long
         ggplot2::guides(colour = ggplot2::guide_legend(ncol = 1)) +
         .base_theme(ggtheme)
 }
 
-cp_plot_cal <- function(sets, ggtheme, xlab = "Predicted risk", ylab = "Observed proportion") {
+cp_plot_cal <- function(sets, ggtheme, xlab = .("Predicted risk"), ylab = .("Observed proportion")) {
     curve <- do.call(rbind, lapply(sets, function(s) data.frame(s$curve, label = s$label)))
     grp <- do.call(rbind, lapply(sets, function(s) data.frame(s$groups, label = s$label)))
     hist <- do.call(rbind, lapply(sets, function(s) data.frame(s$hist, label = s$label)))
@@ -76,7 +76,7 @@ cp_plot_risk <- function(sets, ggtheme) {
         ggplot2::geom_histogram(bins = 30, position = "identity", alpha = 0.55, boundary = 0) +
         ggplot2::scale_fill_manual(values = c("#999999", "#D55E00")) +
         ggplot2::facet_wrap(~label, scales = "free_y") +
-        ggplot2::labs(x = "Predicted risk", y = "Count") +
+        ggplot2::labs(x = .("Predicted risk"), y = .("Count")) +
         .base_theme(ggtheme)
 }
 
@@ -93,16 +93,18 @@ cp_plot_dca <- function(sets, ggtheme) {
     strat <- intersect(c("Model", "Full model", "Baseline model", "Treat all", "Treat none"), unique(df$strategy))
     df$strategy <- factor(df$strategy, strat)
     top <- max(df$nb[df$strategy != "Treat none"], na.rm = TRUE)
+    labs <- c(Model = .("Model"), `Full model` = .("Full model"), `Baseline model` = .("Baseline model"),
+              `Treat all` = .("Treat all"), `Treat none` = .("Treat none"))
     ggplot2::ggplot(df, ggplot2::aes(.data$threshold, .data$nb, colour = .data$strategy,
                                      linetype = .data$strategy)) +
         ggplot2::geom_line(linewidth = 0.9) +
         ggplot2::scale_colour_manual(values = c(Model = "#0072B2", `Full model` = "#0072B2", `Baseline model` = "#009E73",
-                                                `Treat all` = "#D55E00", `Treat none` = "grey40")) +
+                                                `Treat all` = "#D55E00", `Treat none` = "grey40"), labels = labs) +
         ggplot2::scale_linetype_manual(values = c(Model = "solid", `Full model` = "solid", `Baseline model` = "twodash",
-                                                  `Treat all` = "longdash", `Treat none` = "dotted")) +
+                                                  `Treat all` = "longdash", `Treat none` = "dotted"), labels = labs) +
         ggplot2::facet_wrap(~label) +
         ggplot2::coord_cartesian(ylim = c(-0.1 * top, top * 1.05)) +
-        ggplot2::labs(x = "Threshold probability", y = "Net benefit") +
+        ggplot2::labs(x = .("Threshold probability"), y = .("Net benefit")) +
         .base_theme(ggtheme)
 }
 
@@ -120,14 +122,14 @@ cp_plot_dca <- function(sets, ggtheme) {
 # other predictors, as in the forest plot
 .baseline_panel <- function(p, df) {
     if (is.null(df$forced) || all(df$forced) || !any(df$forced)) return(p)
-    p$data$group <- factor(ifelse(df$forced, "Baseline covariates", "Predictors"), c("Predictors", "Baseline covariates"))
+    p$data$group <- factor(ifelse(df$forced, .("Baseline covariates"), .("Predictors")), c(.("Predictors"), .("Baseline covariates")))
     p + ggplot2::facet_grid(group ~ ., scales = "free_y", space = "free_y")
 }
 
 cp_plot_shapley <- function(df, measureLabel, ggtheme)
-    .bar_importance(df, "shapley", xlab = paste0("Share of ", measureLabel), ggtheme = ggtheme)
+    .bar_importance(df, "shapley", xlab = sprintf(.("Share of %s"), measureLabel), ggtheme = ggtheme)
 
-cp_plot_perm <- function(df, ggtheme, key = "auc", xlab = "Loss in AUC when permuted (mean ± SD)") {
+cp_plot_perm <- function(df, ggtheme, key = "auc", xlab = .("Loss in AUC when permuted (mean ± SD)")) {
     d <- paste0("d_", key); s <- paste0("sd_", key)
     df$lo <- df[[d]] - df[[s]]; df$hi <- df[[d]] + df[[s]]
     .bar_importance(df, d, "lo", "hi", xlab = xlab, ggtheme = ggtheme)
@@ -135,7 +137,7 @@ cp_plot_perm <- function(df, ggtheme, key = "auc", xlab = "Loss in AUC when perm
 
 # Beeswarm: one row per predictor, points spread vertically by local density,
 # coloured by the predictor's value (low to high)
-cp_plot_shap_summary <- function(d, ggtheme, xlab = "SHAP value (contribution to the log-odds)") {
+cp_plot_shap_summary <- function(d, ggtheme, xlab = .("SHAP value (contribution to the log-odds)")) {
     imp <- tapply(abs(d$phi), d$var, mean)
     # baseline covariates at the bottom, in their own panel
     fv <- if (is.null(d$forced)) character(0) else unique(d$var[d$forced])
@@ -157,8 +159,8 @@ cp_plot_shap_summary <- function(d, ggtheme, xlab = "SHAP value (contribution to
         ggplot2::geom_vline(xintercept = 0, colour = "grey60") +
         ggplot2::geom_point(size = 1.2, alpha = 0.8) +
         ggplot2::scale_colour_gradient(low = "#0072B2", high = "#D55E00", limits = c(0, 1),
-                                       breaks = c(0, 1), labels = c("Low", "High"),
-                                       name = "Predictor value") +
+                                       breaks = c(0, 1), labels = c(.("Low"), .("High")),
+                                       name = .("Predictor value")) +
         ggplot2::scale_y_continuous(breaks = seq_along(ord), labels = ord) +
         ggplot2::labs(x = xlab, y = NULL) +
         ggplot2::guides(colour = ggplot2::guide_colourbar(title.position = "top", title.hjust = 0.5, barheight = ggplot2::unit(0.5, "lines"),
@@ -173,7 +175,7 @@ cp_plot_shap_patient <- function(w, ggtheme) {
     lab <- w$label[o]; phi <- w$phi[o]
     end <- w$base + cumsum(phi); start <- c(w$base, utils::head(end, -1))
     # legend labels: c(lowers, raises), for risks unless the state says otherwise
-    sg <- w$signs %||% c("Lowers risk", "Raises risk")
+    sg <- w$signs %||% c(.("Lowers risk"), .("Raises risk"))
     df <- data.frame(label = factor(lab, rev(lab)), start = start, end = end,
                      sign = ifelse(phi > 0, sg[2], sg[1]))
     df$y <- as.integer(df$label)
@@ -184,15 +186,15 @@ cp_plot_shap_patient <- function(w, ggtheme) {
         ggplot2::scale_fill_manual(values = stats::setNames(c("#0072B2", "#D55E00"), sg)) +
         ggplot2::scale_y_continuous(breaks = df$y, labels = as.character(df$label)) +
         # axis: the scale; subtitle: this person (too long for the axis at jamovi's text size)
-        ggplot2::labs(x = (w$axis %||% "Log-odds")[1], y = NULL,
+        ggplot2::labs(x = (w$axis %||% .("Log-odds"))[1], y = NULL,
                       subtitle = paste0(w$title, ": ", if (length(w$axis) > 1) w$axis[2] else
-                          sprintf("mean %.2f → this person %.2f, risk %.1f%%", w$base, w$lp, 100 * w$risk))) +
+                          sprintf(.("mean %.2f → this person %.2f, risk %.1f%%"), w$base, w$lp, 100 * w$risk))) +
         .base_theme(ggtheme)
 }
 
 # predictions are stored on a 1/1000 scale of s$lim (see .stability)
-cp_plot_instability <- function(s, ggtheme, xlab = "Risk from the developed model",
-                                ylab = "Risk from bootstrap models") {
+cp_plot_instability <- function(s, ggtheme, xlab = .("Risk from the developed model"),
+                                ylab = .("Risk from bootstrap models")) {
     lim <- s$lim %||% c(0, 1)
     dec <- function(v) lim[1] + v / 1000 * (lim[2] - lim[1])
     pts <- data.frame(p0 = dec(rep(s$p0, ncol(s$pts))), pb = dec(as.vector(s$pts)))
@@ -210,12 +212,12 @@ cp_plot_instability <- function(s, ggtheme, xlab = "Risk from the developed mode
                            colour = "#D55E00") +
         ggplot2::coord_equal(xlim = lim, ylim = lim) +
         ggplot2::labs(x = xlab, y = ylab,
-                      subtitle = sprintf("MAPE %.3f; dashed: 2.5th and 97.5th percentiles", s$mape)) +
+                      subtitle = sprintf(.("MAPE %.3f; dashed: 2.5th and 97.5th percentiles"), s$mape)) +
         .base_theme(ggtheme)
 }
 
-cp_plot_cal_instability <- function(s, ggtheme, xlab = "Predicted risk",
-                                    ylab = "Observed proportion (smoothed)") {
+cp_plot_cal_instability <- function(s, ggtheme, xlab = .("Predicted risk"),
+                                    ylab = .("Observed proportion (smoothed)")) {
     df <- data.frame(x = rep(s$grid, ncol(s$curves)), y = as.vector(s$curves),
                      b = rep(seq_len(ncol(s$curves)), each = length(s$grid)))
     lim <- if (identical(s$lim %||% c(0, 1), c(0, 1))) c(0, min(1, max(c(s$grid, df$y)) * 1.05))
@@ -225,7 +227,7 @@ cp_plot_cal_instability <- function(s, ggtheme, xlab = "Predicted risk",
         ggplot2::geom_line(alpha = 0.25, colour = "#0072B2") +
         ggplot2::coord_equal(xlim = lim, ylim = lim) +
         ggplot2::labs(x = xlab, y = ylab,
-                      subtitle = "Each line: a bootstrap model applied to the development data") +
+                      subtitle = .("Each line: a bootstrap model applied to the development data")) +
         .base_theme(ggtheme)
 }
 
@@ -246,7 +248,7 @@ cp_plot_cal_cont <- function(sets, ggtheme) {
                            linewidth = 0.9) +
         ggplot2::facet_wrap(~label) +
         ggplot2::coord_cartesian(xlim = lim, ylim = lim) +
-        ggplot2::labs(x = "Predicted value", y = "Observed value") +
+        ggplot2::labs(x = .("Predicted value"), y = .("Observed value")) +
         .base_theme(ggtheme)
 }
 
@@ -264,11 +266,11 @@ cp_plot_km <- function(st, ggtheme) {
         ggplot2::geom_vline(xintercept = st$h, linetype = "dashed", colour = "grey60") +
         ggplot2::geom_step(linewidth = 0.8) +
         ggplot2::geom_point(data = pred, size = 2.5, shape = 18) +
-        ggplot2::scale_colour_manual(values = cols, name = "Risk group") +
+        ggplot2::scale_colour_manual(values = cols, name = .("Risk group")) +
         ggplot2::facet_wrap(~label) +
         ggplot2::coord_cartesian(ylim = c(0, 1)) +
-        ggplot2::labs(x = "Time", y = "Event-free (Kaplan–Meier)",
-                      subtitle = "Diamonds: mean predicted at the horizon") +
+        ggplot2::labs(x = .("Time"), y = .("Event-free (Kaplan–Meier)"),
+                      subtitle = .("Diamonds: mean predicted at the horizon")) +
         .base_theme(ggtheme) +
         # jamovi's 16 pt theme: the group labels need two legend rows
         ggplot2::guides(colour = ggplot2::guide_legend(nrow = 2)) +
@@ -291,19 +293,20 @@ cp_plot_enet_cv <- function(st, ggtheme) {
         ggplot2::geom_text(data = lab, ggplot2::aes(.data$ll, top, label = .data$nz), vjust = -0.3,
                            # fallback on the size itself: %||% binds tighter than * and /, so it never applied
                            size = 0.8 * (ggplot2::calc_element("axis.text", .jtheme(ggtheme))$size %||% 11) / ggplot2::.pt) +
-        ggplot2::labs(x = "log(λ)", y = st$ylab, subtitle = "Numbers: non-zero coefficients") +
+        ggplot2::labs(x = "log(λ)", y = st$ylab, subtitle = .("Numbers: non-zero coefficients")) +
         .jtheme(ggtheme)
 }
 
 # ROC curves of the baseline and the full model, one panel per data set
 cp_plot_inc_roc <- function(sets, ggtheme) {
     df <- do.call(rbind, lapply(sets, function(s) rbind(
-        data.frame(fpr = s$base$fpr, tpr = s$base$tpr, model = "Baseline model", label = s$label),
-        data.frame(fpr = s$full$fpr, tpr = s$full$tpr, model = "Full model", label = s$label))))
+        data.frame(fpr = s$base$fpr, tpr = s$base$tpr, model = "base", label = s$label),
+        data.frame(fpr = s$full$fpr, tpr = s$full$tpr, model = "full", label = s$label))))
     df$label <- factor(df$label, vapply(sets, `[[`, "", "label"))
-    df$model <- factor(df$model, c("Full model", "Baseline model"))
+    df$model <- factor(df$model, c("full", "base"))
+    labs <- c(full = .("Full model"), base = .("Baseline model"))
     aucs <- do.call(rbind, lapply(sets, function(s) data.frame(label = s$label,
-        text = sprintf("AUC full %.3f\nbaseline %.3f", s$full$auc, s$base$auc))))
+        text = sprintf(.("AUC full %.3f\nbaseline %.3f"), s$full$auc, s$base$auc))))
     aucs$label <- factor(aucs$label, levels(df$label))
     th <- .jtheme(ggtheme)
     ggplot2::ggplot(df, ggplot2::aes(.data$fpr, .data$tpr, colour = .data$model, linetype = .data$model)) +
@@ -312,11 +315,11 @@ cp_plot_inc_roc <- function(sets, ggtheme) {
         ggplot2::geom_text(data = aucs, ggplot2::aes(1, 0, label = .data$text), inherit.aes = FALSE,
                            hjust = 1, vjust = 0, size = 0.8 * (ggplot2::calc_element("axis.text", th)$size %||% 11) / ggplot2::.pt,
                            colour = ggplot2::calc_element("axis.text", th)$colour %||% "grey30") +
-        ggplot2::scale_colour_manual(values = c(`Full model` = "#0072B2", `Baseline model` = "#009E73")) +
-        ggplot2::scale_linetype_manual(values = c(`Full model` = "solid", `Baseline model` = "twodash")) +
+        ggplot2::scale_colour_manual(values = c(full = "#0072B2", base = "#009E73"), labels = labs) +
+        ggplot2::scale_linetype_manual(values = c(full = "solid", base = "twodash"), labels = labs) +
         ggplot2::facet_wrap(~label) +
         ggplot2::coord_equal(xlim = c(0, 1), ylim = c(0, 1)) +
-        ggplot2::labs(x = "1 − Specificity", y = "Sensitivity") +
+        ggplot2::labs(x = .("1 − Specificity"), y = .("Sensitivity")) +
         .base_theme(ggtheme)
 }
 
@@ -330,14 +333,15 @@ cp_plot_forest <- function(st, blocks, ggtheme) {
     k <- length(lev); off <- if (k > 1) (seq_len(k) - (k + 1) / 2) * 0.22 else 0
     # one row per label, top to bottom in table order; a gap between the panels
     df$y <- match(df$label, rev(st$order)) + off[as.integer(df$block)]
-    df$group <- factor(ifelse(df$forced, "Baseline covariates", "Predictors"), c("Predictors", "Baseline covariates"))
+    df$group <- factor(ifelse(df$forced, .("Baseline covariates"), .("Predictors")), c(.("Predictors"), .("Baseline covariates")))
     br <- unique(match(df$label, rev(st$order)))
     cols <- c(Crude = "grey45", Adjusted = "#0072B2", `Adjusted (all predictors)` = "#0072B2", `Selected model` = "#D55E00")
     p <- ggplot2::ggplot(df, ggplot2::aes(.data$est, .data$y, colour = .data$block)) +
         ggplot2::geom_vline(xintercept = if (st$exp) 1 else 0, linetype = "dashed", colour = "grey60") +
         ggplot2::geom_errorbar(ggplot2::aes(xmin = .data$lower, xmax = .data$upper), width = 0.15, orientation = "y", na.rm = TRUE) +
         ggplot2::geom_point(size = 2.2) +
-        ggplot2::scale_colour_manual(values = cols[lev]) +
+        ggplot2::scale_colour_manual(values = cols[lev], labels = c(Crude = .("Crude"), Adjusted = .("Adjusted"),
+            `Adjusted (all predictors)` = .("Adjusted (all predictors)"), `Selected model` = .("Selected model"))[lev]) +
         ggplot2::scale_y_continuous(breaks = br, labels = rev(st$order)[br], expand = ggplot2::expansion(add = 0.6)) +
         ggplot2::labs(x = st$xlab, y = NULL) +
         .base_theme(ggtheme)

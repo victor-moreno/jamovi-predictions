@@ -23,7 +23,7 @@
         private$.nImputed <- private$.countImputed(devRaw)
         imps <- private$.impSet(devRaw, M, o$seed)
         n <- nrow(imps[[1]])
-        if (n < 3) .fail("Fewer than 3 development rows have the outcome.")
+        if (n < 3) .fail(.("Fewer than 3 development rows have the outcome."))
 
         # one spec for every imputation (knots and quartiles from them all)
         prepS <- cp_prepare(do.call(rbind, imps), outVars, o$covs, o$splineVars, o$factors, o$knots,
@@ -49,8 +49,7 @@
         maj <- names(kept)[kept >= 0.5]
         vars <- names(specC$vars)[names(specC$vars) %in% c(so$forced, maj)]
         if (!length(vars))
-            .fail("The selection removed every predictor. Mark baseline covariates under Variable Selection, ",
-                  "or use a less strict criterion.")
+            .fail(.("The selection removed every predictor. Mark baseline covariates under Variable Selection, or use a less strict criterion."))
         spec <- cp_with_terms(specC, vars, intersect(names(specC$interactions), maj))
         Xs <- lapply(Ds, function(D) cp_design(spec, D))
         if (penalized) {
@@ -63,9 +62,9 @@
         } else {
             fits <- lapply(Xs, function(X) fam$fit(X, y))
             if (any(vapply(fits, function(b) anyNA(b), TRUE)))
-                .fail("A predictor column is redundant (a combination of other predictors) in some imputed data; remove one of the predictors involved.")
+                .fail(.("A predictor column is redundant (a combination of other predictors) in some imputed data; remove one of the predictors involved."))
             if (!all(vapply(fits, function(b) isTRUE(attr(b, "converged")), TRUE)))
-                .fail("The model did not converge in some imputed data (complete separation); remove or merge the predictor(s) involved.")
+                .fail(.("The model did not converge in some imputed data (complete separation); remove or merge the predictor(s) involved."))
             pool <- cp_rubin(lapply(fits, function(b) stats::setNames(as.numeric(b), names(b))), lapply(fits, fam$vcov))
             beta <- pool$est
             attr(beta, "converged") <- TRUE
@@ -96,7 +95,7 @@
             h <- cp_harmonise(ext, specRaw, outVars, sets[["ext"]], complete = FALSE)
             if (o$missExplore) private$.fillMissVal("ext", h$all)
             for (i in seq_len(nrow(h$check)))
-                r$extCheck$setRow(rowKey = h$check$var[i], values = list(role = h$check$role[i], status = h$check$status[i],
+                r$extCheck$setRow(rowKey = h$check$var[i], values = list(role = .check_label(h$check$role[i]), status = .check_label(h$check$status[i]),
                                                                          details = h$check$details[i]))
             vsets$ext <- mkSet(h$data, "ext", h$nTotal)
         }

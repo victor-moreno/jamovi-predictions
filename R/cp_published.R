@@ -10,7 +10,8 @@
 # and special rows: Intercept (constant); for Cox, "baseline survival" (S0 at
 # the horizon), "horizon", and "centre" (subtracted from the prognostic index).
 
-.cp_family_title <- c(binary = "binary (logistic)", gaussian = "continuous (linear)", cox = "time-to-event (Cox)")
+# model types as named in the panel (a function: translated when called)
+.cp_family_title <- function() c(binary = .("Binary (logistic)"), gaussian = .("Continuous (linear)"), cox = .("Time to event (Cox)"))
 
 # ---- export ----------------------------------------------------------------
 
@@ -65,10 +66,9 @@ cp_model_read <- function(path, filename = path) {
 
 .model_from_json <- function(path, filename) {
     js <- tryCatch(jsonlite::fromJSON(path, simplifyVector = FALSE),
-                   error = function(e) .fail("The file '", basename(filename), "' is not valid JSON."))
+                   error = function(e) .fail(sprintf(.("The file '%s' is not valid JSON."), basename(filename))))
     if (!identical(js$format, "clinpred-model"))
-        .fail("The file '", basename(filename), "' is not a model exported by clinpred. ",
-              "A published model can also be entered as a table with the columns term, estimate and (optionally) SE.")
+        .fail(sprintf(.("The file '%s' is not a model exported by clinpred. A published model can also be entered as a table with the columns term, estimate and (optionally) SE."), basename(filename)))
     vars <- list()
     for (p in js$predictors) {
         info <- list(name = p$name, role = p$role)
@@ -86,7 +86,7 @@ cp_model_read <- function(path, filename = path) {
     spec <- .spec_columns(list(outcome = js$outcome, vars = vars, interactions = ints))
     terms <- vapply(js$coefficients, function(cf) cf$term, "")
     if (!identical(terms, spec$columns))
-        .fail("The model file '", basename(filename), "' is damaged: its coefficients do not match its predictors.")
+        .fail(sprintf(.("The model file '%s' is damaged: its coefficients do not match its predictors."), basename(filename)))
     est <- vapply(js$coefficients, function(cf) as.numeric(cf$estimate), 0)
     se <- vapply(js$coefficients, function(cf) as.numeric(cf$se %||% NA), 0)
     out <- list(kind = "spec", family = js$family, spec = spec, terms = terms, estimate = est, se = se,
@@ -120,7 +120,7 @@ cp_model_read <- function(path, filename = path) {
     if (is.na(tcol)) tcol <- nms[1]
     ecol <- .find_col(nms, c("estimate", "coef", "coefficient", "beta", "b", "β", "est", "log(or)", "logor", "log(hr)", "loghr"))
     if (is.na(ecol)) {
-        if (length(nms) < 2) .fail("The model table '", source, "' needs the columns term and estimate.")
+        if (length(nms) < 2) .fail(sprintf(.("The model table '%s' needs the columns term and estimate."), source))
         ecol <- setdiff(nms, tcol)[1]
     }
     scol <- .find_col(nms, c("se", "ee", "std.error", "std. error", "stderr", "standard error", "s.e.", "e.e.", "sd"))
@@ -131,7 +131,7 @@ cp_model_read <- function(path, filename = path) {
     keep <- nzchar(term) & !is.na(term)
     term <- term[keep]; est <- est[keep]; se <- se[keep]
     if (anyNA(est))
-        .fail("The model table '", source, "': the estimate of '", term[is.na(est)][1], "' is not a number.")
+        .fail(sprintf(.("The model table '%s': the estimate of '%s' is not a number."), source, term[is.na(est)][1]))
     low <- tolower(term)
     special <- function(pattern) which(grepl(pattern, low))
     iInt <- special("^\\(?(intercept|constant|const|_cons)\\)?$")
@@ -146,9 +146,9 @@ cp_model_read <- function(path, filename = path) {
                 baseline = if (length(iS0)) est[iS0[1]] else NULL,
                 horizon = if (length(iH)) est[iH[1]] else NULL,
                 centre = if (length(iC)) est[iC[1]] else 0)
-    if (!length(out$terms)) .fail("The model table '", source, "' has no predictor terms.")
+    if (!length(out$terms)) .fail(sprintf(.("The model table '%s' has no predictor terms."), source))
     if (!is.null(out$baseline) && !(out$baseline > 0 && out$baseline < 1))
-        .fail("The baseline survival must be a probability between 0 and 1 (it is ", .num(out$baseline), ").")
+        .fail(sprintf(.("The baseline survival must be a probability between 0 and 1 (it is %s)."), .num(out$baseline)))
     out
 }
 
@@ -189,8 +189,7 @@ cp_model_read <- function(path, filename = path) {
     }
     xn <- if (is.numeric(x)) x else suppressWarnings(as.numeric(as.character(x)))
     if (any(!is.na(x)) && all(is.na(xn[!is.na(x)])))
-        .fail("'", cp$name, "' is categorical in the data: name the level in the model, e.g. '", cp$name, " = ",
-              if (is.factor(x)) levels(x)[min(2, nlevels(x))] else "level", "'.")
+        .fail(sprintf(.("'%s' is categorical in the data: name the level in the model, e.g. '%s = %s'."), cp$name, cp$name, if (is.factor(x)) levels(x)[min(2, nlevels(x))] else "level"))
     switch(cp$type,
         num = xn,
         div = xn / cp$by,
@@ -203,10 +202,8 @@ cp_terms_design <- function(model, data) {
     comps <- lapply(model$terms, function(t) lapply(strsplit(t, "\\s*[*×]\\s*")[[1]], .parse_component, data = data))
     miss <- unique(unlist(lapply(comps, function(cs) vapply(Filter(function(c) c$type == "missing", cs), `[[`, "", "name"))))
     if (length(miss))
-        .fail("No variable matches the model term", if (length(miss) > 1) "s " else " ",
-              paste0("'", miss, "'", collapse = ", "),
-              ". Add the variables the model uses to Predictor variables, and name each term after one of them ",
-              "(e.g. 'age', 'sex = male', 'log(crp)', 'age * sex = male').")
+        .fail(sprintf(.("No variable matches the model terms %s. Add the variables the model uses to Predictor variables, and name each term after one of them (e.g. 'age', 'sex = male', 'log(crp)', 'age * sex = male')."),
+                      paste0("'", miss, "'", collapse = ", ")))
     X <- vapply(comps, function(cs) Reduce(`*`, lapply(cs, .component_values, data = data)), numeric(nrow(data)))
     X <- matrix(X, nrow = nrow(data), dimnames = list(NULL, model$terms))
     # one check row per variable
@@ -214,7 +211,7 @@ cp_terms_design <- function(model, data) {
     check <- do.call(rbind, lapply(vars, function(v) {
         notes <- character(0); status <- "OK"
         cs <- Filter(function(c) identical(c$var, v), unlist(comps, recursive = FALSE))
-        if (any(vapply(cs, function(c) c$name != v, TRUE))) notes <- c(notes, paste0("column '", v, "'"))
+        if (any(vapply(cs, function(c) c$name != v, TRUE))) notes <- c(notes, sprintf(.("column '%s'"), v))
         lv <- Filter(function(c) c$type == "level", cs)
         if (length(lv)) {
             xs <- as.character(data[[v]])
@@ -224,21 +221,21 @@ cp_terms_design <- function(model, data) {
                 m <- .match_levels(c$level, inData)
                 if (is.na(m)) {
                     status <- "Warning"
-                    notes <- c(notes, paste0("level '", c$level, "' not in the data (its indicator is always 0)"))
+                    notes <- c(notes, sprintf(.("level '%s' not in the data (its indicator is always 0)"), c$level))
                 } else used <- c(used, m)
             }
             # data levels the model does not name get every indicator 0: the reference
             ref <- setdiff(inData, used)
-            if (length(ref)) notes <- c(notes, paste0("as reference: ", paste(sort(ref), collapse = ", ")))
+            if (length(ref)) notes <- c(notes, sprintf(.("as reference: %s"), paste(sort(ref), collapse = ", ")))
         }
         mis <- mean(is.na(data[[v]]))
-        if (mis > 0) notes <- c(notes, paste0(.pct(mis), " missing"))
+        if (mis > 0) notes <- c(notes, sprintf(.("%s missing"), .pct(mis)))
         data.frame(var = v, role = "Predictor", status = status, details = paste(unique(notes), collapse = "; "),
                    stringsAsFactors = FALSE)
     }))
     bad <- colSums(!is.finite(X) & !is.na(X)) > 0
     if (any(bad))
-        .fail("The term '", model$terms[bad][1], "' gives values that are not finite (e.g. the log of 0 or of a negative value).")
+        .fail(sprintf(.("The term '%s' gives values that are not finite (e.g. the log of 0 or of a negative value)."), model$terms[bad][1]))
     list(X = X, check = check)
 }
 
@@ -249,8 +246,7 @@ cp_model_design <- function(model, data) {
     if (!is.null(model$missing)) data <- cp_miss_category_apply(model$missing, data)
     miss <- names(model$spec$vars)[is.na(vapply(names(model$spec$vars), .match_column, "", available = names(data)))]
     if (length(miss))
-        .fail("The model uses ", paste0("'", miss, "'", collapse = ", "),
-              ": add ", if (length(miss) > 1) "them" else "it", " to Predictor variables.")
+        .fail(sprintf(.("The model uses %s: add the variables to Predictor variables."), paste0("'", miss, "'", collapse = ", ")))
     h <- cp_harmonise(data, model$spec, character(0), "Data")
     X <- matrix(NA_real_, nrow(data), length(model$spec$columns), dimnames = list(NULL, model$spec$columns))
     # cp_harmonise keeps the complete rows only, named by their row number

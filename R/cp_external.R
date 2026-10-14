@@ -12,11 +12,11 @@ cp_read_external <- function(path, filename = path) {
         xlsx = openxlsx::read.xlsx(path, sheet = 1, check.names = FALSE),
         sav = suppressWarnings(foreign::read.spss(path, to.data.frame = TRUE,
                                                   use.value.labels = TRUE)),
-        .fail("Files of type '.", ext, "' cannot be read. Use csv, tsv, txt, omv, xlsx or sav.")),
+        .fail(sprintf(.("Files of type '.%s' cannot be read. Use csv, tsv, txt, omv, xlsx or sav."), ext))),
         cp_user_error = function(e) stop(e),
-        error = function(e) .fail("The file '", basename(filename), "' could not be read as ", ext, "."))
+        error = function(e) .fail(sprintf(.("The file '%s' could not be read as %s."), basename(filename), ext)))
     df <- as.data.frame(df, stringsAsFactors = FALSE, check.names = FALSE)
-    if (!nrow(df)) .fail("The file '", basename(filename), "' has no rows.")
+    if (!nrow(df)) .fail(sprintf(.("The file '%s' has no rows."), basename(filename)))
     df
 }
 
@@ -32,6 +32,10 @@ cp_read_external <- function(path, filename = path) {
                       check.names = FALSE, comment.char = "", strip.white = TRUE,
                       fileEncoding = "UTF-8")
 }
+
+# Displayed labels of the check table's internal status and role codes
+.check_label <- function(x) switch(x, OK = .("OK"), Warning = .("Warning"), Problem = .("Problem"),
+    Missing = .("Missing"), Outcome = .("Outcome"), Predictor = .("Predictor"), x)
 
 # Find a column: exact name, otherwise ignoring case and surrounding spaces
 .match_column <- function(name, available) {
@@ -72,26 +76,26 @@ cp_harmonise <- function(ext, spec, outcomeCols, setName, complete = TRUE) {
 
     for (v in outcomeCols) {
         col <- .match_column(v, avail)
-        if (is.na(col)) { missingCols <- c(missingCols, v); add(v, "Outcome", "Missing", "not in the file"); next }
+        if (is.na(col)) { missingCols <- c(missingCols, v); add(v, "Outcome", "Missing", .("not in the file")); next }
         x <- ext[[col]]
-        note <- if (col != v) paste0("matched to column '", col, "'") else ""
+        note <- if (col != v) sprintf(.("matched to column '%s'"), col) else ""
         lev <- spec$outcome$levels
         if (!is.null(lev) && v == spec$outcome$name) {
             m <- .match_levels(x, lev)
             bad <- sum(is.na(m) & !is.na(x))
             unk <- unique(trimws(as.character(x[is.na(m) & !is.na(x)])))
             if (!(spec$outcome$event %in% m))
-                add(v, "Outcome", "Problem", paste0("event level '", spec$outcome$event, "' never occurs",
-                                                    if (bad) paste0("; unknown values: ", paste(utils::head(unk, 5), collapse = ", ")) else ""))
+                add(v, "Outcome", "Problem", paste0(sprintf(.("event level '%s' never occurs"), spec$outcome$event),
+                                                    if (bad) paste0("; ", sprintf(.("unknown values: %s"), paste(utils::head(unk, 5), collapse = ", "))) else ""))
             else add(v, "Outcome", if (bad) "Warning" else "OK",
-                     paste(c(note, if (bad) paste0(bad, " rows with unknown values (", paste(utils::head(unk, 5), collapse = ", "), ") set to missing")), collapse = "; "))
+                     paste(c(note, if (bad) sprintf(.("%d rows with unknown values (%s) set to missing"), bad, paste(utils::head(unk, 5), collapse = ", "))), collapse = "; "))
             out[[v]] <- factor(m, levels = lev)
         } else {
             # decimal commas, as for the predictors
             xn <- if (is.numeric(x)) x else suppressWarnings(as.numeric(sub(",", ".", as.character(x), fixed = TRUE)))
             bad <- sum(is.na(xn) & !is.na(x))
             add(v, "Outcome", if (bad) "Warning" else "OK",
-                paste(c(note, if (bad) paste0(bad, " non-numeric values set to missing")), collapse = "; "))
+                paste(c(note, if (bad) sprintf(.("%d non-numeric values set to missing"), bad)), collapse = "; "))
             out[[v]] <- xn
         }
     }
@@ -99,9 +103,9 @@ cp_harmonise <- function(ext, spec, outcomeCols, setName, complete = TRUE) {
     for (info in spec$vars) {
         v <- info$name
         col <- .match_column(v, avail)
-        if (is.na(col)) { missingCols <- c(missingCols, v); add(v, "Predictor", "Missing", "not in the file"); next }
+        if (is.na(col)) { missingCols <- c(missingCols, v); add(v, "Predictor", "Missing", .("not in the file")); next }
         x <- ext[[col]]
-        notes <- if (col != v) paste0("matched to column '", col, "'") else character(0)
+        notes <- if (col != v) sprintf(.("matched to column '%s'"), col) else character(0)
         status <- "OK"
         if (info$role == "factor") {
             m <- .match_levels(x, info$levels)
@@ -109,39 +113,39 @@ cp_harmonise <- function(ext, spec, outcomeCols, setName, complete = TRUE) {
             if (any(bad)) {
                 unk <- unique(trimws(as.character(x[bad])))
                 status <- "Warning"
-                notes <- c(notes, paste0(sum(bad), " rows with levels not in development (",
-                                         paste(utils::head(unk, 5), collapse = ", "), ") set to missing"))
+                notes <- c(notes, sprintf(.("%d rows with levels not in development (%s) set to missing"), sum(bad),
+                                         paste(utils::head(unk, 5), collapse = ", ")))
             }
             absent <- setdiff(info$levels, m)
-            if (length(absent)) notes <- c(notes, paste0("levels not observed: ", paste(absent, collapse = ", ")))
+            if (length(absent)) notes <- c(notes, sprintf(.("levels not observed: %s"), paste(absent, collapse = ", ")))
             out[[v]] <- factor(m, levels = info$levels)
         } else {
             xn <- if (is.numeric(x)) x else suppressWarnings(as.numeric(sub(",", ".", as.character(x), fixed = TRUE)))
             bad <- is.na(xn) & !is.na(x)
             if (any(bad)) {
                 status <- "Warning"
-                notes <- c(notes, paste0(sum(bad), " non-numeric values set to missing"))
+                notes <- c(notes, sprintf(.("%d non-numeric values set to missing"), sum(bad)))
             }
             outside <- mean(xn < info$range[1] | xn > info$range[2], na.rm = TRUE)
             if (is.finite(outside) && outside > 0) {
                 if (outside > 0.05) status <- "Warning"
-                notes <- c(notes, paste0(.pct(outside), " outside the development range [",
-                                         .num(info$range[1]), ", ", .num(info$range[2]), "]"))
+                notes <- c(notes, paste(sprintf(.("%s outside the development range"), .pct(outside)),
+                                               sprintf("[%s, %s]", .num(info$range[1]), .num(info$range[2]))))
             }
             out[[v]] <- xn
         }
         mis <- mean(is.na(out[[v]]))
-        if (mis > 0) notes <- c(notes, paste0(.pct(mis), " missing"))
+        if (mis > 0) notes <- c(notes, sprintf(.("%s missing"), .pct(mis)))
         if (mis > 0.2 && status == "OK") status <- "Warning"
         add(v, "Predictor", status, paste(notes, collapse = "; "))
     }
 
     check <- do.call(rbind, rows)
     if (length(missingCols))
-        .fail(setName, ": ", if (length(missingCols) == 1) "the variable " else "the variables ",
-              paste0("'", missingCols, "'", collapse = ", "),
-              if (length(missingCols) == 1) " is" else " are",
-              " not in the validation data. Rename the columns to the names used in the development data.")
+        .fail(if (length(missingCols) == 1)
+                  sprintf(.("%s: the variable '%s' is not in the validation data. Rename the columns to the names used in the development data."), setName, missingCols)
+              else sprintf(.("%s: the variables %s are not in the validation data. Rename the columns to the names used in the development data."),
+                           setName, paste0("'", missingCols, "'", collapse = ", ")))
     # complete = FALSE keeps incomplete rows (for a missing-data method to fill)
     keep <- if (complete) stats::complete.cases(out) else rep(TRUE, nrow(out))
     list(data = out[keep, , drop = FALSE], check = check, nMissing = sum(!keep),

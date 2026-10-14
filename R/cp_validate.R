@@ -96,7 +96,7 @@ cp_internal <- function(X, y, fam, method = "boot", B = 200, k = 10, R = 1, seed
                     cvm[r, ] <- tryCatch(fam$metrics(y, oof), error = function(e) NA_real_)
             }
             ok <- rowSums(!is.na(cvm)) > 0
-            if (!any(ok)) .fail("Cross-validation failed in every repeat: the folds are too small for this model. Use fewer folds or the bootstrap.")
+            if (!any(ok)) .fail(.("Cross-validation failed in every repeat: the folds are too small for this model. Use fewer folds or the bootstrap."))
             optimism <- apparent - colMeans(cvm[ok, , drop = FALSE], na.rm = TRUE)
             out <- list(method = "cv", k = k, R = R, nOk = sum(ok),
                         selection = .selection_freq(selected))
