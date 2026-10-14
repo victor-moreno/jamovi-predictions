@@ -1,0 +1,18 @@
+/* Numbers in result tables: tabular figures keep columns aligned */
+table { font-variant-numeric: tabular-nums; }
+.callout-note .callout-title-container, .callout-tip .callout-title-container,
+.callout-important .callout-title-container, .callout-warning .callout-title-container {
+    font-weight: 600;
+}
+.figure-caption, figcaption { font-size: 0.9rem; }
+
+/* Module result tables, laid out like jamovi's (see jtab() in _common.R) */
+.jtable { margin: 1rem 0 1.5rem; overflow-x: auto; }
+.jtable .jtitle { font-weight: 600; margin-bottom: 0.3rem; }
+.jtable table { border-collapse: collapse; width: auto; font-size: 0.9rem; }
+.jtable th, .jtable td { padding: 0.2rem 0.8rem; text-align: left; white-space: nowrap; }
+.jtable th.num, .jtable td.num { text-align: right; }
+.jtable thead { border-top: 2px solid currentColor; border-bottom: 1px solid currentColor; }
+.jtable tr.super th { text-align: center; font-weight: 500; padding-bottom: 0; }
+.jtable tbody { border-bottom: 2px solid currentColor; }
+.jtable tfoot td { font-size: 0.8rem; white-space: normal; padding-top: 0.3rem; }

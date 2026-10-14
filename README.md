@@ -27,13 +27,27 @@ Needs **jamovi 28.4 or later**.
   and clinical utility (classification, decision curves), with confidence intervals.
 - **Validation**: bootstrap optimism correction or repeated cross-validation; validation in a
   split of the data or an external file (with variable and case-mix checks); model updating with
-  the closed testing procedure; stability of individual predictions; sample-size adequacy.
+  the closed testing procedure (sequential tests for Cox models); stability of individual
+  predictions; sample-size adequacy.
 - **Explanation**: crude and adjusted effects with a forest plot, likelihood ratio tests, effects
   within subgroups, the model equation, Shapley decomposition of R², permutation importance and
   SHAP.
 - **Output**: predictions saved to the spreadsheet, and the fitted model exported as JSON.
 
 Every feature, option and method is described in [`documents/features.md`](documents/features.md).
+
+## Tutorial
+
+A [tutorial website](https://victor-moreno.github.io/jamovi-predictions/) (in `docs/`) introduces
+prediction models — overfitting, performance measures, internal and external validation,
+updating — and works through every analysis on the example data: a logistic model, selection and
+incremental value, validation in new patients, missing data, a Cox model, a linear model, published
+models and variable importance. Every table and plot in it is computed by the module itself.
+
+## Languages
+
+The options, tables, notes, messages and plots are available in English, Spanish and Catalan;
+jamovi uses the language chosen in its settings. The translations are in `jamovi/i18n/*.po`.
 
 ## Example data
 
@@ -60,6 +74,7 @@ validation file uses jamovi's File option, which appeared in 28.4.
 bash tools/install.sh desktop        # install into jamovi.app (tools/smoke.R checks the installed module)
 bash tools/build-jmo.sh current      # release builds: dist/clinpred_<version>_current_R4.6.0_{arm64,x64}.jmo
 bash tools/release.sh                # build and publish one GitHub release
+sh tools/tutorial_redo.sh            # render the tutorial (Quarto source in tutorial/, local) into docs/
 R CMD INSTALL -l .tmp/lib . && Rscript -e '.libPaths(c(".tmp/lib", .libPaths())); testthat::test_dir("tests/testthat", package = "clinpred", load_package = "installed")'
 ```
 

@@ -183,3 +183,13 @@ test_that("a missing-indicator model exported as JSON rebuilds its indicators fr
     lp0 <- fam$lp(b, cp_design(prep$spec, cp_miss_category_apply(h, te)))
     expect_equal(unname(fam$lp(cp_model_beta(m), des$X)), unname(lp0), tolerance = 1e-12)
 })
+
+test_that("several data levels falling into the reference of a coefficient table are a warning", {
+    f <- tmpfile("ref.csv")
+    writeLines(c("term,estimate", "Intercept,-1", "agegrp = 45+,0.5"), f)
+    m <- cp_model_read(f, "ref.csv"); m$family <- "binary"
+    d <- pima_stacked()
+    ck <- cp_model_design(m, d)$check
+    expect_equal(ck$status[ck$var == "agegrp"], "Warning")
+    expect_match(ck$details[ck$var == "agegrp"], "as reference: 30-45, <30", fixed = TRUE)
+})

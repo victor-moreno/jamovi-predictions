@@ -1,0 +1,1648 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="Exploring missing values, and developing and validating the model with multiple imputation by chained equations instead of complete cases.">
+
+<title>Missing values – Clinical prediction models</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../worked/cox.html" rel="next">
+<link href="../worked/external.html" rel="prev">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-b85bc7c33db8c58e0ec93c3465666fed.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-e5e84f5a70260acdabf710505354887c.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-4143a9d5f9d8f9deb4202a6d60211dcc.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-e5e84f5a70260acdabf710505354887c.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+</head>
+
+<body class="nav-sidebar docked nav-fixed quarto-light"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = false;
+    const darkModeDefault = authorPrefersDark;
+      document.querySelector('link#quarto-text-highlighting-styles.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+      document.querySelector('link#quarto-bootstrap.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Clinical prediction models</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="../index.html" aria-current="page"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../foundations/prediction-models.html"> 
+<span class="menu-text">Foundations</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../worked/logistic.html"> 
+<span class="menu-text">Worked examples</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../further/reporting.html"> 
+<span class="menu-text">Reporting</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../references.html"> 
+<span class="menu-text">References</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../worked/logistic.html">Worked examples in jamovi</a></li><li class="breadcrumb-item"><a href="../worked/missing.html">Missing values</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Clinical prediction models in jamovi</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../foundations/prediction-models.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Prediction models and overfitting</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../foundations/performance.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Measuring performance</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../foundations/validation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Validation and updating</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Worked examples in jamovi</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../worked/logistic.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">A logistic prediction model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../worked/selection.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Selection, interactions and incremental value</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../worked/external.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Validation in new patients and updating</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../worked/missing.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Missing values</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../worked/cox.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">A time-to-event model (Cox)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../worked/linear.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">A continuous outcome (linear)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../worked/published.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Validating a published model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../worked/importance.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Which predictors matter? Importance and SHAP</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Further</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../further/reporting.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Reporting with TRIPOD+AI</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../further/glossary.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Glossary</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../references.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">References</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#why-it-matters" id="toc-why-it-matters" class="nav-link active" data-scroll-target="#why-it-matters">Why it matters</a></li>
+  <li><a href="#step-1-explore" id="toc-step-1-explore" class="nav-link" data-scroll-target="#step-1-explore">Step 1: explore</a></li>
+  <li><a href="#step-2-impute" id="toc-step-2-impute" class="nav-link" data-scroll-target="#step-2-impute">Step 2: impute</a></li>
+  <li><a href="#step-3-validate-with-imputed-data" id="toc-step-3-validate-with-imputed-data" class="nav-link" data-scroll-target="#step-3-validate-with-imputed-data">Step 3: validate with imputed data</a></li>
+  <li><a href="#the-other-options" id="toc-the-other-options" class="nav-link" data-scroll-target="#the-other-options">The other options</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../worked/logistic.html">Worked examples in jamovi</a></li><li class="breadcrumb-item"><a href="../worked/missing.html">Missing values</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">Missing values</h1>
+</div>
+
+<div>
+  <div class="description">
+    Exploring missing values, and developing and validating the model with multiple imputation by chained equations instead of complete cases.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><strong>Question.</strong> 108 patients of the heart cohort lack cholesterol or body mass index, and the previous examples simply dropped them. Is that harmless? What changes if the missing values are imputed?</p>
+<section id="why-it-matters" class="level2">
+<h2 class="anchored" data-anchor-id="why-it-matters">Why it matters</h2>
+<p>Dropping patients with a missing value (<em>complete-case analysis</em>) loses information and, worse, can bias the model if missingness is related to the outcome. A prediction model also needs a rule for patients with missing values <em>when it is used</em>. Multiple imputation by chained equations is the usual remedy <span class="citation" data-cites="steyerberg2019">(<a href="#ref-steyerberg2019" role="doc-biblioref">Steyerberg 2019</a>)</span>: each missing value is filled in several times from a model of that variable given all the others <strong>including the outcome</strong>, the analysis is repeated in each completed data set, and the results are combined.</p>
+</section>
+<section id="step-1-explore" class="level2">
+<h2 class="anchored" data-anchor-id="step-1-explore">Step 1: explore</h2>
+<p>Under <em>Missing values</em>, tick <em>Missing values (exploration)</em>.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>R syntax</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>r0 <span class="ot">&lt;-</span> <span class="fu">do.call</span>(cpLogistic, <span class="fu">c</span>(args, <span class="fu">list</span>(<span class="at">missExplore =</span> <span class="cn">TRUE</span>)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<div class="jtable">
+<p class="jtitle">Missing Values (Development Data)</p>
+
+<table class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="super header">
+<th colspan="4" data-quarto-table-cell-role="th"></th>
+<th colspan="2" data-quarto-table-cell-role="th">% missing</th>
+<th data-quarto-table-cell-role="th"></th>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">Variable</th>
+<th data-quarto-table-cell-role="th">Role</th>
+<th class="num" data-quarto-table-cell-role="th">Missing</th>
+<th class="num" data-quarto-table-cell-role="th">%</th>
+<th class="num" data-quarto-table-cell-role="th">Non-events</th>
+<th class="num" data-quarto-table-cell-role="th">Events</th>
+<th class="num" data-quarto-table-cell-role="th">p</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>event10</td>
+<td>Outcome</td>
+<td class="num">0</td>
+<td class="num">0.0 %</td>
+<td class="num"></td>
+<td class="num"></td>
+<td class="num"></td>
+</tr>
+<tr class="even">
+<td>sbp</td>
+<td>Predictor</td>
+<td class="num">0</td>
+<td class="num">0.0 %</td>
+<td class="num"></td>
+<td class="num"></td>
+<td class="num"></td>
+</tr>
+<tr class="odd">
+<td>chol</td>
+<td>Predictor</td>
+<td class="num">40</td>
+<td class="num">1.7 %</td>
+<td class="num">1.7 %</td>
+<td class="num">1.4 %</td>
+<td class="num">.611</td>
+</tr>
+<tr class="even">
+<td>bmi</td>
+<td>Predictor</td>
+<td class="num">70</td>
+<td class="num">2.9 %</td>
+<td class="num">3.1 %</td>
+<td class="num">1.9 %</td>
+<td class="num">.206</td>
+</tr>
+<tr class="odd">
+<td>age</td>
+<td>Predictor</td>
+<td class="num">0</td>
+<td class="num">0.0 %</td>
+<td class="num"></td>
+<td class="num"></td>
+<td class="num"></td>
+</tr>
+<tr class="even">
+<td>sex</td>
+<td>Predictor</td>
+<td class="num">0</td>
+<td class="num">0.0 %</td>
+<td class="num"></td>
+<td class="num"></td>
+<td class="num"></td>
+</tr>
+<tr class="odd">
+<td>smoking</td>
+<td>Predictor</td>
+<td class="num">0</td>
+<td class="num">0.0 %</td>
+<td class="num"></td>
+<td class="num"></td>
+<td class="num"></td>
+</tr>
+<tr class="even">
+<td>diabetes</td>
+<td>Predictor</td>
+<td class="num">0</td>
+<td class="num">0.0 %</td>
+<td class="num"></td>
+<td class="num"></td>
+<td class="num"></td>
+</tr>
+</tbody><tfoot>
+<tr class="odd">
+<td colspan="7"><em>Note.</em> Share of rows with the predictor missing among non-events and events (chi-square test): a difference means that missingness depends on the outcome (not missing completely at random).</td>
+</tr>
+</tfoot>
+
+</table>
+
+</div>
+</div>
+<div class="cell-output-display">
+<div class="jtable">
+<p class="jtitle">Missing Value Patterns</p>
+
+<table class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">Missing</th>
+<th class="num" data-quarto-table-cell-role="th">Variables</th>
+<th class="num" data-quarto-table-cell-role="th">Rows</th>
+<th class="num" data-quarto-table-cell-role="th">%</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>none (complete)</td>
+<td class="num">0</td>
+<td class="num">2292</td>
+<td class="num">95.5 %</td>
+</tr>
+<tr class="even">
+<td>bmi</td>
+<td class="num">1</td>
+<td class="num">68</td>
+<td class="num">2.8 %</td>
+</tr>
+<tr class="odd">
+<td>chol</td>
+<td class="num">1</td>
+<td class="num">38</td>
+<td class="num">1.6 %</td>
+</tr>
+<tr class="even">
+<td>chol, bmi</td>
+<td class="num">2</td>
+<td class="num">2</td>
+<td class="num">0.1 %</td>
+</tr>
+</tbody><tfoot>
+<tr class="odd">
+<td colspan="4"><em>Note.</em> The most frequent combinations of missing variables in the development rows (at most 10).</td>
+</tr>
+</tfoot>
+
+</table>
+
+</div>
+</div>
+</div>
+<p>Only two variables have missing values, 2.9% for bmi and 1.7% for cholesterol, almost never together. The share missing does not differ clearly between patients with and without an event (bmi: 3.1% vs 1.9%, p = 0.206). Missingness that depends on the outcome would be a warning against complete-case analysis. When the model is validated in a split or an external file, the table adds the share missing there.</p>
+</section>
+<section id="step-2-impute" class="level2">
+<h2 class="anchored" data-anchor-id="step-2-impute">Step 2: impute</h2>
+<p><em>Missing values: Multiple imputation</em>, 5 imputations, 10 iterations. clinpred imputes numeric variables by predictive mean matching (an observed value of a similar patient), factors by logistic or multinomial regression, with the outcome in every imputation model (for Cox models, the event and its cumulative hazard <span class="citation" data-cites="white2009">(<a href="#ref-white2009" role="doc-biblioref">White and Royston 2009</a>)</span>).</p>
+<div class="cell">
+<details class="code-fold">
+<summary>R syntax</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>r1 <span class="ot">&lt;-</span> <span class="fu">do.call</span>(cpLogistic, <span class="fu">c</span>(args, <span class="fu">list</span>(<span class="at">missMethod =</span> <span class="st">"mi"</span>, <span class="at">miM =</span> <span class="dv">5</span>)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<div class="jtable">
+<p class="jtitle">Data</p>
+
+<table class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">Data set</th>
+<th class="num" data-quarto-table-cell-role="th">N</th>
+<th class="num" data-quarto-table-cell-role="th">Events</th>
+<th class="num" data-quarto-table-cell-role="th">%</th>
+<th class="num" data-quarto-table-cell-role="th">Excluded (missing)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Development</td>
+<td class="num">2400</td>
+<td class="num">369</td>
+<td class="num">15.4 %</td>
+<td class="num">0</td>
+</tr>
+</tbody><tfoot>
+<tr class="odd">
+<td colspan="5"><em>Note.</em> Multiple imputation: 5 imputations by chained equations (predictive mean matching, 10 iterations; the outcome in the imputation models) of 108 development rows with a missing predictor; validation data imputed separately. Coefficients pooled by Rubin's rules, performance averaged over the imputations. Rows with a missing outcome are excluded.</td>
+</tr>
+</tfoot>
+
+</table>
+
+</div>
+</div>
+<div class="cell-output-display">
+<div class="jtable">
+<p class="jtitle">Odds Ratios</p>
+
+<table class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="super header">
+<th colspan="2" data-quarto-table-cell-role="th"></th>
+<th colspan="4" data-quarto-table-cell-role="th">Crude</th>
+<th colspan="4" data-quarto-table-cell-role="th">Adjusted</th>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th class="num" data-quarto-table-cell-role="th">OR</th>
+<th class="num" data-quarto-table-cell-role="th">Lower</th>
+<th class="num" data-quarto-table-cell-role="th">Upper</th>
+<th class="num" data-quarto-table-cell-role="th">p</th>
+<th class="num" data-quarto-table-cell-role="th">OR</th>
+<th class="num" data-quarto-table-cell-role="th">Lower</th>
+<th class="num" data-quarto-table-cell-role="th">Upper</th>
+<th class="num" data-quarto-table-cell-role="th">p</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>sbp</td>
+<td>per 10 units</td>
+<td class="num">1.24</td>
+<td class="num">1.156</td>
+<td class="num">1.33</td>
+<td class="num">&lt; .001</td>
+<td class="num">1.20</td>
+<td class="num">1.110</td>
+<td class="num">1.29</td>
+<td class="num">&lt; .001</td>
+</tr>
+<tr class="even">
+<td>chol</td>
+<td>per unit</td>
+<td class="num">1.22</td>
+<td class="num">1.098</td>
+<td class="num">1.36</td>
+<td class="num">&lt; .001</td>
+<td class="num">1.27</td>
+<td class="num">1.132</td>
+<td class="num">1.42</td>
+<td class="num">&lt; .001</td>
+</tr>
+<tr class="odd">
+<td>bmi</td>
+<td>per unit</td>
+<td class="num">1.03</td>
+<td class="num">1.007</td>
+<td class="num">1.06</td>
+<td class="num">.012</td>
+<td class="num">1.02</td>
+<td class="num">0.993</td>
+<td class="num">1.05</td>
+<td class="num">.160</td>
+</tr>
+<tr class="even">
+<td>age</td>
+<td>Q3 vs Q1 (66.25 vs 53)</td>
+<td class="num">1.16</td>
+<td class="num">0.853</td>
+<td class="num">1.58</td>
+<td class="num">&lt; .001</td>
+<td class="num">2.07</td>
+<td class="num">1.234</td>
+<td class="num">3.46</td>
+<td class="num">&lt; .001</td>
+</tr>
+<tr class="odd">
+<td>sex</td>
+<td>female</td>
+<td class="num">1.00</td>
+<td class="num"></td>
+<td class="num"></td>
+<td class="num">&lt; .001</td>
+<td class="num">1.00</td>
+<td class="num"></td>
+<td class="num"></td>
+<td class="num">&lt; .001</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>male</td>
+<td class="num">1.54</td>
+<td class="num">1.225</td>
+<td class="num">1.92</td>
+<td class="num">&lt; .001</td>
+<td class="num">1.78</td>
+<td class="num">1.283</td>
+<td class="num">2.46</td>
+<td class="num">&lt; .001</td>
+</tr>
+<tr class="odd">
+<td>smoking</td>
+<td>never</td>
+<td class="num">1.00</td>
+<td class="num"></td>
+<td class="num"></td>
+<td class="num">&lt; .001</td>
+<td class="num">1.00</td>
+<td class="num"></td>
+<td class="num"></td>
+<td class="num">&lt; .001</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>former</td>
+<td class="num">1.11</td>
+<td class="num">0.846</td>
+<td class="num">1.45</td>
+<td class="num">.459</td>
+<td class="num">1.15</td>
+<td class="num">0.870</td>
+<td class="num">1.51</td>
+<td class="num">.332</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>current</td>
+<td class="num">2.16</td>
+<td class="num">1.648</td>
+<td class="num">2.84</td>
+<td class="num">&lt; .001</td>
+<td class="num">2.21</td>
+<td class="num">1.672</td>
+<td class="num">2.93</td>
+<td class="num">&lt; .001</td>
+</tr>
+<tr class="even">
+<td>diabetes</td>
+<td>no</td>
+<td class="num">1.00</td>
+<td class="num"></td>
+<td class="num"></td>
+<td class="num">&lt; .001</td>
+<td class="num">1.00</td>
+<td class="num"></td>
+<td class="num"></td>
+<td class="num">&lt; .001</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>yes</td>
+<td class="num">2.30</td>
+<td class="num">1.640</td>
+<td class="num">3.23</td>
+<td class="num">&lt; .001</td>
+<td class="num">2.28</td>
+<td class="num">1.593</td>
+<td class="num">3.27</td>
+<td class="num">&lt; .001</td>
+</tr>
+</tbody><tfoot>
+<tr class="odd">
+<td colspan="10"><em>Note.</em> Crude: each predictor alone, on the same rows. Adjusted: in the prediction model.</td>
+</tr>
+<tr class="even">
+<td colspan="10"><em>Note.</em> Spline predictors: odds ratio between the third and the first quartile; the p is the likelihood ratio test of the whole (non-linear) association.</td>
+</tr>
+<tr class="odd">
+<td colspan="10"><em>Note.</em> The p on a factor's reference row is the likelihood ratio test of the factor.</td>
+</tr>
+<tr class="even">
+<td colspan="10"><em>Note.</em> With interactions, an adjusted odds ratio is the effect at the reference level (factor) or median (covariate) of the variables it interacts with; see Effects Within Subgroups.</td>
+</tr>
+<tr class="odd">
+<td colspan="10"><em>Note.</em> Crude and adjusted effects pooled over the imputations by Rubin's rules.</td>
+</tr>
+</tfoot>
+
+</table>
+
+</div>
+</div>
+</div>
+<p>All 2400 patients are now used. The pooled odds ratios (Rubin’s rules) barely differ from the complete-case ones: with 4.5% of patients incomplete and missingness unrelated to the outcome, complete-case analysis was harmless here. It would not be with 30% missing.</p>
+</section>
+<section id="step-3-validate-with-imputed-data" class="level2">
+<h2 class="anchored" data-anchor-id="step-3-validate-with-imputed-data">Step 3: validate with imputed data</h2>
+<div class="cell">
+<div class="cell-output-display">
+<div class="jtable">
+<p class="jtitle">Performance in the Development Data</p>
+
+<table class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="super header">
+<th colspan="3" data-quarto-table-cell-role="th"></th>
+<th colspan="2" data-quarto-table-cell-role="th">95% CI</th>
+<th colspan="2" data-quarto-table-cell-role="th"></th>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">Measure</th>
+<th class="num" data-quarto-table-cell-role="th">Apparent</th>
+<th class="num" data-quarto-table-cell-role="th">Lower</th>
+<th class="num" data-quarto-table-cell-role="th">Upper</th>
+<th class="num" data-quarto-table-cell-role="th">Optimism</th>
+<th class="num" data-quarto-table-cell-role="th">Corrected</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Discrimination</td>
+<td>C-statistic (AUC)</td>
+<td class="num">0.68934</td>
+<td class="num"></td>
+<td class="num"></td>
+<td class="num">0.01098</td>
+<td class="num">0.67834</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Discrimination slope</td>
+<td class="num">0.06713</td>
+<td class="num"></td>
+<td class="num"></td>
+<td class="num">0.00519</td>
+<td class="num">0.06195</td>
+</tr>
+<tr class="odd">
+<td>Calibration</td>
+<td>Calibration-in-the-large</td>
+<td class="num">0.00001</td>
+<td class="num"></td>
+<td class="num"></td>
+<td class="num">-0.00079</td>
+<td class="num">0.00079</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Calibration slope</td>
+<td class="num">0.99997</td>
+<td class="num"></td>
+<td class="num"></td>
+<td class="num">0.06871</td>
+<td class="num">0.93129</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>O/E ratio</td>
+<td class="num">1.00001</td>
+<td class="num"></td>
+<td class="num"></td>
+<td class="num">-0.00206</td>
+<td class="num">1.00206</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>ICI</td>
+<td class="num">0.00437</td>
+<td class="num"></td>
+<td class="num"></td>
+<td class="num">-0.00137</td>
+<td class="num">0.00575</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>E50</td>
+<td class="num">0.00426</td>
+<td class="num"></td>
+<td class="num"></td>
+<td class="num">-0.00105</td>
+<td class="num">0.00519</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>E90</td>
+<td class="num">0.00788</td>
+<td class="num"></td>
+<td class="num"></td>
+<td class="num">-0.00270</td>
+<td class="num">0.01058</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>Emax</td>
+<td class="num">0.02076</td>
+<td class="num"></td>
+<td class="num"></td>
+<td class="num">0.03724</td>
+<td class="num">0.00000</td>
+</tr>
+<tr class="even">
+<td>Overall</td>
+<td>Brier score</td>
+<td class="num">0.12143</td>
+<td class="num"></td>
+<td class="num"></td>
+<td class="num">-0.00146</td>
+<td class="num">0.12289</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>Scaled Brier score</td>
+<td class="num">0.06670</td>
+<td class="num"></td>
+<td class="num"></td>
+<td class="num">0.01121</td>
+<td class="num">0.05550</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Nagelkerke R²</td>
+<td class="num">0.10594</td>
+<td class="num"></td>
+<td class="num"></td>
+<td class="num">0.01612</td>
+<td class="num">0.08984</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>Cox–Snell R²</td>
+<td class="num">0.06104</td>
+<td class="num"></td>
+<td class="num"></td>
+<td class="num">0.00929</td>
+<td class="num">0.05175</td>
+</tr>
+</tbody><tfoot>
+<tr class="odd">
+<td colspan="7"><em>Note.</em> Bootstrap optimism correction (Harrell): 100 samples (100 usable); corrected = apparent − optimism.</td>
+</tr>
+<tr class="even">
+<td colspan="7"><em>Note.</em> An error measure whose estimated optimism exceeds its apparent value (a noisy measure such as Emax) is shown corrected as 0.</td>
+</tr>
+<tr class="odd">
+<td colspan="7"><em>Note.</em> Averaged over the imputations (no confidence intervals); internal validation within each imputation.</td>
+</tr>
+</tfoot>
+
+</table>
+
+</div>
+</div>
+</div>
+<p>Performance is computed with the pooled model in each imputed data set and averaged; the bootstrap optimism is estimated <strong>within each imputation</strong> <span class="citation" data-cites="wahl2016">(<a href="#ref-wahl2016" role="doc-biblioref">Wahl et al. 2016</a>)</span>, with the whole procedure — selection included — repeated in every resample. Validation data (a split or an external file) are imputed separately, so that no information from them reaches the model.</p>
+</section>
+<section id="the-other-options" class="level2">
+<h2 class="anchored" data-anchor-id="the-other-options">The other options</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Method</th>
+<th>What it does</th>
+<th>When</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Complete cases</td>
+<td>drops incomplete rows</td>
+<td>few missing values, unrelated to the outcome</td>
+</tr>
+<tr class="even">
+<td>Missing category / indicator</td>
+<td>a <code>(missing)</code> level for factors; for numeric variables, the development median plus an indicator predictor</td>
+<td>missingness that is itself informative and will also occur in practice (a test not ordered)</td>
+</tr>
+<tr class="odd">
+<td>Single imputation</td>
+<td>one chained-equations imputation</td>
+<td>a quick look; standard errors too small</td>
+</tr>
+<tr class="even">
+<td>Multiple imputation</td>
+<td><em>m</em> imputations, pooled</td>
+<td>the default choice for development</td>
+</tr>
+</tbody>
+</table>
+<p>With the missing indicator method the model includes the indicators and stores the development medians; <em>Export model</em> writes both, so the published model can be applied to new patients with missing values.</p>
+
+
+
+</section>
+
+<a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a><div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="ref-steyerberg2019" class="csl-entry" role="listitem">
+Steyerberg, Ewout W. 2019. <em>Clinical Prediction Models: A Practical Approach to Development, Validation, and Updating</em>. In <em>Statistics for Biology and Health</em>. Springer International Publishing. <a href="https://doi.org/10.1007/978-3-030-16399-0">https://doi.org/10.1007/978-3-030-16399-0</a>.
+</div>
+<div id="ref-wahl2016" class="csl-entry" role="listitem">
+Wahl, Simone, Anne-Laure Boulesteix, Astrid Zierer, Barbara Thorand, and Mark A. van de Wiel. 2016. <span>“Assessment of Predictive Performance in Incomplete Data by Combining Internal Validation and Multiple Imputation.”</span> <em>BMC Medical Research Methodology</em> 16 (1). <a href="https://doi.org/10.1186/s12874-016-0239-7">https://doi.org/10.1186/s12874-016-0239-7</a>.
+</div>
+<div id="ref-white2009" class="csl-entry" role="listitem">
+White, Ian R., and Patrick Royston. 2009. <span>“Imputing Missing Covariate Values for the Cox Model.”</span> <em>Statistics in Medicine</em> 28 (15): 1982–98. <a href="https://doi.org/10.1002/sim.3618">https://doi.org/10.1002/sim.3618</a>.
+</div>
+</div></section></div></main> <!-- /main -->
+<!-- Collapsible left (contents) and right (on this page) panels on wide
+     screens: a button at each edge, ‹ hides a panel and › brings it back; the
+     text widens into the space; the choice is remembered between pages.
+     Copied from jamovi-skill/templates/tutorial/collapse.html; included with
+     format: html: include-after-body: collapse.html in _quarto.yml. -->
+<style>
+.panel-toggle {
+  position: fixed; top: 50%; transform: translateY(-50%); z-index: 1100;
+  width: 22px; height: 46px; padding: 0; font-size: 20px; line-height: 1;
+  border: 1px solid var(--bs-border-color, #ccc); border-radius: 6px;
+  background: var(--bs-body-bg, #fff); color: var(--bs-body-color, #333);
+  opacity: 0.7; cursor: pointer;
+}
+.panel-toggle:hover { opacity: 1; }
+/* blue, for visibility: the edge buttons and the site title in the contents */
+.panel-toggle { color: #2780e3; border-color: #2780e3; font-weight: bold; opacity: 0.85; }
+.sidebar-title, .sidebar-title a { color: #2780e3 !important; }
+body.quarto-dark .panel-toggle { color: #6aa9f0; border-color: #6aa9f0; }
+body.quarto-dark .sidebar-title, body.quarto-dark .sidebar-title a { color: #6aa9f0 !important; }
+#panel-toggle-left { left: 2px; }
+#panel-toggle-right { right: 2px; }
+@media (max-width: 991.98px) { .panel-toggle { display: none; } }
+@media (min-width: 992px) {
+  body.panel-left-off #quarto-sidebar { display: none !important; }
+  body.panel-right-off #quarto-margin-sidebar { display: none !important; }
+  body.panel-left-off main.content { grid-column-start: page-start !important; }
+  body.panel-right-off main.content { grid-column-end: page-end !important; }
+}
+</style>
+<script>
+(function () {
+  var KEY = "tutorial-panels";
+  var state = { left: true, right: true };
+  try { var s = JSON.parse(localStorage.getItem(KEY)); if (s) state = s; } catch (e) {}
+  function apply() {
+    document.body.classList.toggle("panel-left-off", !state.left);
+    document.body.classList.toggle("panel-right-off", !state.right);
+    var l = document.getElementById("panel-toggle-left"), r = document.getElementById("panel-toggle-right");
+    if (l) { l.textContent = state.left ? "‹" : "›"; l.title = state.left ? "Hide the contents" : "Show the contents"; }
+    if (r) { r.textContent = state.right ? "›" : "‹"; r.title = state.right ? "Hide 'On this page'" : "Show 'On this page'"; }
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
+  }
+  function button(id, side) {
+    var b = document.createElement("button");
+    b.type = "button"; b.id = id; b.className = "panel-toggle";
+    b.addEventListener("click", function () { state[side] = !state[side]; apply(); });
+    document.body.appendChild(b);
+  }
+  document.addEventListener("DOMContentLoaded", function () {
+    if (document.getElementById("quarto-sidebar")) button("panel-toggle-left", "left");
+    if (document.getElementById("quarto-margin-sidebar")) button("panel-toggle-right", "right");
+    apply();
+  });
+})();
+</script>
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../worked/external.html" class="pagination-link" aria-label="Validation in new patients and updating">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Validation in new patients and updating</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../worked/cox.html" class="pagination-link" aria-label="A time-to-event model (Cox)">
+        <span class="nav-page-text">A time-to-event model (Cox)</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+<p>Tutorial for the clinpred jamovi module · V. Moreno</p>
+</div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

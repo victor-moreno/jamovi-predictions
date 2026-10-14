@@ -48,3 +48,9 @@ else
 fi
 
 echo ">> tutorial rendered successfully in: $TUTORIAL_DIR/_site/index.html"
+
+# the rendered site is what the repository pushes (GitHub Pages serves docs/)
+rm -rf "$ROOT/docs"
+cp -R "$TUTORIAL_DIR/_site" "$ROOT/docs"
+touch "$ROOT/docs/.nojekyll"
+echo ">> copied to $ROOT/docs"

@@ -1,0 +1,1925 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="Baseline covariates kept in the model, backward selection and the elastic net repeated in every bootstrap fit, an age × sex interaction, inference after selection, and the value added over a baseline model.">
+
+<title>Selection, interactions and incremental value – Clinical prediction models</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../worked/external.html" rel="next">
+<link href="../worked/logistic.html" rel="prev">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-b85bc7c33db8c58e0ec93c3465666fed.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-e5e84f5a70260acdabf710505354887c.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-4143a9d5f9d8f9deb4202a6d60211dcc.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-e5e84f5a70260acdabf710505354887c.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+</head>
+
+<body class="nav-sidebar docked nav-fixed quarto-light"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = false;
+    const darkModeDefault = authorPrefersDark;
+      document.querySelector('link#quarto-text-highlighting-styles.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+      document.querySelector('link#quarto-bootstrap.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Clinical prediction models</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link active" href="../index.html" aria-current="page"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../foundations/prediction-models.html"> 
+<span class="menu-text">Foundations</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../worked/logistic.html"> 
+<span class="menu-text">Worked examples</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../further/reporting.html"> 
+<span class="menu-text">Reporting</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../references.html"> 
+<span class="menu-text">References</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../worked/logistic.html">Worked examples in jamovi</a></li><li class="breadcrumb-item"><a href="../worked/selection.html">Selection, interactions and incremental value</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Clinical prediction models in jamovi</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../foundations/prediction-models.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Prediction models and overfitting</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../foundations/performance.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Measuring performance</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../foundations/validation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Validation and updating</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Worked examples in jamovi</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../worked/logistic.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">A logistic prediction model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../worked/selection.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Selection, interactions and incremental value</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../worked/external.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Validation in new patients and updating</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../worked/missing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Missing values</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../worked/cox.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">A time-to-event model (Cox)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../worked/linear.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">A continuous outcome (linear)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../worked/published.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Validating a published model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../worked/importance.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Which predictors matter? Importance and SHAP</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Further</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../further/reporting.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Reporting with TRIPOD+AI</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../further/glossary.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Glossary</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../references.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">References</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#step-1-the-panel" id="toc-step-1-the-panel" class="nav-link active" data-scroll-target="#step-1-the-panel">Step 1: the panel</a></li>
+  <li><a href="#step-2-the-interactions" id="toc-step-2-the-interactions" class="nav-link" data-scroll-target="#step-2-the-interactions">Step 2: the interactions</a></li>
+  <li><a href="#step-3-the-selection" id="toc-step-3-the-selection" class="nav-link" data-scroll-target="#step-3-the-selection">Step 3: the selection</a></li>
+  <li><a href="#step-4-inference-after-selection" id="toc-step-4-inference-after-selection" class="nav-link" data-scroll-target="#step-4-inference-after-selection">Step 4: inference after selection</a></li>
+  <li><a href="#step-5-the-elastic-net-instead" id="toc-step-5-the-elastic-net-instead" class="nav-link" data-scroll-target="#step-5-the-elastic-net-instead">Step 5: the elastic net instead</a></li>
+  <li><a href="#step-6-incremental-value" id="toc-step-6-incremental-value" class="nav-link" data-scroll-target="#step-6-incremental-value">Step 6: incremental value</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../worked/logistic.html">Worked examples in jamovi</a></li><li class="breadcrumb-item"><a href="../worked/selection.html">Selection, interactions and incremental value</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">Selection, interactions and incremental value</h1>
+</div>
+
+<div>
+  <div class="description">
+    Baseline covariates kept in the model, backward selection and the elastic net repeated in every bootstrap fit, an age × sex interaction, inference after selection, and the value added over a baseline model.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><strong>Question.</strong> The <a href="../worked/logistic.html">logistic model</a> gave age, the strongest cardiovascular risk factor, an adjusted odds ratio near 1. Is the effect of age different in men and women? Which of the other predictors are worth keeping? And what do the modifiable risk factors add to a model with only age, sex and the recruiting centre?</p>
+<section id="step-1-the-panel" class="level2">
+<h2 class="anchored" data-anchor-id="step-1-the-panel">Step 1: the panel</h2>
+<p>On top of the settings of the logistic example:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Panel</th>
+<th>Setting</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Factors</td>
+<td>add <code>centre</code></td>
+</tr>
+<tr class="even">
+<td>Variable Selection</td>
+<td>Baseline (always in): tick <code>age</code>, <code>sex</code>, <code>centre</code>; Selection of the other predictors: Backward elimination, AIC; Bootstrap inclusion and coefficients</td>
+</tr>
+<tr class="odd">
+<td>Interactions</td>
+<td>Interaction terms: <code>age × sex</code>, <code>sbp × diabetes</code>; Interactions to keep: Forward selection, LR test</td>
+</tr>
+<tr class="even">
+<td>Validation</td>
+<td>Bootstrap, 100 samples</td>
+</tr>
+<tr class="odd">
+<td>Incremental value</td>
+<td>Incremental value over the baseline model; net benefit thresholds <code>0.1, 0.2</code></td>
+</tr>
+<tr class="even">
+<td>Plots</td>
+<td>ROC curve</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Baseline covariates</strong> are always in the model and never selected: here the variables that define who the patient is (age, sex) and the design (centre, an institution effect that should be adjusted for but is not of interest). The <strong>other predictors</strong> are candidates for backward elimination by AIC. Two <strong>interactions</strong> are candidates: one that the literature suggests (age × sex) and one we made up (sbp × diabetes).</p>
+<div class="cell">
+<details class="code-fold">
+<summary>R syntax</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>r <span class="ot">&lt;-</span> <span class="fu">cpLogistic</span>(<span class="at">data =</span> heart, <span class="at">dep =</span> <span class="st">"event10"</span>, <span class="at">eventLevel =</span> <span class="st">"yes"</span>,</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>                <span class="at">covs =</span> <span class="fu">c</span>(<span class="st">"sbp"</span>, <span class="st">"chol"</span>, <span class="st">"bmi"</span>), <span class="at">splineVars =</span> <span class="st">"age"</span>,</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>                <span class="at">factors =</span> <span class="fu">c</span>(<span class="st">"sex"</span>, <span class="st">"smoking"</span>, <span class="st">"diabetes"</span>, <span class="st">"centre"</span>),</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>                <span class="at">covScales =</span> <span class="fu">list</span>(<span class="fu">list</span>(<span class="at">var =</span> <span class="st">"sbp"</span>, <span class="at">scale =</span> <span class="st">"ten"</span>)),</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>                <span class="at">baseline =</span> <span class="fu">list</span>(<span class="fu">list</span>(<span class="at">var =</span> <span class="st">"age"</span>, <span class="at">forced =</span> <span class="cn">TRUE</span>), <span class="fu">list</span>(<span class="at">var =</span> <span class="st">"sex"</span>, <span class="at">forced =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>                                <span class="fu">list</span>(<span class="at">var =</span> <span class="st">"centre"</span>, <span class="at">forced =</span> <span class="cn">TRUE</span>)),</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>                <span class="at">selMode =</span> <span class="st">"backward"</span>, <span class="at">selCrit =</span> <span class="st">"aic"</span>,</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>                <span class="at">interactions =</span> <span class="fu">list</span>(<span class="fu">list</span>(<span class="st">"age"</span>, <span class="st">"sex"</span>), <span class="fu">list</span>(<span class="st">"sbp"</span>, <span class="st">"diabetes"</span>)), <span class="at">intMode =</span> <span class="st">"lrt"</span>,</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>                <span class="at">validation =</span> <span class="st">"boot"</span>, <span class="at">nBoot =</span> <span class="dv">100</span>, <span class="at">seed =</span> <span class="dv">1</span>, <span class="at">bootCoefs =</span> <span class="cn">TRUE</span>, <span class="at">oddsRatios =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>                <span class="at">incremental =</span> <span class="cn">TRUE</span>, <span class="at">nbThresholds =</span> <span class="st">"0.1, 0.2"</span>, <span class="at">rocPlot =</span> <span class="cn">TRUE</span>, <span class="at">explain =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</section>
+<section id="step-2-the-interactions" class="level2">
+<h2 class="anchored" data-anchor-id="step-2-the-interactions">Step 2: the interactions</h2>
+<div class="cell">
+<div class="cell-output-display">
+<div class="jtable">
+<p class="jtitle">Interactions — Screening and Selection</p>
+
+<table class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">Term</th>
+<th class="num" data-quarto-table-cell-role="th">χ²</th>
+<th class="num" data-quarto-table-cell-role="th">df</th>
+<th class="num" data-quarto-table-cell-role="th">p</th>
+<th class="num" data-quarto-table-cell-role="th">ΔAIC</th>
+<th class="num" data-quarto-table-cell-role="th">ΔBIC</th>
+<th data-quarto-table-cell-role="th">In model</th>
+<th class="num" data-quarto-table-cell-role="th">Bootstrap fits</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>age × sex</td>
+<td class="num">21.854</td>
+<td class="num">3</td>
+<td class="num">&lt; .001</td>
+<td class="num">-15.85</td>
+<td class="num">1.36</td>
+<td>step 1</td>
+<td class="num">100.0 %</td>
+</tr>
+<tr class="even">
+<td>sbp × diabetes</td>
+<td class="num">0.309</td>
+<td class="num">1</td>
+<td class="num">.578</td>
+<td class="num">1.69</td>
+<td class="num">7.43</td>
+<td>no</td>
+<td class="num">6.0 %</td>
+</tr>
+</tbody><tfoot>
+<tr class="odd">
+<td colspan="8"><em>Note.</em> χ², ΔAIC and ΔBIC: the term added alone to the main-effects model (negative Δ: the term improves the criterion).</td>
+</tr>
+<tr class="even">
+<td colspan="8"><em>Note.</em> Forward selection: at each step the term with the smallest likelihood ratio p enters, while p &lt; 0.05.</td>
+</tr>
+<tr class="odd">
+<td colspan="8"><em>Note.</em> The selection is repeated in every resampled fit, so the internal validation includes its optimism; the last column is the share of fits that selected the term.</td>
+</tr>
+</tfoot>
+
+</table>
+
+</div>
+</div>
+</div>
+<p>Each candidate is first <strong>screened</strong> alone against the main-effects model: age × sex improves the fit clearly (likelihood ratio χ² = 21.9 on 3 df — the spline of age has three terms, so the interaction too), the invented sbp × diabetes does not (p = 0.578). Forward selection keeps age × sex. The last column is the share of the bootstrap fits that selected each term: 100% for age × sex, 6% for the invented one — a false positive in one fit in ten, as expected from testing at 5% in every resample.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div class="jtable">
+<p class="jtitle">Effects Within Subgroups</p>
+
+<table class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="super header">
+<th colspan="3" data-quarto-table-cell-role="th"></th>
+<th colspan="2" data-quarto-table-cell-role="th">95% CI</th>
+<th data-quarto-table-cell-role="th"></th>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">Effect</th>
+<th data-quarto-table-cell-role="th">Within</th>
+<th class="num" data-quarto-table-cell-role="th">OR</th>
+<th class="num" data-quarto-table-cell-role="th">Lower</th>
+<th class="num" data-quarto-table-cell-role="th">Upper</th>
+<th class="num" data-quarto-table-cell-role="th">p</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>age: Q3 vs Q1 (66 vs 53)</td>
+<td>sex = female</td>
+<td class="num">2.027</td>
+<td class="num">1.205</td>
+<td class="num">3.409</td>
+<td class="num">.008</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>sex = male</td>
+<td class="num">0.659</td>
+<td class="num">0.437</td>
+<td class="num">0.995</td>
+<td class="num">.047</td>
+</tr>
+<tr class="odd">
+<td>sex: male</td>
+<td>age = 53 (Q1)</td>
+<td class="num">3.205</td>
+<td class="num">2.027</td>
+<td class="num">5.068</td>
+<td class="num">&lt; .001</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>age = 60 (median)</td>
+<td class="num">1.787</td>
+<td class="num">1.282</td>
+<td class="num">2.490</td>
+<td class="num">&lt; .001</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>age = 66 (Q3)</td>
+<td class="num">1.042</td>
+<td class="num">0.702</td>
+<td class="num">1.548</td>
+<td class="num">.837</td>
+</tr>
+</tbody><tfoot>
+<tr class="odd">
+<td colspan="6"><em>Note.</em> Odds ratio of each variable of an interaction at the levels (factor) or quartiles (covariate) of the other; other predictors at their reference level or median.</td>
+</tr>
+<tr class="even">
+<td colspan="6"><em>Note.</em> The model was selected in these data: its confidence intervals and p values do not account for the selection, so they are too narrow (see the bootstrap coefficients).</td>
+</tr>
+</tfoot>
+
+</table>
+
+</div>
+</div>
+</div>
+<p>The <strong>effects within subgroups</strong> explain the puzzle of the logistic example. At 53 years, men have 3.20 times the odds of women; at 66 years the excess has vanished (1.04). In women risk rises steeply with age, in men much less. A single “adjusted odds ratio for age” averaged two opposite things.</p>
+</section>
+<section id="step-3-the-selection" class="level2">
+<h2 class="anchored" data-anchor-id="step-3-the-selection">Step 3: the selection</h2>
+<div class="cell">
+<div class="cell-output-display">
+<div class="jtable">
+<p class="jtitle">Predictor Selection</p>
+
+<table class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="super header">
+<th colspan="3" data-quarto-table-cell-role="th"></th>
+<th colspan="3" data-quarto-table-cell-role="th">vs final model</th>
+<th data-quarto-table-cell-role="th"></th>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">Predictor</th>
+<th data-quarto-table-cell-role="th">Status</th>
+<th class="num" data-quarto-table-cell-role="th">Step</th>
+<th class="num" data-quarto-table-cell-role="th">χ²</th>
+<th class="num" data-quarto-table-cell-role="th">df</th>
+<th class="num" data-quarto-table-cell-role="th">p</th>
+<th class="num" data-quarto-table-cell-role="th">Bootstrap fits</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>sbp</td>
+<td>kept</td>
+<td class="num"></td>
+<td class="num">20.66</td>
+<td class="num">1</td>
+<td class="num">&lt; .001</td>
+<td class="num">100.0 %</td>
+</tr>
+<tr class="even">
+<td>chol</td>
+<td>kept</td>
+<td class="num"></td>
+<td class="num">16.90</td>
+<td class="num">1</td>
+<td class="num">&lt; .001</td>
+<td class="num">99.0 %</td>
+</tr>
+<tr class="odd">
+<td>bmi</td>
+<td>kept</td>
+<td class="num"></td>
+<td class="num">2.12</td>
+<td class="num">1</td>
+<td class="num">.145</td>
+<td class="num">51.0 %</td>
+</tr>
+<tr class="even">
+<td>smoking</td>
+<td>kept</td>
+<td class="num"></td>
+<td class="num">29.84</td>
+<td class="num">2</td>
+<td class="num">&lt; .001</td>
+<td class="num">100.0 %</td>
+</tr>
+<tr class="odd">
+<td>diabetes</td>
+<td>kept</td>
+<td class="num"></td>
+<td class="num">15.61</td>
+<td class="num">1</td>
+<td class="num">&lt; .001</td>
+<td class="num">100.0 %</td>
+</tr>
+</tbody><tfoot>
+<tr class="odd">
+<td colspan="7"><em>Note.</em> Baseline covariates, always in the model and not selected: age, sex, centre.</td>
+</tr>
+<tr class="even">
+<td colspan="7"><em>Note.</em> Backward elimination (AIC): at each step the predictor whose removal improves the criterion most leaves. Baseline covariates are never removed.</td>
+</tr>
+<tr class="odd">
+<td colspan="7"><em>Note.</em> χ², df, p: each predictor dropped from (if kept) or added to (if not) the final main-effects model; a factor or a spline is one term.</td>
+</tr>
+<tr class="even">
+<td colspan="7"><em>Note.</em> The selection is repeated in every resampled fit, so the internal validation includes its optimism; the last column is the share of fits that kept the predictor.</td>
+</tr>
+</tfoot>
+
+</table>
+
+</div>
+</div>
+</div>
+<p>Backward elimination by AIC keeps every candidate. Body mass index is borderline: its χ² is just above 2 (the AIC threshold for one parameter), and it was kept in only 51% of the bootstrap fits — a coin toss. The <strong>selection is repeated in every bootstrap fit</strong>, so the optimism-corrected performance includes the instability of these decisions.</p>
+</section>
+<section id="step-4-inference-after-selection" class="level2">
+<h2 class="anchored" data-anchor-id="step-4-inference-after-selection">Step 4: inference after selection</h2>
+<p>The confidence intervals of a model selected in the same data ignore the selection: they are too narrow and the estimates of predictors that “survived” are biased away from zero. The <strong>bootstrap coefficient table</strong> <span class="citation" data-cites="heinze2018">(<a href="#ref-heinze2018" role="doc-biblioref">Heinze et al. 2018</a>)</span> shows the honest variability of the whole procedure.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div class="jtable">
+<p class="jtitle">Bootstrap Coefficients (Selection Repeated)</p>
+
+<table class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="super header">
+<th colspan="2" data-quarto-table-cell-role="th"></th>
+<th colspan="3" data-quarto-table-cell-role="th">Bootstrap</th>
+<th colspan="3" data-quarto-table-cell-role="th"></th>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">Coefficient</th>
+<th class="num" data-quarto-table-cell-role="th">Estimate</th>
+<th class="num" data-quarto-table-cell-role="th">Median</th>
+<th class="num" data-quarto-table-cell-role="th">2.5%</th>
+<th class="num" data-quarto-table-cell-role="th">97.5%</th>
+<th class="num" data-quarto-table-cell-role="th">Inclusion</th>
+<th class="num" data-quarto-table-cell-role="th">RMSD ratio</th>
+<th class="num" data-quarto-table-cell-role="th">Rel. cond. bias</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Intercept</td>
+<td class="num">-7.65113</td>
+<td class="num">-7.5940</td>
+<td class="num">-11.3779</td>
+<td class="num">-3.8248</td>
+<td class="num">100.0 %</td>
+<td class="num">0.861</td>
+<td class="num">-0.00930</td>
+</tr>
+<tr class="even">
+<td>sbp</td>
+<td class="num">0.18152</td>
+<td class="num">0.1880</td>
+<td class="num">0.1217</td>
+<td class="num">0.2652</td>
+<td class="num">100.0 %</td>
+<td class="num">1.030</td>
+<td class="num">0.04199</td>
+</tr>
+<tr class="odd">
+<td>chol</td>
+<td class="num">0.24364</td>
+<td class="num">0.2453</td>
+<td class="num">0.1271</td>
+<td class="num">0.3282</td>
+<td class="num">99.0 %</td>
+<td class="num">0.984</td>
+<td class="num">-0.00616</td>
+</tr>
+<tr class="even">
+<td>bmi</td>
+<td class="num">0.01944</td>
+<td class="num">0.0186</td>
+<td class="num">0.0000</td>
+<td class="num">0.0460</td>
+<td class="num">51.0 %</td>
+<td class="num">1.271</td>
+<td class="num">0.56569</td>
+</tr>
+<tr class="odd">
+<td>age</td>
+<td class="num">0.01476</td>
+<td class="num">0.0115</td>
+<td class="num">-0.0643</td>
+<td class="num">0.0938</td>
+<td class="num">100.0 %</td>
+<td class="num">0.876</td>
+<td class="num">-0.06434</td>
+</tr>
+<tr class="even">
+<td>age'</td>
+<td class="num">0.07976</td>
+<td class="num">0.0932</td>
+<td class="num">-0.1359</td>
+<td class="num">0.2854</td>
+<td class="num">100.0 %</td>
+<td class="num">0.883</td>
+<td class="num">0.01853</td>
+</tr>
+<tr class="odd">
+<td>age''</td>
+<td class="num">-0.23213</td>
+<td class="num">-0.2554</td>
+<td class="num">-0.9593</td>
+<td class="num">0.5025</td>
+<td class="num">100.0 %</td>
+<td class="num">0.894</td>
+<td class="num">0.00027</td>
+</tr>
+<tr class="even">
+<td>sex: male</td>
+<td class="num">1.70071</td>
+<td class="num">1.2000</td>
+<td class="num">-3.0756</td>
+<td class="num">6.3392</td>
+<td class="num">100.0 %</td>
+<td class="num">0.886</td>
+<td class="num">-0.04266</td>
+</tr>
+<tr class="odd">
+<td>smoking: former</td>
+<td class="num">0.12118</td>
+<td class="num">0.1108</td>
+<td class="num">-0.1015</td>
+<td class="num">0.3738</td>
+<td class="num">100.0 %</td>
+<td class="num">0.851</td>
+<td class="num">-0.04765</td>
+</tr>
+<tr class="even">
+<td>smoking: current</td>
+<td class="num">0.80221</td>
+<td class="num">0.8038</td>
+<td class="num">0.5271</td>
+<td class="num">1.0334</td>
+<td class="num">100.0 %</td>
+<td class="num">0.967</td>
+<td class="num">-0.00901</td>
+</tr>
+<tr class="odd">
+<td>diabetes: yes</td>
+<td class="num">0.78439</td>
+<td class="num">0.7585</td>
+<td class="num">0.4264</td>
+<td class="num">4.0470</td>
+<td class="num">100.0 %</td>
+<td class="num">4.460</td>
+<td class="num">0.24956</td>
+</tr>
+<tr class="even">
+<td>centre: B</td>
+<td class="num">-0.14549</td>
+<td class="num">-0.1623</td>
+<td class="num">-0.4008</td>
+<td class="num">0.1282</td>
+<td class="num">100.0 %</td>
+<td class="num">1.027</td>
+<td class="num">-0.00530</td>
+</tr>
+<tr class="odd">
+<td>centre: C</td>
+<td class="num">-0.08326</td>
+<td class="num">-0.1089</td>
+<td class="num">-0.3461</td>
+<td class="num">0.2358</td>
+<td class="num">100.0 %</td>
+<td class="num">1.011</td>
+<td class="num">0.13606</td>
+</tr>
+<tr class="even">
+<td>age × sex: male</td>
+<td class="num">-0.00778</td>
+<td class="num">0.0006</td>
+<td class="num">-0.0994</td>
+<td class="num">0.0854</td>
+<td class="num">100.0 %</td>
+<td class="num">0.884</td>
+<td class="num">-0.24871</td>
+</tr>
+<tr class="odd">
+<td>age' × sex: male</td>
+<td class="num">-0.18520</td>
+<td class="num">-0.2129</td>
+<td class="num">-0.4477</td>
+<td class="num">0.0667</td>
+<td class="num">100.0 %</td>
+<td class="num">0.903</td>
+<td class="num">0.07465</td>
+</tr>
+<tr class="even">
+<td>age'' × sex: male</td>
+<td class="num">0.72963</td>
+<td class="num">0.7983</td>
+<td class="num">-0.2212</td>
+<td class="num">1.6991</td>
+<td class="num">100.0 %</td>
+<td class="num">0.924</td>
+<td class="num">0.07389</td>
+</tr>
+<tr class="odd">
+<td>sbp × diabetes: yes</td>
+<td class="num">0.00000</td>
+<td class="num">0.0000</td>
+<td class="num">-0.2619</td>
+<td class="num">0.0000</td>
+<td class="num">6.0 %</td>
+<td class="num"></td>
+<td class="num"></td>
+</tr>
+</tbody><tfoot>
+<tr class="odd">
+<td colspan="8"><em>Note.</em> 100 bootstrap fits, each repeating the whole procedure. Median and 2.5th-97.5th percentiles count a coefficient left out of a fit as 0; inclusion: share of fits with the coefficient not 0. RMSD ratio: root mean squared difference of the bootstrap estimates from the final one, over its model-based SE (above 1: the selection adds variability the SE ignores). Relative conditional bias: mean estimate where selected over the final estimate, minus 1 (Heinze, Wallisch &amp; Dunkler 2018).</td>
+</tr>
+<tr class="even">
+<td colspan="8"><em>Note.</em> Percentile intervals describe the variability of the whole procedure; they are not exact confidence intervals, least of all for coefficients often shrunk or selected to 0.</td>
+</tr>
+</tfoot>
+
+</table>
+
+</div>
+</div>
+</div>
+<p>How to read it:</p>
+<ul>
+<li><strong>Inclusion</strong>: the share of fits with the coefficient not 0. Strong predictors are always in; bmi is in half of them.</li>
+<li><strong>Median and percentiles</strong> count the fits that dropped a term as 0, so a term often dropped has an interval that touches 0.</li>
+<li><strong>RMSD ratio</strong> compares the bootstrap spread with the model-based standard error: above 1 the selection adds variability that the usual SE ignores. The very large value for diabetes (4.5) comes from the fits that selected the invented sbp × diabetes interaction: in those, the diabetes coefficient means “the effect of diabetes at a systolic pressure of 0” and takes absurd values. Main effects in models with interactions are unstable; report effects within subgroups instead.</li>
+<li><strong>Relative conditional bias</strong>: how much larger the coefficient is in the fits that selected it. Positive values mean that selection inflates effects.</li>
+</ul>
+<div class="cell">
+<div class="cell-output-display">
+<div class="jtable">
+<p class="jtitle">Most Frequent Selected Models (Bootstrap)</p>
+
+<table class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">Terms selected</th>
+<th class="num" data-quarto-table-cell-role="th">Fits</th>
+<th class="num" data-quarto-table-cell-role="th">%</th>
+<th class="num" data-quarto-table-cell-role="th">Cumulative</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>age, centre, chol, diabetes, sbp, sex, smoking, age:sex</td>
+<td class="num">48</td>
+<td class="num">48.0 %</td>
+<td class="num">48.0 %</td>
+</tr>
+<tr class="even">
+<td>age, bmi, centre, chol, diabetes, sbp, sex, smoking, age:sex</td>
+<td class="num">45</td>
+<td class="num">45.0 %</td>
+<td class="num">93.0 %</td>
+</tr>
+<tr class="odd">
+<td>age, bmi, centre, chol, diabetes, sbp, sex, smoking, age:sex, sbp:diabetes</td>
+<td class="num">5</td>
+<td class="num">5.0 %</td>
+<td class="num">98.0 %</td>
+</tr>
+<tr class="even">
+<td>age, bmi, centre, diabetes, sbp, sex, smoking, age:sex</td>
+<td class="num">1</td>
+<td class="num">1.0 %</td>
+<td class="num">99.0 %</td>
+</tr>
+<tr class="odd">
+<td>age, centre, chol, diabetes, sbp, sex, smoking, age:sex, sbp:diabetes</td>
+<td class="num">1</td>
+<td class="num">1.0 %</td>
+<td class="num">100.0 %</td>
+</tr>
+</tbody><tfoot>
+<tr class="odd">
+<td colspan="4"><em>Note.</em> The 5 most frequent sets of selected terms among the bootstrap fits (5 distinct sets).</td>
+</tr>
+</tfoot>
+
+</table>
+
+</div>
+</div>
+</div>
+<p>Only 48% of the bootstrap fits chose the final model; the two most frequent models together make 93%. The model is reasonably stable, which is what one expects with 358 events for a handful of candidates.</p>
+</section>
+<section id="step-5-the-elastic-net-instead" class="level2">
+<h2 class="anchored" data-anchor-id="step-5-the-elastic-net-instead">Step 5: the elastic net instead</h2>
+<p>Stepwise selection is the most criticised step in prediction modelling. The <strong>elastic net</strong> <span class="citation" data-cites="zou2005">(<a href="#ref-zou2005" role="doc-biblioref">Zou and Hastie 2005</a>)</span> estimates all candidates at once with a penalty that shrinks coefficients towards 0 (and sets some exactly to 0), with the penalty λ chosen by cross-validation. Baseline covariates are not penalised. In the panel: <em>Selection of the other predictors: Elastic net</em>, mixing α = 0.5.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>R syntax</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>re <span class="ot">&lt;-</span> <span class="fu">cpLogistic</span>(<span class="at">data =</span> heart, <span class="at">dep =</span> <span class="st">"event10"</span>, <span class="at">eventLevel =</span> <span class="st">"yes"</span>,</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>                 <span class="at">covs =</span> <span class="fu">c</span>(<span class="st">"sbp"</span>, <span class="st">"chol"</span>, <span class="st">"bmi"</span>), <span class="at">splineVars =</span> <span class="st">"age"</span>,</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>                 <span class="at">factors =</span> <span class="fu">c</span>(<span class="st">"sex"</span>, <span class="st">"smoking"</span>, <span class="st">"diabetes"</span>, <span class="st">"centre"</span>),</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>                 <span class="at">covScales =</span> <span class="fu">list</span>(<span class="fu">list</span>(<span class="at">var =</span> <span class="st">"sbp"</span>, <span class="at">scale =</span> <span class="st">"ten"</span>)),</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>                 <span class="at">baseline =</span> <span class="fu">list</span>(<span class="fu">list</span>(<span class="at">var =</span> <span class="st">"age"</span>, <span class="at">forced =</span> <span class="cn">TRUE</span>), <span class="fu">list</span>(<span class="at">var =</span> <span class="st">"sex"</span>, <span class="at">forced =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>                                 <span class="fu">list</span>(<span class="at">var =</span> <span class="st">"centre"</span>, <span class="at">forced =</span> <span class="cn">TRUE</span>)),</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>                 <span class="at">selMode =</span> <span class="st">"enet"</span>, <span class="at">enetAlpha =</span> <span class="fl">0.5</span>, <span class="at">interactions =</span> <span class="fu">list</span>(<span class="fu">list</span>(<span class="st">"age"</span>, <span class="st">"sex"</span>)),</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>                 <span class="at">validation =</span> <span class="st">"boot"</span>, <span class="at">nBoot =</span> <span class="dv">50</span>, <span class="at">seed =</span> <span class="dv">1</span>, <span class="at">enetTune =</span> <span class="cn">FALSE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<div class="jtable">
+<p class="jtitle">Predictor Selection</p>
+
+<table class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">Predictor</th>
+<th data-quarto-table-cell-role="th">Status</th>
+<th class="num" data-quarto-table-cell-role="th">Bootstrap fits</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>sbp</td>
+<td>kept</td>
+<td class="num">100.0 %</td>
+</tr>
+<tr class="even">
+<td>chol</td>
+<td>kept</td>
+<td class="num">100.0 %</td>
+</tr>
+<tr class="odd">
+<td>bmi</td>
+<td>kept</td>
+<td class="num">98.0 %</td>
+</tr>
+<tr class="even">
+<td>smoking</td>
+<td>kept</td>
+<td class="num">100.0 %</td>
+</tr>
+<tr class="odd">
+<td>diabetes</td>
+<td>kept</td>
+<td class="num">100.0 %</td>
+</tr>
+</tbody><tfoot>
+<tr class="odd">
+<td colspan="3"><em>Note.</em> Not shown for a penalised model: standard errors, CIs and p values, likelihood ratio tests, the Shapley decomposition and the heuristic shrinkage factor (a relaxed lasso has them).</td>
+</tr>
+<tr class="even">
+<td colspan="3"><em>Note.</em> Baseline covariates, always in the model and not selected: age, sex, centre.</td>
+</tr>
+<tr class="odd">
+<td colspan="3"><em>Note.</em> Elastic net, mixing α = 0.5, λ = 0.0003068 (minimum deviance, 10-fold cross-validation); baseline covariates are not penalised. A predictor is kept when any of its coefficients is not shrunk to 0; all candidate interactions enter the penalised model.</td>
+</tr>
+<tr class="even">
+<td colspan="3"><em>Note.</em> Resampled fits use the λ of the final model (the tuning itself is not validated); the last column is the share of fits that kept the predictor.</td>
+</tr>
+</tfoot>
+
+</table>
+
+</div>
+</div>
+</div>
+<div class="cell" data-jamovi="re$plots$enetCv">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="selection_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid figure-img" width="1466"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The cross-validated deviance is flat over a wide range of λ and its minimum (solid line) lies at a very small λ: with 2292 patients and a dozen parameters there is little overfitting to penalise, and the elastic net keeps everything with almost no shrinkage. The <em>largest λ within 1 SE</em> rule (dashed line) would choose a sparser model, at the price of more shrinkage than the data need. That agrees with the shrinkage factor of the logistic example (above 0.9). Penalisation matters when the events per parameter are few; here the data were large enough. <em>Repeat the λ tuning in each resampled fit</em> validates the tuning too, at the cost of time.</p>
+</section>
+<section id="step-6-incremental-value" class="level2">
+<h2 class="anchored" data-anchor-id="step-6-incremental-value">Step 6: incremental value</h2>
+<p>Do the modifiable risk factors (blood pressure, cholesterol, bmi, smoking, diabetes) improve on a model with only the baseline covariates (age, sex, centre)? The <strong>incremental value</strong> table compares the baseline model with the full prediction model on the same patients <span class="citation" data-cites="pencina2008 steyerberg2019">(<a href="#ref-pencina2008" role="doc-biblioref">Pencina et al. 2008</a>; <a href="#ref-steyerberg2019" role="doc-biblioref">Steyerberg 2019</a>)</span>.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div class="jtable">
+<p class="jtitle">Incremental Value over the Baseline Model</p>
+
+<table class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="super header">
+<th colspan="5" data-quarto-table-cell-role="th"></th>
+<th colspan="2" data-quarto-table-cell-role="th">Δ 95% CI</th>
+<th data-quarto-table-cell-role="th"></th>
+<th colspan="3" data-quarto-table-cell-role="th">Optimism-corrected</th>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">Data set</th>
+<th data-quarto-table-cell-role="th">Measure</th>
+<th class="num" data-quarto-table-cell-role="th">Baseline</th>
+<th class="num" data-quarto-table-cell-role="th">Full</th>
+<th class="num" data-quarto-table-cell-role="th">Δ</th>
+<th class="num" data-quarto-table-cell-role="th">Lower</th>
+<th class="num" data-quarto-table-cell-role="th">Upper</th>
+<th class="num" data-quarto-table-cell-role="th">p</th>
+<th class="num" data-quarto-table-cell-role="th">Baseline</th>
+<th class="num" data-quarto-table-cell-role="th">Full</th>
+<th class="num" data-quarto-table-cell-role="th">Δ</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Development</td>
+<td>C-statistic (AUC)</td>
+<td class="num">0.60429</td>
+<td class="num">0.6890</td>
+<td class="num">0.08475</td>
+<td class="num">0.0540</td>
+<td class="num">0.1155</td>
+<td class="num">&lt; .001</td>
+<td class="num">0.5935</td>
+<td class="num">0.6733</td>
+<td class="num">0.07980</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Discrimination slope</td>
+<td class="num">0.01705</td>
+<td class="num">0.0692</td>
+<td class="num">0.05219</td>
+<td class="num"></td>
+<td class="num"></td>
+<td class="num"></td>
+<td class="num">0.0147</td>
+<td class="num">0.0622</td>
+<td class="num">0.04749</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>Calibration slope</td>
+<td class="num">1.00000</td>
+<td class="num">1.0000</td>
+<td class="num">0.00000</td>
+<td class="num"></td>
+<td class="num"></td>
+<td class="num"></td>
+<td class="num">0.9204</td>
+<td class="num">0.9135</td>
+<td class="num">-0.00693</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Brier score</td>
+<td class="num">0.12971</td>
+<td class="num">0.1227</td>
+<td class="num">-0.00702</td>
+<td class="num"></td>
+<td class="num"></td>
+<td class="num"></td>
+<td class="num">0.1305</td>
+<td class="num">0.1247</td>
+<td class="num">-0.00580</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>Scaled Brier score</td>
+<td class="num">0.01587</td>
+<td class="num">0.0691</td>
+<td class="num">0.05327</td>
+<td class="num"></td>
+<td class="num"></td>
+<td class="num"></td>
+<td class="num">0.0108</td>
+<td class="num">0.0548</td>
+<td class="num">0.04403</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Nagelkerke R²</td>
+<td class="num">0.02926</td>
+<td class="num">0.1081</td>
+<td class="num">0.07884</td>
+<td class="num"></td>
+<td class="num"></td>
+<td class="num"></td>
+<td class="num">0.0210</td>
+<td class="num">0.0879</td>
+<td class="num">0.06685</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>NRI (continuous)</td>
+<td class="num"></td>
+<td class="num"></td>
+<td class="num">0.51053</td>
+<td class="num">0.4008</td>
+<td class="num">0.6202</td>
+<td class="num">&lt; .001</td>
+<td class="num"></td>
+<td class="num"></td>
+<td class="num"></td>
+</tr>
+<tr class="even">
+<td></td>
+<td>IDI</td>
+<td class="num"></td>
+<td class="num"></td>
+<td class="num">0.05219</td>
+<td class="num">0.0407</td>
+<td class="num">0.0637</td>
+<td class="num">&lt; .001</td>
+<td class="num"></td>
+<td class="num"></td>
+<td class="num"></td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>NRI (risk categories cut at 0.1, 0.2)</td>
+<td class="num"></td>
+<td class="num"></td>
+<td class="num">0.33936</td>
+<td class="num">0.2577</td>
+<td class="num">0.4210</td>
+<td class="num">&lt; .001</td>
+<td class="num"></td>
+<td class="num"></td>
+<td class="num"></td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Net benefit at 0.1</td>
+<td class="num">0.06506</td>
+<td class="num">0.0734</td>
+<td class="num">0.00834</td>
+<td class="num"></td>
+<td class="num"></td>
+<td class="num"></td>
+<td class="num"></td>
+<td class="num"></td>
+<td class="num"></td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>Net benefit at 0.2</td>
+<td class="num">0.00556</td>
+<td class="num">0.0267</td>
+<td class="num">0.02116</td>
+<td class="num"></td>
+<td class="num"></td>
+<td class="num"></td>
+<td class="num"></td>
+<td class="num"></td>
+<td class="num"></td>
+</tr>
+<tr class="even">
+<td></td>
+<td>LR test of the added predictors (χ², df = 9)</td>
+<td class="num"></td>
+<td class="num"></td>
+<td class="num">109.09947</td>
+<td class="num"></td>
+<td class="num"></td>
+<td class="num">&lt; .001</td>
+<td class="num"></td>
+<td class="num"></td>
+<td class="num"></td>
+</tr>
+</tbody><tfoot>
+<tr class="odd">
+<td colspan="11"><em>Note.</em> The test ignores that the added predictors were selected: its p is too small.</td>
+</tr>
+<tr class="even">
+<td colspan="11"><em>Note.</em> Optimism-corrected: each model validated on the same resamples; the full model's validation repeats its selection.</td>
+</tr>
+<tr class="odd">
+<td colspan="11"><em>Note.</em> Baseline model: age, sex, centre. Full model: the prediction model. Δ = full − baseline (for Brier, RMSE and MAE, negative is better).</td>
+</tr>
+<tr class="even">
+<td colspan="11"><em>Note.</em> NRI and IDI are reported for completeness; they can favour miscalibrated models (Pepe et al. 2015) and say less than ΔAUC, the LR test and Δ net benefit.</td>
+</tr>
+</tfoot>
+
+</table>
+
+</div>
+</div>
+</div>
+<p>The AUC rises from 0.604 to 0.689 (Δ = 0.085, 95% CI 0.054–0.115, paired DeLong). The <strong>optimism-corrected</strong> columns validate both models on the same bootstrap samples (repeating the selection for the full model): the gain survives, Δ = 0.080. The likelihood ratio test of the added predictors is highly significant, though its p ignores that the predictors were selected. Net benefit increases at both thresholds. NRI and IDI are reported because readers ask for them, but they can favour miscalibrated models; ΔAUC, the likelihood ratio test and Δ net benefit say more.</p>
+<div class="cell" data-jamovi="r$plots$incRoc">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="selection_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid figure-img" width="1280"></p>
+</figure>
+</div>
+</div>
+</div>
+
+
+
+</section>
+
+<a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a><div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="ref-heinze2018" class="csl-entry" role="listitem">
+Heinze, Georg, Christine Wallisch, and Daniela Dunkler. 2018. <span>“Variable Selection – a Review and Recommendations for the Practicing Statistician.”</span> <em>Biometrical Journal</em> 60 (3): 431–49. <a href="https://doi.org/10.1002/bimj.201700067">https://doi.org/10.1002/bimj.201700067</a>.
+</div>
+<div id="ref-pencina2008" class="csl-entry" role="listitem">
+Pencina, Michael J., Ralph B. D’ Agostino, Ralph B. D’ Agostino, and Ramachandran S. Vasan. 2008. <span>“Evaluating the Added Predictive Ability of a New Marker: From Area Under the ROC Curve to Reclassification and Beyond.”</span> <em>Statistics in Medicine</em> 27 (2): 157–72. <a href="https://doi.org/10.1002/sim.2929">https://doi.org/10.1002/sim.2929</a>.
+</div>
+<div id="ref-steyerberg2019" class="csl-entry" role="listitem">
+Steyerberg, Ewout W. 2019. <em>Clinical Prediction Models: A Practical Approach to Development, Validation, and Updating</em>. In <em>Statistics for Biology and Health</em>. Springer International Publishing. <a href="https://doi.org/10.1007/978-3-030-16399-0">https://doi.org/10.1007/978-3-030-16399-0</a>.
+</div>
+<div id="ref-zou2005" class="csl-entry" role="listitem">
+Zou, Hui, and Trevor Hastie. 2005. <span>“Regularization and Variable Selection via the Elastic Net.”</span> <em>Journal of the Royal Statistical Society Series B: Statistical Methodology</em> 67 (2): 301–20. <a href="https://doi.org/10.1111/j.1467-9868.2005.00503.x">https://doi.org/10.1111/j.1467-9868.2005.00503.x</a>.
+</div>
+</div></section></div></main> <!-- /main -->
+<!-- Collapsible left (contents) and right (on this page) panels on wide
+     screens: a button at each edge, ‹ hides a panel and › brings it back; the
+     text widens into the space; the choice is remembered between pages.
+     Copied from jamovi-skill/templates/tutorial/collapse.html; included with
+     format: html: include-after-body: collapse.html in _quarto.yml. -->
+<style>
+.panel-toggle {
+  position: fixed; top: 50%; transform: translateY(-50%); z-index: 1100;
+  width: 22px; height: 46px; padding: 0; font-size: 20px; line-height: 1;
+  border: 1px solid var(--bs-border-color, #ccc); border-radius: 6px;
+  background: var(--bs-body-bg, #fff); color: var(--bs-body-color, #333);
+  opacity: 0.7; cursor: pointer;
+}
+.panel-toggle:hover { opacity: 1; }
+/* blue, for visibility: the edge buttons and the site title in the contents */
+.panel-toggle { color: #2780e3; border-color: #2780e3; font-weight: bold; opacity: 0.85; }
+.sidebar-title, .sidebar-title a { color: #2780e3 !important; }
+body.quarto-dark .panel-toggle { color: #6aa9f0; border-color: #6aa9f0; }
+body.quarto-dark .sidebar-title, body.quarto-dark .sidebar-title a { color: #6aa9f0 !important; }
+#panel-toggle-left { left: 2px; }
+#panel-toggle-right { right: 2px; }
+@media (max-width: 991.98px) { .panel-toggle { display: none; } }
+@media (min-width: 992px) {
+  body.panel-left-off #quarto-sidebar { display: none !important; }
+  body.panel-right-off #quarto-margin-sidebar { display: none !important; }
+  body.panel-left-off main.content { grid-column-start: page-start !important; }
+  body.panel-right-off main.content { grid-column-end: page-end !important; }
+}
+</style>
+<script>
+(function () {
+  var KEY = "tutorial-panels";
+  var state = { left: true, right: true };
+  try { var s = JSON.parse(localStorage.getItem(KEY)); if (s) state = s; } catch (e) {}
+  function apply() {
+    document.body.classList.toggle("panel-left-off", !state.left);
+    document.body.classList.toggle("panel-right-off", !state.right);
+    var l = document.getElementById("panel-toggle-left"), r = document.getElementById("panel-toggle-right");
+    if (l) { l.textContent = state.left ? "‹" : "›"; l.title = state.left ? "Hide the contents" : "Show the contents"; }
+    if (r) { r.textContent = state.right ? "›" : "‹"; r.title = state.right ? "Hide 'On this page'" : "Show 'On this page'"; }
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
+  }
+  function button(id, side) {
+    var b = document.createElement("button");
+    b.type = "button"; b.id = id; b.className = "panel-toggle";
+    b.addEventListener("click", function () { state[side] = !state[side]; apply(); });
+    document.body.appendChild(b);
+  }
+  document.addEventListener("DOMContentLoaded", function () {
+    if (document.getElementById("quarto-sidebar")) button("panel-toggle-left", "left");
+    if (document.getElementById("quarto-margin-sidebar")) button("panel-toggle-right", "right");
+    apply();
+  });
+})();
+</script>
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../worked/logistic.html" class="pagination-link" aria-label="A logistic prediction model">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">A logistic prediction model</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../worked/external.html" class="pagination-link" aria-label="Validation in new patients and updating">
+        <span class="nav-page-text">Validation in new patients and updating</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+<p>Tutorial for the clinpred jamovi module · V. Moreno</p>
+</div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

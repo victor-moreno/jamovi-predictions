@@ -1,0 +1,142 @@
+{
+  "format": "clinpred-model",
+  "formatVersion": 1,
+  "clinpred": "0.3.0",
+  "family": "binary",
+  "created": "2026-10-08",
+  "outcome": {
+    "name": "event10",
+    "event": "yes",
+    "levels": ["no", "yes"]
+  },
+  "predictors": [
+    {
+      "name": "sbp",
+      "role": "numeric",
+      "range": [90, 183],
+      "mean": 120.317200784827,
+      "sd": 15.7349853142574,
+      "quartiles": [109, 121, 131],
+      "scale": 10,
+      "scaleLabel": "per 10 units"
+    },
+    {
+      "name": "chol",
+      "role": "numeric",
+      "range": [3.2, 10.34],
+      "mean": 5.50392413342054,
+      "sd": 0.998564760357549,
+      "quartiles": [4.81, 5.42, 6.11],
+      "scale": 1,
+      "scaleLabel": "per unit"
+    },
+    {
+      "name": "bmi",
+      "role": "numeric",
+      "range": [17, 40.9],
+      "mean": 27.105035971223,
+      "sd": 4.47696191330479,
+      "quartiles": [24.1, 27.2, 30.2],
+      "scale": 1,
+      "scaleLabel": "per unit"
+    },
+    {
+      "name": "age",
+      "role": "spline",
+      "range": [35, 85],
+      "mean": 60.0130804447351,
+      "sd": 9.87539310606998,
+      "quartiles": [53, 60, 66],
+      "knots": [44, 56, 64, 77]
+    },
+    {
+      "name": "sex",
+      "role": "factor",
+      "levels": ["female", "male"]
+    },
+    {
+      "name": "smoking",
+      "role": "factor",
+      "levels": ["never", "former", "current"]
+    },
+    {
+      "name": "diabetes",
+      "role": "factor",
+      "levels": ["no", "yes"]
+    }
+  ],
+  "interactions": [
+    ["age", "sex"]
+  ],
+  "intercept": {
+    "estimate": -6.49185485305185,
+    "se": 2.62125782321454
+  },
+  "coefficients": [
+    {
+      "term": "sbp",
+      "estimate": 0.161802001151843,
+      "se": 0.0462202705254473
+    },
+    {
+      "term": "chol",
+      "estimate": 0.216254914593051,
+      "se": 0.0688997414689345
+    },
+    {
+      "term": "bmi",
+      "estimate": 0.0171036125158409,
+      "se": 0.0158521691688189
+    },
+    {
+      "term": "age",
+      "estimate": 0.00401719702515615,
+      "se": 0.0507847074983351
+    },
+    {
+      "term": "age'",
+      "estimate": 0.109259628022105,
+      "se": 0.140852890675922
+    },
+    {
+      "term": "age''",
+      "estimate": -0.337017838420921,
+      "se": 0.499111750282139
+    },
+    {
+      "term": "sex: male",
+      "estimate": 2.02814701040469,
+      "se": 3.01917768606358
+    },
+    {
+      "term": "smoking: former",
+      "estimate": 0.0295505990889967,
+      "se": 0.169249683411803
+    },
+    {
+      "term": "smoking: current",
+      "estimate": 0.708157254690128,
+      "se": 0.171611727866104
+    },
+    {
+      "term": "diabetes: yes",
+      "estimate": 0.787176605534169,
+      "se": 0.21955244262291
+    },
+    {
+      "term": "age × sex: male",
+      "estimate": -0.0161430834562648,
+      "se": 0.0611181152343399
+    },
+    {
+      "term": "age' × sex: male",
+      "estimate": -0.167323480050888,
+      "se": 0.175286853253138
+    },
+    {
+      "term": "age'' × sex: male",
+      "estimate": 0.688774641005196,
+      "se": 0.635942158799451
+    }
+  ]
+}

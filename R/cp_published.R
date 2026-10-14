@@ -227,6 +227,9 @@ cp_terms_design <- function(model, data) {
             # data levels the model does not name get every indicator 0: the reference
             ref <- setdiff(inData, used)
             if (length(ref)) notes <- c(notes, sprintf(.("as reference: %s"), paste(sort(ref), collapse = ", ")))
+            # several levels the model does not name all fall into the reference: one of them
+            # is probably a category the model never saw (e.g. 'unknown')
+            if (length(ref) > 1) status <- "Warning"
         }
         mis <- mean(is.na(data[[v]]))
         if (mis > 0) notes <- c(notes, sprintf(.("%s missing"), .pct(mis)))

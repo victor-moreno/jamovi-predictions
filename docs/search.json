@@ -1,0 +1,897 @@
+[
+  {
+    "objectID": "references.html",
+    "href": "references.html",
+    "title": "References",
+    "section": "",
+    "text": "Back to top",
+    "crumbs": [
+      "Home",
+      "Further",
+      "References"
+    ]
+  },
+  {
+    "objectID": "further/reporting.html",
+    "href": "further/reporting.html",
+    "title": "Reporting with TRIPOD+AI",
+    "section": "",
+    "text": "TRIPOD+AI (Collins et al. 2024) is the reporting guideline for studies that develop or validate a clinical prediction model, whether by regression or machine learning. The table maps the methods and results topics of its checklist that depend on the analysis to the clinpred output that documents them. Items on the study design, data sources, ethics, and open science are outside any software.\n\n\n\n\n\n\n\n\nTRIPOD+AI topic\nWhat to report\nWhere in clinpred\n\n\n\n\nSample size\nhow the sample size was decided; whether it was adequate\nSample size adequacy table (criteria of Riley et al.)\n\n\nMissing data\nhow missing data were handled\nMissing values: exploration and patterns tables; the method note under Data\n\n\nData preparation\ncoding of predictors, transformations\neffects table (reference levels, scaling); Model equation (spline knots, coding)\n\n\nType of model, building\nmodel type, predictor selection, interactions\nselection and interaction tables, with their notes (method, criterion, baseline covariates)\n\n\nInternal validation\nmethod, and that it includes all modelling steps\nperformance note (bootstrap or cross-validation; selection repeated in each fit)\n\n\nPerformance measures\ndiscrimination, calibration, clinical utility\nPerformance tables; calibration plot; decision curve\n\n\nUpdating\nmethods to update the model in validation data\nModel updating table and note\n\n\nHeterogeneity / fairness\nperformance across subgroups or settings\nperformance per validation set; case-mix table\n\n\nParticipants\nnumbers, outcome events\nData table (per data set, with excluded rows)\n\n\nCharacteristics\npredictors by outcome; development vs validation\nDescriptives; case-mix table\n\n\nFull model\nall coefficients, intercept, baseline risk\nModel coefficients; Model equation; Export model (JSON)\n\n\nPerformance\nwith confidence intervals; optimism corrected\nPerformance in the Development Data (apparent, CI, corrected); Performance in the Validation Data\n\n\nCalibration\ncalibration plot and measures\ncalibration plot; calibration-in-the-large, slope, O/E, ICI\n\n\nUpdating results\nthe updated model and its performance\nModel updating table\n\n\n\nTwo habits help a report:\n\nReport the corrected numbers, not the apparent ones, for the development data, and say how many bootstrap samples (or folds and repeats) were used — the note under the performance table has it.\nGive the model: the equation with the spline formula and the baseline survival at the horizon, or the exported JSON as a supplement. A model that cannot be computed by a reader cannot be validated by anyone else.\n\n\n\n\n\n Back to topReferences\n\nCollins, Gary S, Karel G M Moons, Paula Dhiman, et al. 2024. “TRIPOD+AI Statement: Updated Guidance for Reporting Clinical Prediction Models That Use Regression or Machine Learning Methods.” BMJ 385 (April): e078378. https://doi.org/10.1136/bmj-2023-078378.",
+    "crumbs": [
+      "Home",
+      "Further",
+      "Reporting with TRIPOD+AI"
+    ]
+  },
+  {
+    "objectID": "foundations/validation.html",
+    "href": "foundations/validation.html",
+    "title": "Validation and updating",
+    "section": "",
+    "text": "Internal validation estimates how the model would perform in new patients from the same population, using only the development data. Splitting the data once into a training and a test part is the worst way: it wastes data and the result depends on the split. clinpred offers the two recommended methods (Steyerberg 2019).\n\n\nHarrell’s bootstrap (HARRELL et al. 1996) estimates the optimism directly:\n\n\n\n\n\nflowchart LR\n  A[\"Development data&lt;br/&gt;(n patients)\"] --&gt; B[\"Fit the model&lt;br/&gt;apparent performance\"]\n  A --&gt; C[\"Draw a bootstrap sample&lt;br/&gt;(n patients, with replacement)\"]\n  C --&gt; D[\"Repeat the whole procedure&lt;br/&gt;(selection, tuning, fit)\"]\n  D --&gt; E[\"Performance in the&lt;br/&gt;bootstrap sample\"]\n  D --&gt; F[\"Performance in the&lt;br/&gt;original data\"]\n  E --&gt; G[\"Optimism = E − F\"]\n  F --&gt; G\n  G --&gt; H[\"Average over 200 samples&lt;br/&gt;corrected = apparent − optimism\"]\n  B --&gt; H\n\n\n\n\n\n\nThe key is the second box from the left: everything that was done to build the model — variable selection, choice of interactions, the elastic net’s λ — is repeated in every bootstrap sample, so its optimism is included. clinpred does this automatically: the fitting procedure is a single function, used for the final model and for every resampled fit.\nTwo by-products come free:\n\nthe uniform shrinkage factor, the mean calibration slope of the bootstrap models in the original data (how much the coefficients should be shrunk), next to van Houwelingen’s heuristic estimate;\nprediction stability (Riley and Collins 2023): each bootstrap model predicts every patient, so the spread of a patient’s predicted risk across models (the instability plot, the mean absolute prediction error, MAPE) shows how much an individual prediction depends on the particular data.\n\n\n\n\nRepeated k-fold cross-validation splits the data into k parts, fits the model on k − 1 and predicts the left-out part, so that every patient is predicted by a model that did not see them; repeating with new splits stabilises the result. clinpred stratifies the folds by the outcome and repeats the whole procedure in every fold too. The bootstrap is preferred for small data; cross-validation is closer to what an external sample would give when data are large.",
+    "crumbs": [
+      "Home",
+      "Foundations",
+      "Validation and updating"
+    ]
+  },
+  {
+    "objectID": "foundations/validation.html#internal-validation",
+    "href": "foundations/validation.html#internal-validation",
+    "title": "Validation and updating",
+    "section": "",
+    "text": "Internal validation estimates how the model would perform in new patients from the same population, using only the development data. Splitting the data once into a training and a test part is the worst way: it wastes data and the result depends on the split. clinpred offers the two recommended methods (Steyerberg 2019).\n\n\nHarrell’s bootstrap (HARRELL et al. 1996) estimates the optimism directly:\n\n\n\n\n\nflowchart LR\n  A[\"Development data&lt;br/&gt;(n patients)\"] --&gt; B[\"Fit the model&lt;br/&gt;apparent performance\"]\n  A --&gt; C[\"Draw a bootstrap sample&lt;br/&gt;(n patients, with replacement)\"]\n  C --&gt; D[\"Repeat the whole procedure&lt;br/&gt;(selection, tuning, fit)\"]\n  D --&gt; E[\"Performance in the&lt;br/&gt;bootstrap sample\"]\n  D --&gt; F[\"Performance in the&lt;br/&gt;original data\"]\n  E --&gt; G[\"Optimism = E − F\"]\n  F --&gt; G\n  G --&gt; H[\"Average over 200 samples&lt;br/&gt;corrected = apparent − optimism\"]\n  B --&gt; H\n\n\n\n\n\n\nThe key is the second box from the left: everything that was done to build the model — variable selection, choice of interactions, the elastic net’s λ — is repeated in every bootstrap sample, so its optimism is included. clinpred does this automatically: the fitting procedure is a single function, used for the final model and for every resampled fit.\nTwo by-products come free:\n\nthe uniform shrinkage factor, the mean calibration slope of the bootstrap models in the original data (how much the coefficients should be shrunk), next to van Houwelingen’s heuristic estimate;\nprediction stability (Riley and Collins 2023): each bootstrap model predicts every patient, so the spread of a patient’s predicted risk across models (the instability plot, the mean absolute prediction error, MAPE) shows how much an individual prediction depends on the particular data.\n\n\n\n\nRepeated k-fold cross-validation splits the data into k parts, fits the model on k − 1 and predicts the left-out part, so that every patient is predicted by a model that did not see them; repeating with new splits stabilises the result. clinpred stratifies the folds by the outcome and repeats the whole procedure in every fold too. The bootstrap is preferred for small data; cross-validation is closer to what an external sample would give when data are large.",
+    "crumbs": [
+      "Home",
+      "Foundations",
+      "Validation and updating"
+    ]
+  },
+  {
+    "objectID": "foundations/validation.html#external-validation",
+    "href": "foundations/validation.html#external-validation",
+    "title": "Validation and updating",
+    "section": "External validation",
+    "text": "External validation\nA model must eventually be tested in patients from another time, place or setting. clinpred applies the development model, unchanged (the same coefficients and, for Cox models, the same baseline hazard), to:\n\nthe rows marked by a validation split variable in the same data set (e.g. a later recruitment period — temporal validation, or another centre — geographical), and/or\nan external data file (csv, tsv, txt, omv, xlsx, sav). Its columns are matched by name (ignoring case), its factor levels to the development levels, and a check table reports what could not be matched or lies beyond the development range.\n\nWhether performance holds or drops must be interpreted against the case-mix of the new population (Debray et al. 2015). clinpred’s case-mix table compares the predictors, the spread of the linear predictor (a wider spread raises discrimination by itself) and a membership c-statistic: how well a model can tell development from validation patients. Near 0.5 the validation tests reproducibility (same kind of patients); high values test transportability to a different population. For Cox models see also Royston and Altman (2013).",
+    "crumbs": [
+      "Home",
+      "Foundations",
+      "Validation and updating"
+    ]
+  },
+  {
+    "objectID": "foundations/validation.html#updating",
+    "href": "foundations/validation.html#updating",
+    "title": "Validation and updating",
+    "section": "Updating",
+    "text": "Updating\nA model that discriminates well but is miscalibrated in a new population does not need to be rebuilt: it can be updated with a few parameters estimated in the new data (Steyerberg 2019; Houwelingen 2000):\n\n\n\n\n\n\n\n\nMethod\nWhat is re-estimated\nParameters\n\n\n\n\nOriginal model\nnothing\n0\n\n\nRecalibration in the large\nthe intercept (Cox: the baseline risk at the horizon)\n1\n\n\nRecalibration\nintercept and slope of the linear predictor\n2\n\n\nModel revision\nevery coefficient\nall\n\n\n\nThe simpler methods are preferred unless the data clearly need more. For logistic and linear models, clinpred chooses with the closed testing procedure of Vergouwe et al. (2017): each method is compared with revision by a likelihood ratio (or F) test, and the first method, from the original model up, that is not significantly worse than revision is kept.\nFor Cox models the partial likelihood does not involve the baseline hazard, so a change of the baseline risk cannot be tested against revision the same way. clinpred uses sequential tests from the most complex method down: revision against recalibration (partial likelihood ratio), slope = 1 (partial likelihood ratio), and observed/expected risk at the horizon = 1 (a Wald test of log O/E); the most complex method whose test is significant is chosen.\nUpdated models are evaluated in the same data that updated them, so their performance is optimistic — most of all for revision.",
+    "crumbs": [
+      "Home",
+      "Foundations",
+      "Validation and updating"
+    ]
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Clinical prediction models in jamovi",
+    "section": "",
+    "text": "A clinical prediction model turns what is known about a patient today (age, sex, blood pressure, a biomarker) into a probability: the risk of having a disease now (diagnostic) or of developing an event later (prognostic). Building one is easy; building one that works in the next patients is not. The model is fitted to the data it is evaluated on, so its apparent performance flatters it; it can be miscalibrated in another hospital or period; and a long list of candidate predictors invites overfitting. This tutorial follows the workflow that the TRIPOD+AI guideline (Collins et al. 2024) and the textbooks (Steyerberg 2019) recommend, and shows each step with the clinpred module for jamovi.",
+    "crumbs": [
+      "Home",
+      "Clinical prediction models in jamovi"
+    ]
+  },
+  {
+    "objectID": "index.html#what-the-module-does",
+    "href": "index.html#what-the-module-does",
+    "title": "Clinical prediction models in jamovi",
+    "section": "What the module does",
+    "text": "What the module does\nclinpred adds a Prediction menu with four analyses:\n\n\n\n\n\n\n\n\nAnalysis\nOutcome\nModel\n\n\n\n\nBinary Outcome (Logistic)\nevent / no event\nlogistic regression\n\n\nContinuous Outcome (Linear)\na measurement\nlinear regression\n\n\nTime to Event (Cox)\ntime + event, risk by a horizon\nCox regression\n\n\nValidate a Published Model\nany of the three\nread from a file\n\n\n\nThe three development analyses share the same panel and results: predictors (linear, splines, factors, interactions), selection (baseline covariates, stepwise, elastic net), missing data, performance (discrimination, calibration, overall, clinical utility), internal validation (bootstrap, cross-validation), validation in new data (a split of the data or an external file), model updating, sample size, and explanation (effects, importance, SHAP). Every table can carry plain-language notes (Explanations).",
+    "crumbs": [
+      "Home",
+      "Clinical prediction models in jamovi"
+    ]
+  },
+  {
+    "objectID": "index.html#how-to-read-this-tutorial",
+    "href": "index.html#how-to-read-this-tutorial",
+    "title": "Clinical prediction models in jamovi",
+    "section": "How to read this tutorial",
+    "text": "How to read this tutorial\n\nFoundations explains the concepts with as little algebra as possible: what a prediction model is and why it overfits, how its performance is measured, and how it is validated.\nWorked examples run the module step by step on one data set. Each page states the question, the options to set in the panel, the tables and plots jamovi shows, and how to read them. Start with the logistic model; the others build on it.\nFurther maps the module’s output to the TRIPOD+AI reporting items and has a glossary.\n\nEvery table and plot in the worked examples is computed by the module’s own code, so it is what jamovi shows with the same options. The folded R syntax under each example is the equivalent call from R (clinpred::cpLogistic(...)), useful for reproducing a result outside jamovi.",
+    "crumbs": [
+      "Home",
+      "Clinical prediction models in jamovi"
+    ]
+  },
+  {
+    "objectID": "index.html#the-example-data",
+    "href": "index.html#the-example-data",
+    "title": "Clinical prediction models in jamovi",
+    "section": "The example data",
+    "text": "The example data\nThe examples use a simulated heart cohort of 2400 patients, available in jamovi’s Data Library (☰ → Open → Data Library → Clinical Prediction Models) and here as heart_cohort.omv. It is simulated, so the true model is known: age acts non-linearly, the excess risk of men falls with age (an age × sex interaction), body mass index has some missing values, and the later recruitment period has a slightly lower baseline risk. Each patient has three outcomes:\n\n\n\n\n\n\n\n\nOutcome\nAnalysis\nWhat it is\n\n\n\n\nevent10 (no / yes)\nLogistic\ncardiovascular event within 10 years (369 events, 15.4%)\n\n\nsbp1y\nLinear\nsystolic blood pressure one year later\n\n\ntime, status\nCox\nfollow-up in years and whether the event happened\n\n\n\nPredictors: age, sex, smoking (never / former / current), sbp (systolic blood pressure), chol (cholesterol), bmi, diabetes; centre (A, B, C) and period (2012–2016, 2017–2019) describe where and when the patient was recruited.\nAn external cohort of 1,000 patients from another population, heart_external.csv, is used for external validation. It has the problems real files have: columns named with other capitals, levels spelled differently, unknown categories and values beyond the development range.",
+    "crumbs": [
+      "Home",
+      "Clinical prediction models in jamovi"
+    ]
+  },
+  {
+    "objectID": "index.html#installing-the-module",
+    "href": "index.html#installing-the-module",
+    "title": "Clinical prediction models in jamovi",
+    "section": "Installing the module",
+    "text": "Installing the module\nclinpred needs jamovi 28.4 or later (the current series). Download the .jmo file for your computer from the releases page and, in jamovi, choose Modules (⊕) → Sideload. The analyses appear under Prediction. The options, tables and plots are available in English, Spanish and Catalan, following jamovi’s language setting.",
+    "crumbs": [
+      "Home",
+      "Clinical prediction models in jamovi"
+    ]
+  },
+  {
+    "objectID": "worked/published.html",
+    "href": "worked/published.html",
+    "title": "Validating a published model",
+    "section": "",
+    "text": "Question. A paper reports a logistic model for the 10-year cardiovascular risk, as a table of coefficients. Does it work in our patients (the external cohort)? Most published models are never validated outside the data that produced them; this is the analysis that should come before using one.",
+    "crumbs": [
+      "Home",
+      "Worked examples in jamovi",
+      "Validating a published model"
+    ]
+  },
+  {
+    "objectID": "worked/published.html#the-model-file",
+    "href": "worked/published.html#the-model-file",
+    "title": "Validating a published model",
+    "section": "The model file",
+    "text": "The model file\nValidate a Published Model reads either a clinpred export (JSON, written by Export model in any development analysis: predictors, coding, spline knots, coefficients and, for Cox, the baseline survival) or a table (csv, tsv, txt or xlsx) with the columns term, estimate and, optionally, SE. Here is the table of our paper, published_logistic.csv:\n\n\n\n\n\nterm\nestimate\nSE\n\n\n\n\nIntercept\n-6.3769300\n2.3390000\n\n\nage\n-0.0449736\n0.0688000\n\n\nage^2\n0.0007385\n0.0005383\n\n\nsex = male\n3.7014200\n0.9184000\n\n\nsmoking = former\n0.0429183\n0.1686000\n\n\nsmoking = current\n0.7213390\n0.1709000\n\n\nsbp/10\n0.1648230\n0.0460400\n\n\nlog(chol)\n1.2931600\n0.3949000\n\n\ndiabetes = yes\n0.8140290\n0.2166000\n\n\nage * sex = male\n-0.0534244\n0.0146000\n\n\n\n\n\nTerms name variables of the data and are parsed, never run as code: age, sex = male (also sex: male or R’s sexmale), log(chol), sqrt(x), exp(x), age^2, sbp/10, and products with *. A Cox model adds rows baseline survival (at the horizon), horizon and, if the published prognostic index was centred, centre.",
+    "crumbs": [
+      "Home",
+      "Worked examples in jamovi",
+      "Validating a published model"
+    ]
+  },
+  {
+    "objectID": "worked/published.html#step-1-the-panel",
+    "href": "worked/published.html#step-1-the-panel",
+    "title": "Validating a published model",
+    "section": "Step 1: the panel",
+    "text": "Step 1: the panel\nOpen heart_external.csv in jamovi and Prediction → Validate a Published Model:\n\n\n\n\n\n\n\nPanel\nSetting\n\n\n\n\nModel file\npublished_logistic.csv\n\n\nModel type\nBinary outcome (logistic)\n\n\nOutcome / event\nevent10, Event level yes\n\n\nPredictor variables\nAge, SEX, smoking, sbp, chol, bmi, diabetes\n\n\nOptions\nModel updating; Calibration plot, ROC curve\n\n\n\njamovi gives an analysis only the variables in its boxes, so every variable the model uses must be in Predictor variables. Names are matched ignoring case (Age for age).\n\n\nR syntax\nr &lt;- cpPublished(data = ext, modelFile = list(path = \"published_logistic.csv\"),\n                 family = \"binary\", dep = \"event10\", eventLevel = \"yes\",\n                 covs = c(\"Age\", \"SEX\", \"smoking\", \"sbp\", \"chol\", \"bmi\", \"diabetes\"),\n                 updating = TRUE, calPlot = TRUE, rocPlot = TRUE)",
+    "crumbs": [
+      "Home",
+      "Worked examples in jamovi",
+      "Validating a published model"
+    ]
+  },
+  {
+    "objectID": "worked/published.html#step-2-the-model-and-the-check",
+    "href": "worked/published.html#step-2-the-model-and-the-check",
+    "title": "Validating a published model",
+    "section": "Step 2: the model and the check",
+    "text": "Step 2: the model and the check\n\n\n\nModel\n\n\n\n\n\n95% CI\n\n\n\nTerm\nEstimate\nSE\nOR\nLower\nUpper\np\n\n\n\n\nIntercept\n-6.3769\n2.3390\n\n-10.961\n-1.793\n.006\n\n\nage\n-0.0450\n0.0688\n0.956\n0.835\n1.094\n.513\n\n\nage^2\n0.0007\n0.0005\n1.001\n1.000\n1.002\n.170\n\n\nsex = male\n3.7014\n0.9184\n40.505\n6.695\n245.047\n&lt; .001\n\n\nsmoking = former\n0.0429\n0.1686\n1.044\n0.750\n1.453\n.799\n\n\nsmoking = current\n0.7213\n0.1709\n2.057\n1.472\n2.876\n&lt; .001\n\n\nsbp/10\n0.1648\n0.0460\n1.179\n1.077\n1.291\n&lt; .001\n\n\nlog(chol)\n1.2932\n0.3949\n3.644\n1.681\n7.902\n.001\n\n\ndiabetes = yes\n0.8140\n0.2166\n2.257\n1.476\n3.451\n&lt; .001\n\n\nage * sex = male\n-0.0534\n0.0146\n0.948\n0.921\n0.975\n&lt; .001\n\n\n\nNote. Read from published_logistic.csv (a table of coefficients).\n\n\n\n\n\n\n\n\n\nVariables\n\n\n\n\nVariable\nRole\nStatus\nDetails\n\n\n\n\nevent10\nOutcome\nOK\nevent: yes\n\n\nAge\nPredictor\nOK\ncolumn 'Age'\n\n\nSEX\nPredictor\nOK\ncolumn 'SEX'; as reference: Female\n\n\nsmoking\nPredictor\nWarning\nas reference: never, unknown\n\n\nsbp\nPredictor\nOK\n\n\n\nchol\nPredictor\nOK\n\n\n\ndiabetes\nPredictor\nOK\nas reference: no\n\n\n\n\n\n\n\nThe model table repeats the published coefficients with their odds ratios and Wald intervals (from the published SEs). The check is the important table: it says which column each term matched and which levels act as the reference. A coefficient table does not say what the reference level is — every level that the table does not name gets all its indicators 0. For smoking that is never and unknown: the 12 patients with unknown smoking status are treated as never smokers, hence the warning. Recode them, or exclude them, before trusting the result.",
+    "crumbs": [
+      "Home",
+      "Worked examples in jamovi",
+      "Validating a published model"
+    ]
+  },
+  {
+    "objectID": "worked/published.html#step-3-performance-and-updating",
+    "href": "worked/published.html#step-3-performance-and-updating",
+    "title": "Validating a published model",
+    "section": "Step 3: performance and updating",
+    "text": "Step 3: performance and updating\n\n\n\nPerformance in the Data\n\n\n\n\n\n95% CI\n\n\n\nMeasure\nEstimate\nLower\nUpper\n\n\n\n\nDiscrimination\nC-statistic (AUC)\n0.6732\n0.634\n0.710\n\n\n\nDiscrimination slope\n0.0847\n\n\n\n\nCalibration\nCalibration-in-the-large\n0.3274\n0.180\n0.475\n\n\n\nCalibration slope\n0.8412\n0.644\n1.039\n\n\n\nO/E ratio\n1.2471\n1.127\n1.380\n\n\n\nICI\n0.0536\n\n\n\n\n\nE50\n0.0510\n\n\n\n\n\nE90\n0.0863\n\n\n\n\n\nEmax\n0.2140\n\n\n\n\nOverall\nBrier score\n0.1857\n0.170\n0.201\n\n\n\nScaled Brier score\n0.0666\n\n\n\n\n\nNagelkerke R²\n0.0806\n\n\n\n\n\nCox–Snell R²\n0.0557\n\n\n\n\n\nNote. The published model is applied unchanged. Calibration-in-the-large (or O/E) far from its ideal means that the overall risk differs from the population where the model was developed; a calibration slope below 1, that its predictions are too extreme here.\n\n\n\n\n\n\n\n\n\nModel Updating\n\n\n\n\n\nvs revision\n\n\n\nMethod\nParameters\nIntercept\nSlope\nχ²\ndf\np\nChosen\nAUC\nBrier\nICI\n\n\n\n\nOriginal model\n0\n0.000\n1.000\n31.0\n10\n&lt; .001\n\n0.673\n0.186\n0.0536\n\n\nRecalibration in the large\n1\n0.327\n1.000\n12.8\n9\n.171\n✓\n0.673\n0.183\n0.0216\n\n\nRecalibration\n2\n0.132\n0.841\n10.4\n8\n.237\n\n0.673\n0.183\n0.0202\n\n\nModel revision\n10\n\n\n\n\n\n\n0.680\n0.180\n0.0215\n\n\n\nNote. Recalibration re-estimates the intercept and the slope of the published linear predictor; revision re-estimates every coefficient. Each test compares a method with revision; the closed testing procedure (Vergouwe et al. 2017) keeps the first method, from the original model up, not significantly worse than revision at α = 0.05 (✓). Performance of an updated model is measured in the data used to update it, so it is optimistic.\n\n\n\n\n\n\n\n\nIn this population the published model discriminates modestly (AUC 0.673) and under-predicts (O/E 1.25). The closed testing procedure chooses recalibration in the large: a new intercept (0.33 added to the published linear predictor) is enough; the effects of the risk factors transport.",
+    "crumbs": [
+      "Home",
+      "Worked examples in jamovi",
+      "Validating a published model"
+    ]
+  },
+  {
+    "objectID": "worked/published.html#a-clinpred-export",
+    "href": "worked/published.html#a-clinpred-export",
+    "title": "Validating a published model",
+    "section": "A clinpred export",
+    "text": "A clinpred export\nThe same patients with the model exported from the heart cohort analysis (heart_logistic_model.json, age as a spline, systolic pressure per 10 mmHg, an age × sex interaction):\n\n\nR syntax\nr2 &lt;- cpPublished(data = ext, modelFile = list(path = \"heart_logistic_model.json\"),\n                  family = \"binary\", dep = \"event10\", eventLevel = \"yes\",\n                  covs = c(\"Age\", \"SEX\", \"smoking\", \"sbp\", \"chol\", \"bmi\", \"diabetes\"))\n\n\n\n\n\nVariables\n\n\n\n\nVariable\nRole\nStatus\nDetails\n\n\n\n\nevent10\nOutcome\nOK\nevent: yes\n\n\nsbp\nPredictor\nOK\n2.5% outside the development range [90, 183]\n\n\nchol\nPredictor\nOK\n0.2% outside the development range [3.2, 10.3]\n\n\nbmi\nPredictor\nOK\n0.2% outside the development range [17, 40.9]; 8.0% missing\n\n\nage\nPredictor\nOK\nmatched to column 'Age'\n\n\nsex\nPredictor\nOK\nmatched to column 'SEX'\n\n\nsmoking\nPredictor\nWarning\n12 rows with levels not in development (unknown) set to missing; 1.2% missing\n\n\ndiabetes\nPredictor\nOK\n\n\n\n\n\n\n\n\nA JSON model carries its own coding: the factor levels it knows, the spline knots and the development range of each variable. Its check therefore reports, like the external validation of a development analysis, the levels it does not know (unknown smoking, set to missing) and the values beyond the development range. The results equal those of the external file in the external validation example, as they should: it is the same model.",
+    "crumbs": [
+      "Home",
+      "Worked examples in jamovi",
+      "Validating a published model"
+    ]
+  },
+  {
+    "objectID": "worked/linear.html",
+    "href": "worked/linear.html",
+    "title": "A continuous outcome (linear)",
+    "section": "",
+    "text": "Question. Can next year’s systolic blood pressure (sbp1y) be predicted from today’s measurements? A continuous outcome needs no event and no threshold: the prediction is a value, and its error is in mmHg.",
+    "crumbs": [
+      "Home",
+      "Worked examples in jamovi",
+      "A continuous outcome (linear)"
+    ]
+  },
+  {
+    "objectID": "worked/linear.html#step-1-the-panel",
+    "href": "worked/linear.html#step-1-the-panel",
+    "title": "A continuous outcome (linear)",
+    "section": "Step 1: the panel",
+    "text": "Step 1: the panel\nPrediction → Continuous Outcome (Linear):\n\n\n\n\n\n\n\nPanel\nSetting\n\n\n\n\nOutcome\nsbp1y\n\n\nPredictors\nsbp, chol, bmi; spline age; factors sex, smoking, diabetes\n\n\nValidation\nCross-validation, 10 folds × 5 repeats; validation split period = 2017-2019; Model updating\n\n\nModel\nDescriptive table; Effects; Sample size adequacy\n\n\nPlots\nCalibration plot\n\n\n\n\n\nR syntax\nr &lt;- cpLinear(data = heart, dep = \"sbp1y\", covs = c(\"sbp\", \"chol\", \"bmi\"), splineVars = \"age\",\n              factors = c(\"sex\", \"smoking\", \"diabetes\"), descTable = TRUE, oddsRatios = TRUE,\n              validation = \"cv\", nFolds = 10, nRepeats = 5, seed = 1,\n              splitVar = \"period\", splitLevel = \"2017-2019\", updating = TRUE,\n              sampleSize = TRUE, calPlot = TRUE, explain = TRUE)",
+    "crumbs": [
+      "Home",
+      "Worked examples in jamovi",
+      "A continuous outcome (linear)"
+    ]
+  },
+  {
+    "objectID": "worked/linear.html#step-2-effects",
+    "href": "worked/linear.html#step-2-effects",
+    "title": "A continuous outcome (linear)",
+    "section": "Step 2: effects",
+    "text": "Step 2: effects\n\n\n\nDescriptives (Development Data)\n\n\n\n\n\n\nValue\nOutcome\nMissing\n\n\n\n\nPatients\nn\n1600\n122.78 (14.86)\n\n\n\nsbp\nmean (SD)\n120.51 (15.73)\nr = 0.769\n0\n\n\nchol\nmean (SD)\n5.51 (1.00)\nr = -0.027\n22\n\n\nbmi\nmean (SD)\n27.10 (4.47)\nr = 0.230\n51\n\n\nage\nmean (SD)\n60.05 (9.86)\nr = 0.273\n0\n\n\nsex\nfemale\n779 (48.7%)\n122.09 (15.22)\n0\n\n\n\nmale\n821 (51.3%)\n123.44 (14.48)\n\n\n\nsmoking\nnever\n817 (51.1%)\n122.20 (14.81)\n0\n\n\n\nformer\n480 (30.0%)\n121.95 (14.91)\n\n\n\n\ncurrent\n303 (18.9%)\n125.65 (14.60)\n\n\n\ndiabetes\nno\n1470 (91.9%)\n122.12 (14.68)\n0\n\n\n\nyes\n130 (8.1%)\n130.25 (14.82)\n\n\n\n\nNote. Development rows, before excluding missing values. Outcome: its mean (SD) overall and in each factor level, and its Pearson correlation with each numeric predictor.\n\n\n\n\n\n\n\n\n\nEffects on the Outcome\n\n\n\n\n\nCrude\nAdjusted\n\n\n\n\nβ\nLower\nUpper\np\nβ\nLower\nUpper\np\n\n\n\n\nsbp\nper unit\n0.724\n0.694\n0.754\n&lt; .001\n0.69145\n0.6618\n0.721\n&lt; .001\n\n\nchol\nper unit\n-0.348\n-1.094\n0.397\n.360\n0.00227\n-0.4460\n0.451\n.992\n\n\nbmi\nper unit\n0.750\n0.588\n0.912\n&lt; .001\n0.54557\n0.4445\n0.647\n&lt; .001\n\n\nage\nQ3 vs Q1 (66 vs 53)\n4.192\n2.251\n6.133\n&lt; .001\n0.71596\n-0.5067\n1.939\n&lt; .001\n\n\nsex\nfemale\n0.000\n\n\n.034\n0.00000\n\n\n.072\n\n\n\nmale\n1.610\n0.123\n3.097\n.034\n0.82275\n-0.0749\n1.720\n.072\n\n\nsmoking\nnever\n0.000\n\n\n&lt; .001\n0.00000\n\n\n&lt; .001\n\n\n\nformer\n-0.130\n-1.837\n1.576\n.881\n-0.66689\n-1.6982\n0.364\n.205\n\n\n\ncurrent\n3.606\n1.613\n5.599\n&lt; .001\n2.53229\n1.3308\n3.734\n&lt; .001\n\n\ndiabetes\nno\n0.000\n\n\n&lt; .001\n0.00000\n\n\n&lt; .001\n\n\n\nyes\n8.005\n5.308\n10.703\n&lt; .001\n4.93120\n3.2698\n6.593\n&lt; .001\n\n\n\nNote. Crude: each predictor alone, on the same rows. Adjusted: in the prediction model.\n\n\nNote. Spline predictors: difference in the mean outcome between the third and the first quartile; the p is the F test of the whole (non-linear) association.\n\n\nNote. The p on a factor's reference row is the F test of the factor.\n\n\n\n\n\n\n\n\nFor a linear model the effects are differences in the mean outcome: each mmHg of today’s pressure predicts 0.69 mmHg next year (regression to the mean makes it less than 1), current smokers 2.5 mmHg more than never smokers, other things equal. The descriptive table shows each predictor’s crude association with the outcome (a correlation for numeric predictors, the outcome mean by level for factors).",
+    "crumbs": [
+      "Home",
+      "Worked examples in jamovi",
+      "A continuous outcome (linear)"
+    ]
+  },
+  {
+    "objectID": "worked/linear.html#step-3-performance",
+    "href": "worked/linear.html#step-3-performance",
+    "title": "A continuous outcome (linear)",
+    "section": "Step 3: performance",
+    "text": "Step 3: performance\n\n\n\nPerformance in the Development Data\n\n\n\n\n\n95% CI\n\n\n\n\nMeasure\nApparent\nLower\nUpper\nOptimism\nCross-validated\n\n\n\n\nOverall\nR²\n0.642\n\n\n0.00540\n0.63698\n\n\n\nRMSE\n8.868\n\n\n-0.06669\n8.93517\n\n\n\nMAE\n7.081\n6.813\n7.349\n-0.05183\n7.13255\n\n\nCalibration\nCalibration-in-the-large\n0.000\n-0.445\n0.445\n0.00178\n-0.00178\n\n\n\nCalibration slope\n1.000\n0.963\n1.037\n0.00478\n0.99522\n\n\n\nNote. Cross-validation: 10 folds × 5 repeats, stratified by outcome quintiles; performance of the out-of-fold predictions, averaged over repeats.\n\n\nNote. R²: 1 − residual sum of squares / total sum of squares around the mean of the data in which it is measured (can be negative outside the development data). RMSE: root mean squared error; MAE: mean absolute error, in the units of the outcome (lower is better). Calibration-in-the-large: mean of observed − predicted, 0 is ideal. Calibration slope: of the regression of the observed on the predicted outcome, 1 is ideal; below 1 the predictions are too extreme (overfitting).\n\n\n\n\n\n\n\n\nThe model explains 64% of the variance of next year’s pressure after cross-validation; a typical error is 7.1 mmHg (MAE) or 8.9 mmHg (RMSE). With few parameters and many patients the optimism is tiny. Repeated cross-validation predicts every patient with a model that did not see them, five times over different splits.",
+    "crumbs": [
+      "Home",
+      "Worked examples in jamovi",
+      "A continuous outcome (linear)"
+    ]
+  },
+  {
+    "objectID": "worked/linear.html#step-4-temporal-validation-and-updating",
+    "href": "worked/linear.html#step-4-temporal-validation-and-updating",
+    "title": "A continuous outcome (linear)",
+    "section": "Step 4: temporal validation and updating",
+    "text": "Step 4: temporal validation and updating\n\n\n\nPerformance in the Validation Data\n\n\n\n\n\n95% CI\n\n\nData set\n\nMeasure\nEstimate\nLower\nUpper\n\n\n\n\nValidation (period = 2017-2019)\nOverall\nR²\n0.601\n\n\n\n\n\n\nRMSE\n9.381\n\n\n\n\n\n\nMAE\n7.569\n7.175\n7.96\n\n\n\nCalibration\nCalibration-in-the-large\n0.792\n0.127\n1.46\n\n\n\n\nCalibration slope\n0.981\n0.924\n1.04\n\n\n\nNote. The development model is applied unchanged to the validation data. A calibration-in-the-large far from 0 means the mean outcome differs between the populations; a slope below 1, that the predictions are too extreme there.\n\n\n\n\n\n\n\n\n\nModel Updating in the Validation Data\n\n\n\n\n\nvs revision\n\n\n\nData set\nMethod\nParameters\nIntercept\nSlope\nF\ndf\np\nChosen\nR²\nRMSE\n\n\n\n\nValidation (period = 2017-2019)\nOriginal model\n0\n0.000\n1.000\n2.47\n11\n.005\n\n0.601\n9.38\n\n\n\nRecalibration in the large\n1\n0.792\n1.000\n2.17\n10\n.018\n\n0.604\n9.35\n\n\n\nRecalibration\n2\n3.134\n0.981\n2.36\n9\n.013\n\n0.604\n9.34\n\n\n\nModel revision\n11\n\n\n\n\n\n✓\n0.615\n9.22\n\n\n\nNote. Recalibration re-estimates the intercept and the slope of the original prediction; intercept and slope: of the original prediction in the updated model. Each test compares a method with model revision (F test); the closed testing procedure (Vergouwe et al. 2017) keeps the first method, from the original model up, not significantly worse than revision at α = 0.05 (✓). Performance of an updated model is measured in the data used to update it, so it is optimistic, most of all for revision.\n\n\n\n\n\n\n\n\nIn 2017–2019 the model predicts on average 0.8 mmHg too low (calibration-in-the-large: observed − predicted), with an unchanged slope. For a linear model the updating tests are F tests; here even revision is chosen — with hundreds of patients small differences are significant — but the gain in RMSE over the original model is under 0.2 mmHg, which is clinically irrelevant. Statistical significance is not the only criterion for updating.",
+    "crumbs": [
+      "Home",
+      "Worked examples in jamovi",
+      "A continuous outcome (linear)"
+    ]
+  },
+  {
+    "objectID": "worked/linear.html#step-5-sample-size",
+    "href": "worked/linear.html#step-5-sample-size",
+    "title": "A continuous outcome (linear)",
+    "section": "Step 5: sample size",
+    "text": "Step 5: sample size\n\n\n\nSample Size Adequacy (Riley et al. 2019)\n\n\n\n\nCriterion\nRequired N\nSubjects per parameter\n\n\n\n\n1. Shrinkage factor ≥ 0.9\n69\n6.90\n\n\n2. Optimism in R² ≤ 0.05 (apparent − adjusted)\n74\n7.40\n\n\n3. Residual SD within × 1.1\n244\n24.40\n\n\n4. Mean outcome within × 1.1\n244\n24.40\n\n\nMinimum required\n244\n24.40\n\n\nThis development data\n1529\n152.90\n\n\n\nNote. Candidate parameters (excluding the intercept): 10; anticipated adjusted R²: 0.637 (optimism-corrected, this model); outcome mean 122.6, SD 14.83.\n\n\nNote. The development data meet the minimum sample size.\n\n\n\n\n\n\n\n\nFor a continuous outcome Riley et al. (2019) add two criteria to shrinkage and optimism: a precise residual standard deviation and a precise mean outcome. The development data exceed all four many times over.",
+    "crumbs": [
+      "Home",
+      "Worked examples in jamovi",
+      "A continuous outcome (linear)"
+    ]
+  },
+  {
+    "objectID": "worked/selection.html",
+    "href": "worked/selection.html",
+    "title": "Selection, interactions and incremental value",
+    "section": "",
+    "text": "Question. The logistic model gave age, the strongest cardiovascular risk factor, an adjusted odds ratio near 1. Is the effect of age different in men and women? Which of the other predictors are worth keeping? And what do the modifiable risk factors add to a model with only age, sex and the recruiting centre?",
+    "crumbs": [
+      "Home",
+      "Worked examples in jamovi",
+      "Selection, interactions and incremental value"
+    ]
+  },
+  {
+    "objectID": "worked/selection.html#step-1-the-panel",
+    "href": "worked/selection.html#step-1-the-panel",
+    "title": "Selection, interactions and incremental value",
+    "section": "Step 1: the panel",
+    "text": "Step 1: the panel\nOn top of the settings of the logistic example:\n\n\n\n\n\n\n\nPanel\nSetting\n\n\n\n\nFactors\nadd centre\n\n\nVariable Selection\nBaseline (always in): tick age, sex, centre; Selection of the other predictors: Backward elimination, AIC; Bootstrap inclusion and coefficients\n\n\nInteractions\nInteraction terms: age × sex, sbp × diabetes; Interactions to keep: Forward selection, LR test\n\n\nValidation\nBootstrap, 100 samples\n\n\nIncremental value\nIncremental value over the baseline model; net benefit thresholds 0.1, 0.2\n\n\nPlots\nROC curve\n\n\n\nBaseline covariates are always in the model and never selected: here the variables that define who the patient is (age, sex) and the design (centre, an institution effect that should be adjusted for but is not of interest). The other predictors are candidates for backward elimination by AIC. Two interactions are candidates: one that the literature suggests (age × sex) and one we made up (sbp × diabetes).\n\n\nR syntax\nr &lt;- cpLogistic(data = heart, dep = \"event10\", eventLevel = \"yes\",\n                covs = c(\"sbp\", \"chol\", \"bmi\"), splineVars = \"age\",\n                factors = c(\"sex\", \"smoking\", \"diabetes\", \"centre\"),\n                covScales = list(list(var = \"sbp\", scale = \"ten\")),\n                baseline = list(list(var = \"age\", forced = TRUE), list(var = \"sex\", forced = TRUE),\n                                list(var = \"centre\", forced = TRUE)),\n                selMode = \"backward\", selCrit = \"aic\",\n                interactions = list(list(\"age\", \"sex\"), list(\"sbp\", \"diabetes\")), intMode = \"lrt\",\n                validation = \"boot\", nBoot = 100, seed = 1, bootCoefs = TRUE, oddsRatios = TRUE,\n                incremental = TRUE, nbThresholds = \"0.1, 0.2\", rocPlot = TRUE, explain = TRUE)",
+    "crumbs": [
+      "Home",
+      "Worked examples in jamovi",
+      "Selection, interactions and incremental value"
+    ]
+  },
+  {
+    "objectID": "worked/selection.html#step-2-the-interactions",
+    "href": "worked/selection.html#step-2-the-interactions",
+    "title": "Selection, interactions and incremental value",
+    "section": "Step 2: the interactions",
+    "text": "Step 2: the interactions\n\n\n\nInteractions — Screening and Selection\n\n\n\n\nTerm\nχ²\ndf\np\nΔAIC\nΔBIC\nIn model\nBootstrap fits\n\n\n\n\nage × sex\n21.854\n3\n&lt; .001\n-15.85\n1.36\nstep 1\n100.0 %\n\n\nsbp × diabetes\n0.309\n1\n.578\n1.69\n7.43\nno\n6.0 %\n\n\n\nNote. χ², ΔAIC and ΔBIC: the term added alone to the main-effects model (negative Δ: the term improves the criterion).\n\n\nNote. Forward selection: at each step the term with the smallest likelihood ratio p enters, while p &lt; 0.05.\n\n\nNote. The selection is repeated in every resampled fit, so the internal validation includes its optimism; the last column is the share of fits that selected the term.\n\n\n\n\n\n\n\n\nEach candidate is first screened alone against the main-effects model: age × sex improves the fit clearly (likelihood ratio χ² = 21.9 on 3 df — the spline of age has three terms, so the interaction too), the invented sbp × diabetes does not (p = 0.578). Forward selection keeps age × sex. The last column is the share of the bootstrap fits that selected each term: 100% for age × sex, 6% for the invented one — a false positive in one fit in ten, as expected from testing at 5% in every resample.\n\n\n\nEffects Within Subgroups\n\n\n\n\n\n95% CI\n\n\n\nEffect\nWithin\nOR\nLower\nUpper\np\n\n\n\n\nage: Q3 vs Q1 (66 vs 53)\nsex = female\n2.027\n1.205\n3.409\n.008\n\n\n\nsex = male\n0.659\n0.437\n0.995\n.047\n\n\nsex: male\nage = 53 (Q1)\n3.205\n2.027\n5.068\n&lt; .001\n\n\n\nage = 60 (median)\n1.787\n1.282\n2.490\n&lt; .001\n\n\n\nage = 66 (Q3)\n1.042\n0.702\n1.548\n.837\n\n\n\nNote. Odds ratio of each variable of an interaction at the levels (factor) or quartiles (covariate) of the other; other predictors at their reference level or median.\n\n\nNote. The model was selected in these data: its confidence intervals and p values do not account for the selection, so they are too narrow (see the bootstrap coefficients).\n\n\n\n\n\n\n\n\nThe effects within subgroups explain the puzzle of the logistic example. At 53 years, men have 3.20 times the odds of women; at 66 years the excess has vanished (1.04). In women risk rises steeply with age, in men much less. A single “adjusted odds ratio for age” averaged two opposite things.",
+    "crumbs": [
+      "Home",
+      "Worked examples in jamovi",
+      "Selection, interactions and incremental value"
+    ]
+  },
+  {
+    "objectID": "worked/selection.html#step-3-the-selection",
+    "href": "worked/selection.html#step-3-the-selection",
+    "title": "Selection, interactions and incremental value",
+    "section": "Step 3: the selection",
+    "text": "Step 3: the selection\n\n\n\nPredictor Selection\n\n\n\n\n\nvs final model\n\n\n\nPredictor\nStatus\nStep\nχ²\ndf\np\nBootstrap fits\n\n\n\n\nsbp\nkept\n\n20.66\n1\n&lt; .001\n100.0 %\n\n\nchol\nkept\n\n16.90\n1\n&lt; .001\n99.0 %\n\n\nbmi\nkept\n\n2.12\n1\n.145\n51.0 %\n\n\nsmoking\nkept\n\n29.84\n2\n&lt; .001\n100.0 %\n\n\ndiabetes\nkept\n\n15.61\n1\n&lt; .001\n100.0 %\n\n\n\nNote. Baseline covariates, always in the model and not selected: age, sex, centre.\n\n\nNote. Backward elimination (AIC): at each step the predictor whose removal improves the criterion most leaves. Baseline covariates are never removed.\n\n\nNote. χ², df, p: each predictor dropped from (if kept) or added to (if not) the final main-effects model; a factor or a spline is one term.\n\n\nNote. The selection is repeated in every resampled fit, so the internal validation includes its optimism; the last column is the share of fits that kept the predictor.\n\n\n\n\n\n\n\n\nBackward elimination by AIC keeps every candidate. Body mass index is borderline: its χ² is just above 2 (the AIC threshold for one parameter), and it was kept in only 51% of the bootstrap fits — a coin toss. The selection is repeated in every bootstrap fit, so the optimism-corrected performance includes the instability of these decisions.",
+    "crumbs": [
+      "Home",
+      "Worked examples in jamovi",
+      "Selection, interactions and incremental value"
+    ]
+  },
+  {
+    "objectID": "worked/selection.html#step-4-inference-after-selection",
+    "href": "worked/selection.html#step-4-inference-after-selection",
+    "title": "Selection, interactions and incremental value",
+    "section": "Step 4: inference after selection",
+    "text": "Step 4: inference after selection\nThe confidence intervals of a model selected in the same data ignore the selection: they are too narrow and the estimates of predictors that “survived” are biased away from zero. The bootstrap coefficient table (Heinze et al. 2018) shows the honest variability of the whole procedure.\n\n\n\nBootstrap Coefficients (Selection Repeated)\n\n\n\n\n\nBootstrap\n\n\n\nCoefficient\nEstimate\nMedian\n2.5%\n97.5%\nInclusion\nRMSD ratio\nRel. cond. bias\n\n\n\n\nIntercept\n-7.65113\n-7.5940\n-11.3779\n-3.8248\n100.0 %\n0.861\n-0.00930\n\n\nsbp\n0.18152\n0.1880\n0.1217\n0.2652\n100.0 %\n1.030\n0.04199\n\n\nchol\n0.24364\n0.2453\n0.1271\n0.3282\n99.0 %\n0.984\n-0.00616\n\n\nbmi\n0.01944\n0.0186\n0.0000\n0.0460\n51.0 %\n1.271\n0.56569\n\n\nage\n0.01476\n0.0115\n-0.0643\n0.0938\n100.0 %\n0.876\n-0.06434\n\n\nage'\n0.07976\n0.0932\n-0.1359\n0.2854\n100.0 %\n0.883\n0.01853\n\n\nage''\n-0.23213\n-0.2554\n-0.9593\n0.5025\n100.0 %\n0.894\n0.00027\n\n\nsex: male\n1.70071\n1.2000\n-3.0756\n6.3392\n100.0 %\n0.886\n-0.04266\n\n\nsmoking: former\n0.12118\n0.1108\n-0.1015\n0.3738\n100.0 %\n0.851\n-0.04765\n\n\nsmoking: current\n0.80221\n0.8038\n0.5271\n1.0334\n100.0 %\n0.967\n-0.00901\n\n\ndiabetes: yes\n0.78439\n0.7585\n0.4264\n4.0470\n100.0 %\n4.460\n0.24956\n\n\ncentre: B\n-0.14549\n-0.1623\n-0.4008\n0.1282\n100.0 %\n1.027\n-0.00530\n\n\ncentre: C\n-0.08326\n-0.1089\n-0.3461\n0.2358\n100.0 %\n1.011\n0.13606\n\n\nage × sex: male\n-0.00778\n0.0006\n-0.0994\n0.0854\n100.0 %\n0.884\n-0.24871\n\n\nage' × sex: male\n-0.18520\n-0.2129\n-0.4477\n0.0667\n100.0 %\n0.903\n0.07465\n\n\nage'' × sex: male\n0.72963\n0.7983\n-0.2212\n1.6991\n100.0 %\n0.924\n0.07389\n\n\nsbp × diabetes: yes\n0.00000\n0.0000\n-0.2619\n0.0000\n6.0 %\n\n\n\n\n\nNote. 100 bootstrap fits, each repeating the whole procedure. Median and 2.5th-97.5th percentiles count a coefficient left out of a fit as 0; inclusion: share of fits with the coefficient not 0. RMSD ratio: root mean squared difference of the bootstrap estimates from the final one, over its model-based SE (above 1: the selection adds variability the SE ignores). Relative conditional bias: mean estimate where selected over the final estimate, minus 1 (Heinze, Wallisch & Dunkler 2018).\n\n\nNote. Percentile intervals describe the variability of the whole procedure; they are not exact confidence intervals, least of all for coefficients often shrunk or selected to 0.\n\n\n\n\n\n\n\n\nHow to read it:\n\nInclusion: the share of fits with the coefficient not 0. Strong predictors are always in; bmi is in half of them.\nMedian and percentiles count the fits that dropped a term as 0, so a term often dropped has an interval that touches 0.\nRMSD ratio compares the bootstrap spread with the model-based standard error: above 1 the selection adds variability that the usual SE ignores. The very large value for diabetes (4.5) comes from the fits that selected the invented sbp × diabetes interaction: in those, the diabetes coefficient means “the effect of diabetes at a systolic pressure of 0” and takes absurd values. Main effects in models with interactions are unstable; report effects within subgroups instead.\nRelative conditional bias: how much larger the coefficient is in the fits that selected it. Positive values mean that selection inflates effects.\n\n\n\n\nMost Frequent Selected Models (Bootstrap)\n\n\n\n\nTerms selected\nFits\n%\nCumulative\n\n\n\n\nage, centre, chol, diabetes, sbp, sex, smoking, age:sex\n48\n48.0 %\n48.0 %\n\n\nage, bmi, centre, chol, diabetes, sbp, sex, smoking, age:sex\n45\n45.0 %\n93.0 %\n\n\nage, bmi, centre, chol, diabetes, sbp, sex, smoking, age:sex, sbp:diabetes\n5\n5.0 %\n98.0 %\n\n\nage, bmi, centre, diabetes, sbp, sex, smoking, age:sex\n1\n1.0 %\n99.0 %\n\n\nage, centre, chol, diabetes, sbp, sex, smoking, age:sex, sbp:diabetes\n1\n1.0 %\n100.0 %\n\n\n\nNote. The 5 most frequent sets of selected terms among the bootstrap fits (5 distinct sets).\n\n\n\n\n\n\n\n\nOnly 48% of the bootstrap fits chose the final model; the two most frequent models together make 93%. The model is reasonably stable, which is what one expects with 358 events for a handful of candidates.",
+    "crumbs": [
+      "Home",
+      "Worked examples in jamovi",
+      "Selection, interactions and incremental value"
+    ]
+  },
+  {
+    "objectID": "worked/selection.html#step-5-the-elastic-net-instead",
+    "href": "worked/selection.html#step-5-the-elastic-net-instead",
+    "title": "Selection, interactions and incremental value",
+    "section": "Step 5: the elastic net instead",
+    "text": "Step 5: the elastic net instead\nStepwise selection is the most criticised step in prediction modelling. The elastic net (Zou and Hastie 2005) estimates all candidates at once with a penalty that shrinks coefficients towards 0 (and sets some exactly to 0), with the penalty λ chosen by cross-validation. Baseline covariates are not penalised. In the panel: Selection of the other predictors: Elastic net, mixing α = 0.5.\n\n\nR syntax\nre &lt;- cpLogistic(data = heart, dep = \"event10\", eventLevel = \"yes\",\n                 covs = c(\"sbp\", \"chol\", \"bmi\"), splineVars = \"age\",\n                 factors = c(\"sex\", \"smoking\", \"diabetes\", \"centre\"),\n                 covScales = list(list(var = \"sbp\", scale = \"ten\")),\n                 baseline = list(list(var = \"age\", forced = TRUE), list(var = \"sex\", forced = TRUE),\n                                 list(var = \"centre\", forced = TRUE)),\n                 selMode = \"enet\", enetAlpha = 0.5, interactions = list(list(\"age\", \"sex\")),\n                 validation = \"boot\", nBoot = 50, seed = 1, enetTune = FALSE)\n\n\n\n\n\nPredictor Selection\n\n\n\n\nPredictor\nStatus\nBootstrap fits\n\n\n\n\nsbp\nkept\n100.0 %\n\n\nchol\nkept\n100.0 %\n\n\nbmi\nkept\n98.0 %\n\n\nsmoking\nkept\n100.0 %\n\n\ndiabetes\nkept\n100.0 %\n\n\n\nNote. Not shown for a penalised model: standard errors, CIs and p values, likelihood ratio tests, the Shapley decomposition and the heuristic shrinkage factor (a relaxed lasso has them).\n\n\nNote. Baseline covariates, always in the model and not selected: age, sex, centre.\n\n\nNote. Elastic net, mixing α = 0.5, λ = 0.0003068 (minimum deviance, 10-fold cross-validation); baseline covariates are not penalised. A predictor is kept when any of its coefficients is not shrunk to 0; all candidate interactions enter the penalised model.\n\n\nNote. Resampled fits use the λ of the final model (the tuning itself is not validated); the last column is the share of fits that kept the predictor.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nThe cross-validated deviance is flat over a wide range of λ and its minimum (solid line) lies at a very small λ: with 2292 patients and a dozen parameters there is little overfitting to penalise, and the elastic net keeps everything with almost no shrinkage. The largest λ within 1 SE rule (dashed line) would choose a sparser model, at the price of more shrinkage than the data need. That agrees with the shrinkage factor of the logistic example (above 0.9). Penalisation matters when the events per parameter are few; here the data were large enough. Repeat the λ tuning in each resampled fit validates the tuning too, at the cost of time.",
+    "crumbs": [
+      "Home",
+      "Worked examples in jamovi",
+      "Selection, interactions and incremental value"
+    ]
+  },
+  {
+    "objectID": "worked/selection.html#step-6-incremental-value",
+    "href": "worked/selection.html#step-6-incremental-value",
+    "title": "Selection, interactions and incremental value",
+    "section": "Step 6: incremental value",
+    "text": "Step 6: incremental value\nDo the modifiable risk factors (blood pressure, cholesterol, bmi, smoking, diabetes) improve on a model with only the baseline covariates (age, sex, centre)? The incremental value table compares the baseline model with the full prediction model on the same patients (Pencina et al. 2008; Steyerberg 2019).\n\n\n\nIncremental Value over the Baseline Model\n\n\n\n\n\nΔ 95% CI\n\nOptimism-corrected\n\n\nData set\nMeasure\nBaseline\nFull\nΔ\nLower\nUpper\np\nBaseline\nFull\nΔ\n\n\n\n\nDevelopment\nC-statistic (AUC)\n0.60429\n0.6890\n0.08475\n0.0540\n0.1155\n&lt; .001\n0.5935\n0.6733\n0.07980\n\n\n\nDiscrimination slope\n0.01705\n0.0692\n0.05219\n\n\n\n0.0147\n0.0622\n0.04749\n\n\n\nCalibration slope\n1.00000\n1.0000\n0.00000\n\n\n\n0.9204\n0.9135\n-0.00693\n\n\n\nBrier score\n0.12971\n0.1227\n-0.00702\n\n\n\n0.1305\n0.1247\n-0.00580\n\n\n\nScaled Brier score\n0.01587\n0.0691\n0.05327\n\n\n\n0.0108\n0.0548\n0.04403\n\n\n\nNagelkerke R²\n0.02926\n0.1081\n0.07884\n\n\n\n0.0210\n0.0879\n0.06685\n\n\n\nNRI (continuous)\n\n\n0.51053\n0.4008\n0.6202\n&lt; .001\n\n\n\n\n\n\nIDI\n\n\n0.05219\n0.0407\n0.0637\n&lt; .001\n\n\n\n\n\n\nNRI (risk categories cut at 0.1, 0.2)\n\n\n0.33936\n0.2577\n0.4210\n&lt; .001\n\n\n\n\n\n\nNet benefit at 0.1\n0.06506\n0.0734\n0.00834\n\n\n\n\n\n\n\n\n\nNet benefit at 0.2\n0.00556\n0.0267\n0.02116\n\n\n\n\n\n\n\n\n\nLR test of the added predictors (χ², df = 9)\n\n\n109.09947\n\n\n&lt; .001\n\n\n\n\n\n\nNote. The test ignores that the added predictors were selected: its p is too small.\n\n\nNote. Optimism-corrected: each model validated on the same resamples; the full model's validation repeats its selection.\n\n\nNote. Baseline model: age, sex, centre. Full model: the prediction model. Δ = full − baseline (for Brier, RMSE and MAE, negative is better).\n\n\nNote. NRI and IDI are reported for completeness; they can favour miscalibrated models (Pepe et al. 2015) and say less than ΔAUC, the LR test and Δ net benefit.\n\n\n\n\n\n\n\n\nThe AUC rises from 0.604 to 0.689 (Δ = 0.085, 95% CI 0.054–0.115, paired DeLong). The optimism-corrected columns validate both models on the same bootstrap samples (repeating the selection for the full model): the gain survives, Δ = 0.080. The likelihood ratio test of the added predictors is highly significant, though its p ignores that the predictors were selected. Net benefit increases at both thresholds. NRI and IDI are reported because readers ask for them, but they can favour miscalibrated models; ΔAUC, the likelihood ratio test and Δ net benefit say more.",
+    "crumbs": [
+      "Home",
+      "Worked examples in jamovi",
+      "Selection, interactions and incremental value"
+    ]
+  },
+  {
+    "objectID": "worked/external.html",
+    "href": "worked/external.html",
+    "title": "Validation in new patients and updating",
+    "section": "",
+    "text": "Question. The model was developed in patients recruited in 2012–2016. Does it hold for the patients recruited in 2017–2019 (temporal validation)? And in a cohort from another population (external validation)? If its risks are wrong there, can they be fixed without building a new model?",
+    "crumbs": [
+      "Home",
+      "Worked examples in jamovi",
+      "Validation in new patients and updating"
+    ]
+  },
+  {
+    "objectID": "worked/external.html#step-1-the-panel",
+    "href": "worked/external.html#step-1-the-panel",
+    "title": "Validation in new patients and updating",
+    "section": "Step 1: the panel",
+    "text": "Step 1: the panel\nThe model of the selection example, without selection (the main effects and the age × sex interaction), and in the Validation box:\n\n\n\nPanel\nSetting\n\n\n\n\nInteractions\nage × sex, keep all candidates\n\n\nValidation split\nperiod, validation rows: 2017-2019\n\n\nExternal validation data\nheart_external.csv (download)\n\n\nModel updating\nticked, α = 0.05\n\n\nPlots\nCalibration plot\n\n\n\nThe model is developed on the 2012–2016 rows only; the 2017–2019 rows and the external file are predicted with it unchanged.\n\n\nR syntax\nr &lt;- cpLogistic(data = heart, dep = \"event10\", eventLevel = \"yes\",\n                covs = c(\"sbp\", \"chol\", \"bmi\"), splineVars = \"age\",\n                factors = c(\"sex\", \"smoking\", \"diabetes\"),\n                covScales = list(list(var = \"sbp\", scale = \"ten\")),\n                interactions = list(list(\"age\", \"sex\")),\n                splitVar = \"period\", splitLevel = \"2017-2019\",\n                extFile = list(path = \"heart_external.csv\"),\n                updating = TRUE, calPlot = TRUE, explain = TRUE)",
+    "crumbs": [
+      "Home",
+      "Worked examples in jamovi",
+      "Validation in new patients and updating"
+    ]
+  },
+  {
+    "objectID": "worked/external.html#step-2-does-the-external-file-fit-the-model",
+    "href": "worked/external.html#step-2-does-the-external-file-fit-the-model",
+    "title": "Validation in new patients and updating",
+    "section": "Step 2: does the external file fit the model?",
+    "text": "Step 2: does the external file fit the model?\n\n\n\nData\n\n\n\n\nData set\nN\nEvents\n%\nExcluded (missing)\n\n\n\n\nDevelopment\n1529\n265\n17.3 %\n71\n\n\nValidation (period = 2017-2019)\n763\n93\n12.2 %\n37\n\n\nExternal (heart_external.csv)\n908\n249\n27.4 %\n92\n\n\n\nNote. Event: event10 = yes. Rows with a missing outcome or predictor are excluded (complete-case analysis).\n\n\n\n\n\n\n\n\n\nExternal Data — Variable Check\n\n\n\n\nVariable\nRole\nStatus\nDetails\n\n\n\n\nevent10\nOutcome\nOK\n\n\n\nsbp\nPredictor\nOK\n2.5% outside the development range [90, 183]\n\n\nchol\nPredictor\nOK\n0.2% outside the development range [3.2, 10.3]\n\n\nbmi\nPredictor\nOK\n0.2% outside the development range [17, 40.9]; 8.0% missing\n\n\nage\nPredictor\nOK\nmatched to column 'Age'\n\n\nsex\nPredictor\nOK\nmatched to column 'SEX'\n\n\nsmoking\nPredictor\nWarning\n12 rows with levels not in development (unknown) set to missing; 1.2% missing\n\n\ndiabetes\nPredictor\nOK\n\n\n\n\n\n\n\n\nAn external file is never in exactly the same format. clinpred matches its columns by name ignoring case (Age, SEX), its factor levels ignoring case (Female), and reports what it could not match: 12 patients with smoking unknown, a level the model does not know, are set to missing; some blood pressures lie outside the range the model was developed on (the model is then extrapolating). Rows with a missing predictor are excluded, as in development.",
+    "crumbs": [
+      "Home",
+      "Worked examples in jamovi",
+      "Validation in new patients and updating"
+    ]
+  },
+  {
+    "objectID": "worked/external.html#step-3-are-the-populations-alike",
+    "href": "worked/external.html#step-3-are-the-populations-alike",
+    "title": "Validation in new patients and updating",
+    "section": "Step 3: are the populations alike?",
+    "text": "Step 3: are the populations alike?\n\n\n\nCase-mix\n\n\n\n\n\n\nDevelopment\nValidation (rows)\nExternal\n\n\n\n\nPatients\nn\n1529\n763\n908\n\n\nEvents\nn (%)\n265 (17.3%)\n93 (12.2%)\n249 (27.4%)\n\n\nsbp\nmean (SD)\n120.32 (15.73)\n120.04 (15.51)\n125.47 (22.64)\n\n\nchol\nmean (SD)\n5.50 (1.00)\n5.52 (1.01)\n5.47 (1.02)\n\n\nbmi\nmean (SD)\n27.11 (4.48)\n27.02 (4.57)\n27.07 (4.40)\n\n\nage\nmean (SD)\n60.01 (9.88)\n60.19 (9.87)\n66.14 (9.76)\n\n\nsex\nfemale\n48.8%\n49.0%\n49.1%\n\n\n\nmale\n51.2%\n51.0%\n50.9%\n\n\nsmoking\nnever\n51.1%\n48.9%\n38.1%\n\n\n\nformer\n29.9%\n31.2%\n30.4%\n\n\n\ncurrent\n19.0%\n19.9%\n31.5%\n\n\ndiabetes\nno\n91.9%\n92.4%\n92.2%\n\n\n\nyes\n8.1%\n7.6%\n7.8%\n\n\nLinear predictor\nmean (SD)\n-1.71 (0.68)\n-1.72 (0.67)\n-1.42 (0.76)\n\n\nMembership c-statistic\nc\n\n0.544\n0.696\n\n\n\nNote. Membership c-statistic: how well the predictors and the outcome distinguish validation from development rows (Debray et al. 2015). Near 0.5: similar case-mix (reproducibility); high: different populations (transportability). A larger SD of the linear predictor means a more heterogeneous case-mix, which by itself raises the AUC.\n\n\n\n\n\n\n\n\nThe later period looks like the development data: same distributions, same spread of the linear predictor, and a membership c-statistic of 0.544 — a model can hardly tell the two apart (Debray et al. 2015). Only the event rate is lower. The external cohort is older (mean age 66.14), smokes more and has higher blood pressure; its membership c of 0.696 says it is a different population. Validating there tests transportability, not just reproducibility.",
+    "crumbs": [
+      "Home",
+      "Worked examples in jamovi",
+      "Validation in new patients and updating"
+    ]
+  },
+  {
+    "objectID": "worked/external.html#step-4-performance",
+    "href": "worked/external.html#step-4-performance",
+    "title": "Validation in new patients and updating",
+    "section": "Step 4: performance",
+    "text": "Step 4: performance\n\n\n\nPerformance in the Validation Data\n\n\n\n\n\n95% CI\n\n\nData set\n\nMeasure\nEstimate\nLower\nUpper\n\n\n\n\nValidation (period = 2017-2019)\nDiscrimination\nC-statistic (AUC)\n0.7115\n0.6515\n0.765\n\n\n\n\nDiscrimination slope\n0.0802\n\n\n\n\n\nCalibration\nCalibration-in-the-large\n-0.4157\n-0.6383\n-0.193\n\n\n\n\nCalibration slope\n1.2592\n0.8953\n1.623\n\n\n\n\nO/E ratio\n0.7150\n0.5910\n0.865\n\n\n\n\nICI\n0.0504\n\n\n\n\n\n\nE50\n0.0485\n\n\n\n\n\n\nE90\n0.0745\n\n\n\n\n\n\nEmax\n0.0764\n\n\n\n\n\nOverall\nBrier score\n0.1009\n0.0871\n0.115\n\n\n\n\nScaled Brier score\n0.0569\n\n\n\n\n\n\nNagelkerke R²\n0.0873\n\n\n\n\n\n\nCox–Snell R²\n0.0457\n\n\n\n\nExternal (heart_external.csv)\nDiscrimination\nC-statistic (AUC)\n0.6632\n0.6219\n0.702\n\n\n\n\nDiscrimination slope\n0.0776\n\n\n\n\n\nCalibration\nCalibration-in-the-large\n0.3384\n0.1844\n0.492\n\n\n\n\nCalibration slope\n0.7968\n0.5888\n1.005\n\n\n\n\nO/E ratio\n1.2580\n1.1317\n1.398\n\n\n\n\nICI\n0.0551\n\n\n\n\n\n\nE50\n0.0550\n\n\n\n\n\n\nE90\n0.0914\n\n\n\n\n\n\nEmax\n0.1502\n\n\n\n\n\nOverall\nBrier score\n0.1880\n0.1716\n0.204\n\n\n\n\nScaled Brier score\n0.0555\n\n\n\n\n\n\nNagelkerke R²\n0.0644\n\n\n\n\n\n\nCox–Snell R²\n0.0445\n\n\n\n\n\nNote. The development model is applied unchanged to the validation data. A calibration-in-the-large far from 0 means the overall risk differs between the populations; a slope below 1, that the predictions are too extreme there.\n\n\n\n\n\n\n\n\nLater period. Discrimination holds (AUC 0.711), but the model predicts too many events: O/E = 0.71 (0.59–0.86), a calibration-in-the-large of -0.42 on the log-odds scale. Risk factors act the same, but the baseline risk has fallen — typical of temporal validation, and the reason risk calculators are recalibrated periodically.\nExternal cohort. Discrimination falls (AUC 0.663), the model under-predicts (O/E = 1.26) and its predictions are too extreme there (slope 0.80): the effects of the risk factors are weaker in that population.",
+    "crumbs": [
+      "Home",
+      "Worked examples in jamovi",
+      "Validation in new patients and updating"
+    ]
+  },
+  {
+    "objectID": "worked/external.html#step-5-updating",
+    "href": "worked/external.html#step-5-updating",
+    "title": "Validation in new patients and updating",
+    "section": "Step 5: updating",
+    "text": "Step 5: updating\n\n\n\nModel Updating in the Validation Data\n\n\n\n\n\nvs revision\n\n\n\nData set\nMethod\nParameters\nIntercept\nSlope\nχ²\ndf\np\nChosen\nAUC\nBrier\nICI\n\n\n\n\nValidation (period = 2017-2019)\nOriginal model\n0\n0.0000\n1.000\n22.49\n14\n.069\n✓\n0.711\n0.1009\n0.05043\n\n\n\nRecalibration in the large\n1\n-0.4157\n1.000\n7.76\n13\n.859\n\n0.711\n0.0988\n0.01442\n\n\n\nRecalibration\n2\n-0.0565\n1.259\n5.74\n12\n.929\n\n0.711\n0.0984\n0.00972\n\n\n\nModel revision\n14\n\n\n\n\n\n\n0.723\n0.0976\n0.01035\n\n\nExternal (heart_external.csv)\nOriginal model\n0\n0.0000\n1.000\n41.35\n14\n&lt; .001\n\n0.663\n0.1880\n0.05505\n\n\n\nRecalibration in the large\n1\n0.3384\n1.000\n23.65\n13\n.035\n\n0.663\n0.1852\n0.02553\n\n\n\nRecalibration\n2\n0.0855\n0.797\n20.12\n12\n.065\n✓\n0.663\n0.1847\n0.02106\n\n\n\nModel revision\n14\n\n\n\n\n\n\n0.684\n0.1800\n0.01260\n\n\n\nNote. Recalibration re-estimates the intercept and the slope of the original prediction; intercept and slope: of the original linear predictor (log-odds) in the updated model. Each test compares a method with model revision (likelihood ratio); the closed testing procedure (Vergouwe et al. 2017) keeps the first method, from the original model up, not significantly worse than revision at α = 0.05 (✓). Performance of an updated model is measured in the data used to update it, so it is optimistic, most of all for revision.\n\n\n\n\n\n\n\n\nFor each validation set the table fits the three updating methods and the closed testing procedure (Vergouwe et al. 2017) chooses (✓):\n\nExternal cohort: the original model and recalibration in the large are significantly worse than revision; recalibration (new intercept 0.09 and slope 0.80) is not, so it is chosen. Two parameters fix most of the miscalibration (ICI from 0.055 to 0.021); re-estimating all 14 coefficients is not needed.\nLater period: the procedure keeps the original model, although calibration-in-the-large is clearly off. The first test compares the original model with revision, a 14-parameter change, and is not significant (p = 0.069): the one-parameter shift is diluted among the 14. The closed procedure protects against updating on noise, at the cost of power. Here the O/E ratio and its confidence interval show a real shift that a new intercept corrects (ICI from 0.050 to 0.014); report both and decide with clinical judgement.\n\nThe performance of an updated model is measured in the data that updated it, so it is optimistic; a recalibrated model should itself be validated before use.",
+    "crumbs": [
+      "Home",
+      "Worked examples in jamovi",
+      "Validation in new patients and updating"
+    ]
+  },
+  {
+    "objectID": "worked/logistic.html",
+    "href": "worked/logistic.html",
+    "title": "A logistic prediction model",
+    "section": "",
+    "text": "Question. Can routine clinical data — age, sex, smoking, blood pressure, cholesterol, body mass index and diabetes — predict which patients of the heart cohort will have a cardiovascular event within 10 years? How good would the predictions be in new patients of the same population, and would they help to decide whom to treat?",
+    "crumbs": [
+      "Home",
+      "Worked examples in jamovi",
+      "A logistic prediction model"
+    ]
+  },
+  {
+    "objectID": "worked/logistic.html#step-1-the-panel",
+    "href": "worked/logistic.html#step-1-the-panel",
+    "title": "A logistic prediction model",
+    "section": "Step 1: the panel",
+    "text": "Step 1: the panel\nOpen the heart cohort (☰ → Open → Data Library → Clinical Prediction Models → Heart cohort, simulated) and Prediction → Binary Outcome (Logistic). Set:\n\n\n\n\n\n\n\nPanel\nSetting\n\n\n\n\nOutcome\nevent10; Event level yes\n\n\nCovariates (linear)\nsbp, chol, bmi\n\n\nCovariates (spline)\nage (4 knots)\n\n\nFactors\nsex, smoking, diabetes\n\n\nReference Levels\nsmoking: never\n\n\nCovariate Scaling\nsbp: per 10 units\n\n\nValidation\nInternal validation: Bootstrap, 200 samples; Prediction stability\n\n\nModel\nDescriptive table; Effects: crude and adjusted; Likelihood ratio tests; Model equation; Sample size adequacy\n\n\nClinical Utility\nClassification at a threshold of 0.2; Decision curve\n\n\nPlots\nCalibration plot, ROC curve, Risk distribution\n\n\nOptions\nExplanations\n\n\n\n\n\n\n\n\n\nFigure 1: Prediction → Binary Outcome (Logistic) in jamovi with the variables of this example; the collapsed sections below hold the other options of the table.\n\n\n\nAge enters as a restricted cubic spline: a smooth curve instead of a straight line on the log-odds scale, because there is no reason to assume that each year adds the same risk. Systolic pressure is scaled per 10 mmHg so that its odds ratio is readable.\n\n\nR syntax\nr &lt;- cpLogistic(data = heart, dep = \"event10\", eventLevel = \"yes\",\n                covs = c(\"sbp\", \"chol\", \"bmi\"), splineVars = \"age\", knots = 4,\n                factors = c(\"sex\", \"smoking\", \"diabetes\"),\n                refLevels = list(list(var = \"smoking\", ref = \"never\")),\n                covScales = list(list(var = \"sbp\", scale = \"ten\")),\n                validation = \"boot\", nBoot = 200, seed = 1, stability = TRUE,\n                descTable = TRUE, oddsRatios = TRUE, crude = TRUE, predTests = TRUE,\n                equation = TRUE, sampleSize = TRUE, classif = TRUE, threshold = 0.2,\n                dca = TRUE, calPlot = TRUE, rocPlot = TRUE, riskPlot = TRUE, explain = TRUE)",
+    "crumbs": [
+      "Home",
+      "Worked examples in jamovi",
+      "A logistic prediction model"
+    ]
+  },
+  {
+    "objectID": "worked/logistic.html#step-2-the-data",
+    "href": "worked/logistic.html#step-2-the-data",
+    "title": "A logistic prediction model",
+    "section": "Step 2: the data",
+    "text": "Step 2: the data\n\n\n\nData\n\n\n\n\nData set\nN\nEvents\n%\nExcluded (missing)\n\n\n\n\nDevelopment\n2292\n358\n15.6 %\n108\n\n\n\nNote. Event: event10 = yes. Rows with a missing outcome or predictor are excluded (complete-case analysis).\n\n\n\n\n\n\n\n\n2292 patients have every variable; 108 were excluded for a missing value (cholesterol or body mass index). Complete-case analysis is acceptable when, as here, few values are missing; the missing data example treats them properly. With 358 events the model has about 36 events per candidate parameter (10 parameters: 1 each for sbp, chol and bmi, 3 for the spline of age, 1 for sex, 2 for smoking, 1 for diabetes).\n\n\n\nDescriptives (Development Data)\n\n\n\n\n\n\nno\nyes\nTotal\nMissing\n\n\n\n\nPatients\nn\n2031\n369\n2400\n\n\n\nsbp\nmean (SD)\n119.56 (15.58)\n124.92 (15.56)\n120.38 (15.70)\n0\n\n\nchol\nmean (SD)\n5.48 (0.99)\n5.70 (1.05)\n5.52 (1.01)\n40\n\n\nbmi\nmean (SD)\n26.98 (4.52)\n27.65 (4.37)\n27.08 (4.50)\n70\n\n\nage\nmean (SD)\n59.71 (9.73)\n62.17 (10.20)\n60.08 (9.84)\n0\n\n\nsex\nfemale\n1024 (50.4%)\n147 (39.8%)\n1171 (48.8%)\n0\n\n\n\nmale\n1007 (49.6%)\n222 (60.2%)\n1229 (51.2%)\n\n\n\nsmoking\nnever\n1053 (51.8%)\n155 (42.0%)\n1208 (50.3%)\n0\n\n\n\nformer\n626 (30.8%)\n102 (27.6%)\n728 (30.3%)\n\n\n\n\ncurrent\n352 (17.3%)\n112 (30.4%)\n464 (19.3%)\n\n\n\ndiabetes\nno\n1893 (93.2%)\n316 (85.6%)\n2209 (92.0%)\n0\n\n\n\nyes\n138 (6.8%)\n53 (14.4%)\n191 (8.0%)\n\n\n\n\nNote. Development rows, before excluding missing values; percentages of the non-missing values.\n\n\n\n\n\n\n\n\nThe descriptive table compares patients with and without the event: those with an event were older, more often men, smokers and diabetic, with higher blood pressure and cholesterol.",
+    "crumbs": [
+      "Home",
+      "Worked examples in jamovi",
+      "A logistic prediction model"
+    ]
+  },
+  {
+    "objectID": "worked/logistic.html#step-3-the-effects",
+    "href": "worked/logistic.html#step-3-the-effects",
+    "title": "A logistic prediction model",
+    "section": "Step 3: the effects",
+    "text": "Step 3: the effects\n\n\n\nOdds Ratios\n\n\n\n\n\nCrude\nAdjusted\n\n\n\n\nOR\nLower\nUpper\np\nOR\nLower\nUpper\np\n\n\n\n\nsbp\nper 10 units\n1.24\n1.153\n1.33\n&lt; .001\n1.19\n1.106\n1.29\n&lt; .001\n\n\nchol\nper unit\n1.23\n1.102\n1.37\n&lt; .001\n1.27\n1.133\n1.42\n&lt; .001\n\n\nbmi\nper unit\n1.03\n1.007\n1.06\n.013\n1.02\n0.993\n1.05\n.157\n\n\nage\nQ3 vs Q1 (66 vs 53)\n1.14\n0.836\n1.55\n&lt; .001\n1.01\n0.736\n1.39\n.011\n\n\nsex\nfemale\n1.00\n\n\n&lt; .001\n1.00\n\n\n&lt; .001\n\n\n\nmale\n1.58\n1.254\n1.99\n&lt; .001\n1.59\n1.256\n2.02\n&lt; .001\n\n\nsmoking\nnever\n1.00\n\n\n&lt; .001\n1.00\n\n\n&lt; .001\n\n\n\nformer\n1.09\n0.830\n1.44\n.531\n1.12\n0.846\n1.48\n.432\n\n\n\ncurrent\n2.18\n1.652\n2.87\n&lt; .001\n2.19\n1.650\n2.91\n&lt; .001\n\n\ndiabetes\nno\n1.00\n\n\n&lt; .001\n1.00\n\n\n&lt; .001\n\n\n\nyes\n2.22\n1.566\n3.14\n&lt; .001\n2.18\n1.510\n3.15\n&lt; .001\n\n\n\nNote. Crude: each predictor alone, on the same rows. Adjusted: in the prediction model.\n\n\nNote. Spline predictors: odds ratio between the third and the first quartile; the p is the likelihood ratio test of the whole (non-linear) association.\n\n\nNote. The p on a factor's reference row is the likelihood ratio test of the factor.\n\n\n\n\n\n\n\n\nThe crude odds ratios come from each predictor alone; the adjusted ones from the prediction model. Each 10 mmHg of systolic pressure multiplies the odds of an event by 1.19 (adjusted), current smoking by 2.19 compared with never smoking, diabetes by 2.18.\nThe spline of age is summarised by the odds ratio between its third and first quartile: 1.14 crude but only 1.01 adjusted. That looks odd for the strongest risk factor of cardiovascular disease — the selection example shows why (an interaction with sex).\nIn a prediction model these odds ratios are a description, not the result. The result is the risk they produce, and the question is whether it is accurate.\n\n\n\nLikelihood Ratio Tests\n\n\n\n\nTerm\nχ²\ndf\np\n\n\n\n\nsbp\n20.75\n1\n&lt; .001\n\n\nchol\n16.82\n1\n&lt; .001\n\n\nbmi\n2.00\n1\n.157\n\n\nage\n11.16\n3\n.011\n\n\nage: non-linear\n4.62\n2\n.099\n\n\nsex\n15.06\n1\n&lt; .001\n\n\nsmoking\n29.72\n2\n&lt; .001\n\n\ndiabetes\n15.94\n1\n&lt; .001\n\n\n\nNote. Each test drops the term from the model (a predictor with its non-linear and interaction terms).\n\n\n\n\n\n\n\n\nThe likelihood ratio tests drop each predictor (all its terms) from the model. The non-linear part of the age spline has p = 0.099; body mass index adds little (p = 0.157). Keeping weak predictors that were chosen beforehand is fine: dropping them on their p-value would add selection to the optimism.",
+    "crumbs": [
+      "Home",
+      "Worked examples in jamovi",
+      "A logistic prediction model"
+    ]
+  },
+  {
+    "objectID": "worked/logistic.html#step-4-performance-and-optimism",
+    "href": "worked/logistic.html#step-4-performance-and-optimism",
+    "title": "A logistic prediction model",
+    "section": "Step 4: performance and optimism",
+    "text": "Step 4: performance and optimism\n\n\n\nPerformance in the Development Data\n\n\n\n\n\n95% CI\n\n\n\n\nMeasure\nApparent\nLower\nUpper\nOptimism\nCorrected\n\n\n\n\nDiscrimination\nC-statistic (AUC)\n0.6794\n0.649\n0.708\n0.01177\n0.66765\n\n\n\nDiscrimination slope\n0.0588\n\n\n0.00442\n0.05439\n\n\nCalibration\nCalibration-in-the-large\n0.0000\n-0.116\n0.116\n-0.00626\n0.00626\n\n\n\nCalibration slope\n1.0000\n0.820\n1.180\n0.06073\n0.93927\n\n\n\nO/E ratio\n1.0000\n0.909\n1.100\n-0.00645\n1.00645\n\n\n\nICI\n0.0110\n\n\n-0.00010\n0.01107\n\n\n\nE50\n0.0108\n\n\n0.00063\n0.01014\n\n\n\nE90\n0.0181\n\n\n-0.00066\n0.01871\n\n\n\nEmax\n0.1711\n\n\n0.00724\n0.16385\n\n\nOverall\nBrier score\n0.1243\n0.115\n0.134\n-0.00179\n0.12611\n\n\n\nScaled Brier score\n0.0568\n\n\n0.00931\n0.04747\n\n\n\nNagelkerke R²\n0.0918\n\n\n0.01375\n0.07809\n\n\n\nCox–Snell R²\n0.0532\n\n\n0.00786\n0.04537\n\n\n\nNote. Bootstrap optimism correction (Harrell): 200 samples (200 usable); corrected = apparent − optimism.\n\n\nNote. AUC: probability that a random event has a higher predicted risk than a random non-event (0.5 = no discrimination). Calibration-in-the-large: 0 is ideal (log-odds). Calibration slope: 1 is ideal; below 1 the predictions are too extreme (overfitting). O/E: observed / expected events. ICI, E50, E90, Emax: mean, median, 90th percentile and maximum absolute difference between the predicted and the (smoothed) observed risk. Brier: mean squared error of the predicted risks (lower is better); scaled Brier: 1 − Brier / Brier of a model without predictors.\n\n\n\n\n\n\n\n\nDiscrimination. The apparent C-statistic is 0.679 (95% CI 0.649–0.708); after bootstrap correction for optimism, 0.668. That is modest, as for most models built on a few routine variables.\nCalibration. In the development data calibration-in-the-large is 0 and the slope 1 by construction. The bootstrap estimates that in new patients the slope would be 0.939: the predictions are slightly too extreme. The ICI says the predicted risks are on average 1.1 percentage points from the observed ones.\nOverall. The scaled Brier score, 0.047 after correction, means the model explains only a small part of the variation in individual outcomes — again usual for a cardiovascular risk model.\n\n\n\n\n\n\n\n\n\nThe calibration plot shows the smoothed observed proportion against the predicted risk (with its confidence band), observed proportions in tenths of the predicted risk, and the distribution of predictions at the bottom. In the development data it hugs the diagonal; the honest test is in new patients.",
+    "crumbs": [
+      "Home",
+      "Worked examples in jamovi",
+      "A logistic prediction model"
+    ]
+  },
+  {
+    "objectID": "worked/logistic.html#step-5-shrinkage-and-stability",
+    "href": "worked/logistic.html#step-5-shrinkage-and-stability",
+    "title": "A logistic prediction model",
+    "section": "Step 5: shrinkage and stability",
+    "text": "Step 5: shrinkage and stability\n\n\n\nStability and Shrinkage (Bootstrap)\n\n\n\n\nMeasure\nValue\n\n\n\n\nUniform shrinkage factor (mean bootstrap calibration slope)\n0.9393\n\n\nHeuristic shrinkage factor (van Houwelingen)\n0.9202\n\n\nMean absolute prediction error (MAPE)\n0.0188\n\n\nLargest individual absolute prediction error\n0.0708\n\n\n\nNote. A shrinkage factor well below 1 (e.g. &lt; 0.9) signals overfitting: the coefficients would need to be shrunk towards 0. MAPE: average absolute difference between an individual's risk from the developed model and from models developed in bootstrap samples (Riley & Collins 2023).\n\n\n\n\n\n\n\n\nThe uniform shrinkage factor, 0.939, is the bootstrap calibration slope: multiplying the coefficients by it would remove the expected overfitting. Above 0.9 it is acceptable. The mean absolute prediction error says that a patient’s predicted risk differs on average by 1.9 percentage points between models developed in bootstrap samples of the same size (Riley and Collins 2023); the instability plot shows it patient by patient.",
+    "crumbs": [
+      "Home",
+      "Worked examples in jamovi",
+      "A logistic prediction model"
+    ]
+  },
+  {
+    "objectID": "worked/logistic.html#step-6-was-the-sample-large-enough",
+    "href": "worked/logistic.html#step-6-was-the-sample-large-enough",
+    "title": "A logistic prediction model",
+    "section": "Step 6: was the sample large enough?",
+    "text": "Step 6: was the sample large enough?\n\n\n\nSample Size Adequacy (Riley et al. 2020)\n\n\n\n\nCriterion\nRequired N\nRequired events\nEvents per parameter\n\n\n\n\n1. Shrinkage factor ≥ 0.9\n1934\n302.1\n30.21\n\n\n2. Optimism in Nagelkerke R² ≤ 0.05\n333\n52.0\n5.20\n\n\n3. Overall risk within ± 0.05\n203\n31.7\n3.17\n\n\nMinimum required\n1934\n302.1\n30.21\n\n\nThis development data\n2292\n358.0\n35.80\n\n\n\nNote. Candidate parameters (excluding the intercept): 10; outcome proportion: 0.156; anticipated Cox–Snell R²: 0.045 (optimism-corrected, this model).\n\n\nNote. The development data meet the minimum sample size.\n\n\n\n\n\n\n\n\nWith the model’s own optimism-corrected Cox–Snell R², the criteria of Riley et al. (2020) require 1934 patients (driven by the shrinkage criterion); the data have 2292. The data are sufficient, but not by much: a model with many more candidate parameters would need penalisation or more data.",
+    "crumbs": [
+      "Home",
+      "Worked examples in jamovi",
+      "A logistic prediction model"
+    ]
+  },
+  {
+    "objectID": "worked/logistic.html#step-7-clinical-utility",
+    "href": "worked/logistic.html#step-7-clinical-utility",
+    "title": "A logistic prediction model",
+    "section": "Step 7: clinical utility",
+    "text": "Step 7: clinical utility\n\n\n\nClassification — Counts\n\n\n\n\nData set\nThreshold\nTP\nFP\nFN\nTN\n\n\n\n\nDevelopment\n0.200\n150\n397\n208\n1537\n\n\n\n\n\n\n\n\nClassification — Accuracy\n\n\n\n\n\n95% CI\n\n\nData set\nMeasure\nEstimate\nLower\nUpper\n\n\n\n\nDevelopment\nSensitivity\n41.9 %\n36.9 %\n47.1 %\n\n\n\nSpecificity\n79.5 %\n77.6 %\n81.2 %\n\n\n\nPPV\n27.4 %\n23.9 %\n31.3 %\n\n\n\nNPV\n88.1 %\n86.5 %\n89.5 %\n\n\n\nAccuracy\n73.6 %\n71.8 %\n75.4 %\n\n\n\n\n\n\n\nAt a risk threshold of 20% — treat patients whose 10-year risk is above 20% — the model identifies 42% of the patients who will have an event (sensitivity), and 27% of those treated would have had an event (positive predictive value).\n\n\n\nNet Benefit\n\n\n\n\nData set\nThreshold\nModel\nTreat all\nGain\nInterventions avoided per 100\n\n\n\n\nDevelopment\n0.0500\n0.1127\n0.1118\n0.0009\n1.66\n\n\n\n0.1000\n0.0737\n0.0624\n0.0113\n10.17\n\n\n\n0.2000\n0.0221\n-0.0548\n0.0221\n30.76\n\n\n\nNote. Net benefit = true positives/N − false positives/N × t/(1 − t), at threshold t. Gain: over the better of treating all and treating none. Interventions avoided per 100: fewer false positives than treating all, at the same benefit.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nThe decision curve compares using the model with treating everyone and treating no one. From thresholds of about 6% the model has a clearly higher net benefit than treating all; at 20% it avoids 31 unnecessary treatments per 100 patients compared with treating everyone, at the same benefit. At lower thresholds treating everyone is about as good: a clinician who would treat at such a low risk does not need the model.",
+    "crumbs": [
+      "Home",
+      "Worked examples in jamovi",
+      "A logistic prediction model"
+    ]
+  },
+  {
+    "objectID": "worked/logistic.html#step-8-the-equation",
+    "href": "worked/logistic.html#step-8-the-equation",
+    "title": "A logistic prediction model",
+    "section": "Step 8: the equation",
+    "text": "Step 8: the equation\nlog-odds(event10 = yes) =\n    -6.8306\n    + 0.17792 × [sbp]\n    + 0.23814 × [chol]\n    + 0.018822 × [bmi]\n    + 0.0101 × [age]\n    − 0.037355 × [age']\n    + 0.24268 × [age'']\n    + 0.46514 × [sex: male]\n    + 0.1121 × [smoking: former]\n    + 0.7847 × [smoking: current]\n    + 0.7797 × [diabetes: yes]\n\nrisk = 1 / (1 + exp(−log-odds))\n\n[sbp] = sbp / 10  (per 10 units)\n\nSpline of age, knots t1..t4 = 44, 56, 64, 77\n  [age'] ... : ((x − tj)₊³ − (x − t3)₊³ (t4 − tj)/(t4 − t3) + (x − t4)₊³ (t3 − tj)/(t4 − t3)) / (t4 − t1)²,  j = 1..2\n\n[sex: level] = 1 if sex is that level, else 0 (reference: female)\n\n[smoking: level] = 1 if smoking is that level, else 0 (reference: never)\n\n[diabetes: level] = 1 if diabetes is that level, else 0 (reference: no)\nThe equation, with the spline formula and the coding of every predictor, is what a paper must report so that others can compute the risk (Collins et al. 2024). Export model (JSON), under Save and Explain, writes the same model as a file that Validate a Published Model reads (see published models). Save to the data adds the predicted risk and the linear predictor as new columns of the spreadsheet.",
+    "crumbs": [
+      "Home",
+      "Worked examples in jamovi",
+      "A logistic prediction model"
+    ]
+  },
+  {
+    "objectID": "worked/importance.html",
+    "href": "worked/importance.html",
+    "title": "Which predictors matter? Importance and SHAP",
+    "section": "",
+    "text": "Question. Which predictors drive the model’s predictions? And why does one particular patient get the risk the model gives?\nCoefficients do not answer the first question: they depend on the units, factors have several, splines and interactions spread a variable over many terms. clinpred offers three answers that treat each predictor as entered (all the terms of a factor, a spline or an interaction count as one predictor), each asking something slightly different.",
+    "crumbs": [
+      "Home",
+      "Worked examples in jamovi",
+      "Which predictors matter? Importance and SHAP"
+    ]
+  },
+  {
+    "objectID": "worked/importance.html#step-1-the-panel",
+    "href": "worked/importance.html#step-1-the-panel",
+    "title": "Which predictors matter? Importance and SHAP",
+    "section": "Step 1: the panel",
+    "text": "Step 1: the panel\nThe model of the external validation example (with the age × sex interaction), and under Variable Importance:\n\n\n\nSetting\n\n\n\n\n\nShapley R² decomposition\nMcFadden R²\n\n\nPermutation importance\n20 permutations\n\n\nSHAP values\nExplain the prediction for row 2\n\n\n\n\n\nR syntax\nr &lt;- cpLogistic(data = heart, dep = \"event10\", eventLevel = \"yes\",\n                covs = c(\"sbp\", \"chol\", \"bmi\"), splineVars = \"age\",\n                factors = c(\"sex\", \"smoking\", \"diabetes\"),\n                covScales = list(list(var = \"sbp\", scale = \"ten\")),\n                interactions = list(list(\"age\", \"sex\")),\n                shapley = TRUE, permImp = TRUE, nPerm = 20, shap = TRUE, shapRow = 2,\n                extFile = list(path = \"heart_external.csv\"))",
+    "crumbs": [
+      "Home",
+      "Worked examples in jamovi",
+      "Which predictors matter? Importance and SHAP"
+    ]
+  },
+  {
+    "objectID": "worked/importance.html#shapley-decomposition-of-r²",
+    "href": "worked/importance.html#shapley-decomposition-of-r²",
+    "title": "Which predictors matter? Importance and SHAP",
+    "section": "Shapley decomposition of R²",
+    "text": "Shapley decomposition of R²\nHow much of the model’s explained variation does each predictor contribute? Adding predictors one by one, each one’s gain depends on the order of entry. The Shapley value (in linear regression the LMG measure (Grömping 2007)) averages a predictor’s gain over all orders, so the shares add up to the R² of the full model and correlated predictors share credit fairly. clinpred fits every subset model (exact up to 10 predictors).\n\n\n\nImportance — Shapley Decomposition of R²\n\n\n\n\nPredictor\nR² share\n% of R²\nRank\n\n\n\n\nsbp\n0.01384\n18.7 %\n2\n\n\nchol\n0.00775\n10.5 %\n6\n\n\nbmi\n0.00198\n2.7 %\n7\n\n\nage\n0.01350\n18.2 %\n3\n\n\nsex\n0.01299\n17.5 %\n4\n\n\nsmoking\n0.01548\n20.9 %\n1\n\n\ndiabetes\n0.00855\n11.5 %\n5\n\n\n\nNote. McFadden R² of the full model: 0.0741, shared among the predictors by their average gain over all orders of entry (Shapley / LMG).\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nWith baseline covariates, a second decomposition shares only the gain over the baseline model among the other predictors: what each one adds to what is always in the model.",
+    "crumbs": [
+      "Home",
+      "Worked examples in jamovi",
+      "Which predictors matter? Importance and SHAP"
+    ]
+  },
+  {
+    "objectID": "worked/importance.html#permutation-importance",
+    "href": "worked/importance.html#permutation-importance",
+    "title": "Which predictors matter? Importance and SHAP",
+    "section": "Permutation importance",
+    "text": "Permutation importance\nHow much worse does the model predict if a predictor’s values are shuffled, breaking its link with the outcome? The loss of AUC (and increase of Brier score) measures how much the fitted model relies on it. Computed in validation data when there are any — here the external file — it says which predictors carry their value to new patients.\n\n\n\nImportance — Permutation\n\n\n\n\nPredictor\nAUC loss\nSD\nBrier increase\nSD\n\n\n\n\nsbp\n0.03498\n0.00985\n0.00873\n0.00262\n\n\nchol\n0.01787\n0.00732\n0.00305\n0.00106\n\n\nbmi\n-0.00269\n0.00211\n-0.00060\n0.00036\n\n\nage\n0.05595\n0.01328\n0.00904\n0.00238\n\n\nsex\n0.01599\n0.00474\n0.00332\n0.00090\n\n\nsmoking\n0.03110\n0.00805\n0.00477\n0.00139\n\n\ndiabetes\n0.00862\n0.00455\n0.00235\n0.00100\n\n\n\nNote. Computed in: External (heart_external.csv). Each predictor is shuffled 20 times; larger losses mean the model relies more on it.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nAge matters most in the external cohort (shuffling it loses 0.056 of AUC). Body mass index has a slightly negative importance: shuffling it does not hurt there — its small effect does not transport.",
+    "crumbs": [
+      "Home",
+      "Worked examples in jamovi",
+      "Which predictors matter? Importance and SHAP"
+    ]
+  },
+  {
+    "objectID": "worked/importance.html#shap-values",
+    "href": "worked/importance.html#shap-values",
+    "title": "Which predictors matter? Importance and SHAP",
+    "section": "SHAP values",
+    "text": "SHAP values\nSHAP values (Lundberg and Lee 2017) explain individual predictions: each predictor’s contribution to a patient’s log-odds, relative to the average patient. For a model that is additive on the log-odds scale, as a logistic model is, they are exact and cheap: a main effect contributes its coefficient times the patient’s deviation from the mean, and an interaction is split fairly between its two variables (Aas et al. 2021).\n\n\n\nImportance — Mean |SHAP| (log-odds)\n\n\n\n\nPredictor\nMean |SHAP|\n% of total\n\n\n\n\nsbp\n0.2280\n17.6 %\n\n\nchol\n0.1915\n14.8 %\n\n\nbmi\n0.0686\n5.3 %\n\n\nage\n0.1720\n13.3 %\n\n\nsex\n0.2839\n21.9 %\n\n\nsmoking\n0.2350\n18.1 %\n\n\ndiabetes\n0.1158\n8.9 %\n\n\n\nNote. SHAP: the contribution of each predictor to an individual's log-odds, relative to the average individual of the development data (exact for this additive model).\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nThe summary (beeswarm) plot shows one point per patient and predictor: its SHAP value (horizontal) coloured by the predictor’s value (blue low, red high). Current smokers get a positive push, never smokers a small negative one; high blood pressure and cholesterol push up; men are pushed up, more so when young (the interaction).",
+    "crumbs": [
+      "Home",
+      "Worked examples in jamovi",
+      "Which predictors matter? Importance and SHAP"
+    ]
+  },
+  {
+    "objectID": "worked/importance.html#explaining-one-patient",
+    "href": "worked/importance.html#explaining-one-patient",
+    "title": "Which predictors matter? Importance and SHAP",
+    "section": "Explaining one patient",
+    "text": "Explaining one patient\nPatient in row 2: a 49-year-old male with systolic pressure 140, cholesterol 6.67, bmi 32.6, never smoker, diabetes yes.\n\n\n\n\n\n\n\n\n\nThe waterfall starts at the average log-odds of the development data and adds each predictor’s contribution, the largest first, to reach this patient’s prediction. For this patient, a risk of nearly 50% comes mainly from diabetes, from being a man at 49 (the age where the excess risk of men is largest) and from a systolic pressure of 140; never having smoked lowers it a little. It is the kind of explanation a clinician can discuss with a patient.",
+    "crumbs": [
+      "Home",
+      "Worked examples in jamovi",
+      "Which predictors matter? Importance and SHAP"
+    ]
+  },
+  {
+    "objectID": "worked/missing.html",
+    "href": "worked/missing.html",
+    "title": "Missing values",
+    "section": "",
+    "text": "Question. 108 patients of the heart cohort lack cholesterol or body mass index, and the previous examples simply dropped them. Is that harmless? What changes if the missing values are imputed?",
+    "crumbs": [
+      "Home",
+      "Worked examples in jamovi",
+      "Missing values"
+    ]
+  },
+  {
+    "objectID": "worked/missing.html#why-it-matters",
+    "href": "worked/missing.html#why-it-matters",
+    "title": "Missing values",
+    "section": "Why it matters",
+    "text": "Why it matters\nDropping patients with a missing value (complete-case analysis) loses information and, worse, can bias the model if missingness is related to the outcome. A prediction model also needs a rule for patients with missing values when it is used. Multiple imputation by chained equations is the usual remedy (Steyerberg 2019): each missing value is filled in several times from a model of that variable given all the others including the outcome, the analysis is repeated in each completed data set, and the results are combined.",
+    "crumbs": [
+      "Home",
+      "Worked examples in jamovi",
+      "Missing values"
+    ]
+  },
+  {
+    "objectID": "worked/missing.html#step-1-explore",
+    "href": "worked/missing.html#step-1-explore",
+    "title": "Missing values",
+    "section": "Step 1: explore",
+    "text": "Step 1: explore\nUnder Missing values, tick Missing values (exploration).\n\n\nR syntax\nr0 &lt;- do.call(cpLogistic, c(args, list(missExplore = TRUE)))\n\n\n\n\n\nMissing Values (Development Data)\n\n\n\n\n\n% missing\n\n\n\nVariable\nRole\nMissing\n%\nNon-events\nEvents\np\n\n\n\n\nevent10\nOutcome\n0\n0.0 %\n\n\n\n\n\nsbp\nPredictor\n0\n0.0 %\n\n\n\n\n\nchol\nPredictor\n40\n1.7 %\n1.7 %\n1.4 %\n.611\n\n\nbmi\nPredictor\n70\n2.9 %\n3.1 %\n1.9 %\n.206\n\n\nage\nPredictor\n0\n0.0 %\n\n\n\n\n\nsex\nPredictor\n0\n0.0 %\n\n\n\n\n\nsmoking\nPredictor\n0\n0.0 %\n\n\n\n\n\ndiabetes\nPredictor\n0\n0.0 %\n\n\n\n\n\n\nNote. Share of rows with the predictor missing among non-events and events (chi-square test): a difference means that missingness depends on the outcome (not missing completely at random).\n\n\n\n\n\n\n\n\n\nMissing Value Patterns\n\n\n\n\nMissing\nVariables\nRows\n%\n\n\n\n\nnone (complete)\n0\n2292\n95.5 %\n\n\nbmi\n1\n68\n2.8 %\n\n\nchol\n1\n38\n1.6 %\n\n\nchol, bmi\n2\n2\n0.1 %\n\n\n\nNote. The most frequent combinations of missing variables in the development rows (at most 10).\n\n\n\n\n\n\n\n\nOnly two variables have missing values, 2.9% for bmi and 1.7% for cholesterol, almost never together. The share missing does not differ clearly between patients with and without an event (bmi: 3.1% vs 1.9%, p = 0.206). Missingness that depends on the outcome would be a warning against complete-case analysis. When the model is validated in a split or an external file, the table adds the share missing there.",
+    "crumbs": [
+      "Home",
+      "Worked examples in jamovi",
+      "Missing values"
+    ]
+  },
+  {
+    "objectID": "worked/missing.html#step-2-impute",
+    "href": "worked/missing.html#step-2-impute",
+    "title": "Missing values",
+    "section": "Step 2: impute",
+    "text": "Step 2: impute\nMissing values: Multiple imputation, 5 imputations, 10 iterations. clinpred imputes numeric variables by predictive mean matching (an observed value of a similar patient), factors by logistic or multinomial regression, with the outcome in every imputation model (for Cox models, the event and its cumulative hazard (White and Royston 2009)).\n\n\nR syntax\nr1 &lt;- do.call(cpLogistic, c(args, list(missMethod = \"mi\", miM = 5)))\n\n\n\n\n\nData\n\n\n\n\nData set\nN\nEvents\n%\nExcluded (missing)\n\n\n\n\nDevelopment\n2400\n369\n15.4 %\n0\n\n\n\nNote. Multiple imputation: 5 imputations by chained equations (predictive mean matching, 10 iterations; the outcome in the imputation models) of 108 development rows with a missing predictor; validation data imputed separately. Coefficients pooled by Rubin's rules, performance averaged over the imputations. Rows with a missing outcome are excluded.\n\n\n\n\n\n\n\n\n\nOdds Ratios\n\n\n\n\n\nCrude\nAdjusted\n\n\n\n\nOR\nLower\nUpper\np\nOR\nLower\nUpper\np\n\n\n\n\nsbp\nper 10 units\n1.24\n1.156\n1.33\n&lt; .001\n1.20\n1.110\n1.29\n&lt; .001\n\n\nchol\nper unit\n1.22\n1.098\n1.36\n&lt; .001\n1.27\n1.132\n1.42\n&lt; .001\n\n\nbmi\nper unit\n1.03\n1.007\n1.06\n.012\n1.02\n0.993\n1.05\n.160\n\n\nage\nQ3 vs Q1 (66.25 vs 53)\n1.16\n0.853\n1.58\n&lt; .001\n2.07\n1.234\n3.46\n&lt; .001\n\n\nsex\nfemale\n1.00\n\n\n&lt; .001\n1.00\n\n\n&lt; .001\n\n\n\nmale\n1.54\n1.225\n1.92\n&lt; .001\n1.78\n1.283\n2.46\n&lt; .001\n\n\nsmoking\nnever\n1.00\n\n\n&lt; .001\n1.00\n\n\n&lt; .001\n\n\n\nformer\n1.11\n0.846\n1.45\n.459\n1.15\n0.870\n1.51\n.332\n\n\n\ncurrent\n2.16\n1.648\n2.84\n&lt; .001\n2.21\n1.672\n2.93\n&lt; .001\n\n\ndiabetes\nno\n1.00\n\n\n&lt; .001\n1.00\n\n\n&lt; .001\n\n\n\nyes\n2.30\n1.640\n3.23\n&lt; .001\n2.28\n1.593\n3.27\n&lt; .001\n\n\n\nNote. Crude: each predictor alone, on the same rows. Adjusted: in the prediction model.\n\n\nNote. Spline predictors: odds ratio between the third and the first quartile; the p is the likelihood ratio test of the whole (non-linear) association.\n\n\nNote. The p on a factor's reference row is the likelihood ratio test of the factor.\n\n\nNote. With interactions, an adjusted odds ratio is the effect at the reference level (factor) or median (covariate) of the variables it interacts with; see Effects Within Subgroups.\n\n\nNote. Crude and adjusted effects pooled over the imputations by Rubin's rules.\n\n\n\n\n\n\n\n\nAll 2400 patients are now used. The pooled odds ratios (Rubin’s rules) barely differ from the complete-case ones: with 4.5% of patients incomplete and missingness unrelated to the outcome, complete-case analysis was harmless here. It would not be with 30% missing.",
+    "crumbs": [
+      "Home",
+      "Worked examples in jamovi",
+      "Missing values"
+    ]
+  },
+  {
+    "objectID": "worked/missing.html#step-3-validate-with-imputed-data",
+    "href": "worked/missing.html#step-3-validate-with-imputed-data",
+    "title": "Missing values",
+    "section": "Step 3: validate with imputed data",
+    "text": "Step 3: validate with imputed data\n\n\n\nPerformance in the Development Data\n\n\n\n\n\n95% CI\n\n\n\n\nMeasure\nApparent\nLower\nUpper\nOptimism\nCorrected\n\n\n\n\nDiscrimination\nC-statistic (AUC)\n0.68934\n\n\n0.01098\n0.67834\n\n\n\nDiscrimination slope\n0.06713\n\n\n0.00519\n0.06195\n\n\nCalibration\nCalibration-in-the-large\n0.00001\n\n\n-0.00079\n0.00079\n\n\n\nCalibration slope\n0.99997\n\n\n0.06871\n0.93129\n\n\n\nO/E ratio\n1.00001\n\n\n-0.00206\n1.00206\n\n\n\nICI\n0.00437\n\n\n-0.00137\n0.00575\n\n\n\nE50\n0.00426\n\n\n-0.00105\n0.00519\n\n\n\nE90\n0.00788\n\n\n-0.00270\n0.01058\n\n\n\nEmax\n0.02076\n\n\n0.03724\n0.00000\n\n\nOverall\nBrier score\n0.12143\n\n\n-0.00146\n0.12289\n\n\n\nScaled Brier score\n0.06670\n\n\n0.01121\n0.05550\n\n\n\nNagelkerke R²\n0.10594\n\n\n0.01612\n0.08984\n\n\n\nCox–Snell R²\n0.06104\n\n\n0.00929\n0.05175\n\n\n\nNote. Bootstrap optimism correction (Harrell): 100 samples (100 usable); corrected = apparent − optimism.\n\n\nNote. An error measure whose estimated optimism exceeds its apparent value (a noisy measure such as Emax) is shown corrected as 0.\n\n\nNote. Averaged over the imputations (no confidence intervals); internal validation within each imputation.\n\n\n\n\n\n\n\n\nPerformance is computed with the pooled model in each imputed data set and averaged; the bootstrap optimism is estimated within each imputation (Wahl et al. 2016), with the whole procedure — selection included — repeated in every resample. Validation data (a split or an external file) are imputed separately, so that no information from them reaches the model.",
+    "crumbs": [
+      "Home",
+      "Worked examples in jamovi",
+      "Missing values"
+    ]
+  },
+  {
+    "objectID": "worked/missing.html#the-other-options",
+    "href": "worked/missing.html#the-other-options",
+    "title": "Missing values",
+    "section": "The other options",
+    "text": "The other options\n\n\n\n\n\n\n\n\nMethod\nWhat it does\nWhen\n\n\n\n\nComplete cases\ndrops incomplete rows\nfew missing values, unrelated to the outcome\n\n\nMissing category / indicator\na (missing) level for factors; for numeric variables, the development median plus an indicator predictor\nmissingness that is itself informative and will also occur in practice (a test not ordered)\n\n\nSingle imputation\none chained-equations imputation\na quick look; standard errors too small\n\n\nMultiple imputation\nm imputations, pooled\nthe default choice for development\n\n\n\nWith the missing indicator method the model includes the indicators and stores the development medians; Export model writes both, so the published model can be applied to new patients with missing values.",
+    "crumbs": [
+      "Home",
+      "Worked examples in jamovi",
+      "Missing values"
+    ]
+  },
+  {
+    "objectID": "worked/cox.html",
+    "href": "worked/cox.html",
+    "title": "A time-to-event model (Cox)",
+    "section": "",
+    "text": "Question. Patients are followed for different lengths of time, and many leave the study without an event (they are censored). Instead of an event within 10 years, can we predict the risk of an event by 5 years, using every patient’s follow-up?",
+    "crumbs": [
+      "Home",
+      "Worked examples in jamovi",
+      "A time-to-event model (Cox)"
+    ]
+  },
+  {
+    "objectID": "worked/cox.html#step-1-the-panel",
+    "href": "worked/cox.html#step-1-the-panel",
+    "title": "A time-to-event model (Cox)",
+    "section": "Step 1: the panel",
+    "text": "Step 1: the panel\nPrediction → Time to Event (Cox):\n\n\n\nPanel\nSetting\n\n\n\n\nTime\ntime (years)\n\n\nEvent\nstatus; Event level event\n\n\nPrediction horizon\n5\n\n\nPredictors\nas in the external validation example, with age × sex\n\n\nValidation\nBootstrap, 100 samples; external data heart_external.csv; Model updating\n\n\nClinical Utility\nDecision curve\n\n\nPlots\nCalibration plot, Kaplan–Meier by risk group\n\n\n\n\n\n\n\n\n\nFigure 1: The Validation section of the Cox panel: the external file and model updating by sequential tests.\n\n\n\nThe horizon turns the Cox model into a risk model: the predicted risk is 1 − S₀(5)^exp(PI), where PI is the prognostic index (the linear predictor) and S₀(5) the baseline event-free probability at 5 years, estimated with the model (Efron’s estimator). Choose a horizon that is clinically relevant and well inside the follow-up; with 0, clinpred uses the median follow-up (reverse Kaplan–Meier (Schemper and Smith 1996)).\n\n\nR syntax\nr &lt;- cpCox(data = heart, time = \"time\", status = \"status\", eventLevel = \"event\", horizon = 5,\n           covs = c(\"sbp\", \"chol\", \"bmi\"), splineVars = \"age\",\n           factors = c(\"sex\", \"smoking\", \"diabetes\"),\n           covScales = list(list(var = \"sbp\", scale = \"ten\")),\n           interactions = list(list(\"age\", \"sex\")), oddsRatios = TRUE,\n           validation = \"boot\", nBoot = 100, seed = 1,\n           extFile = list(path = \"heart_external.csv\"), updating = TRUE,\n           calPlot = TRUE, kmPlot = TRUE, dca = TRUE, explain = TRUE)",
+    "crumbs": [
+      "Home",
+      "Worked examples in jamovi",
+      "A time-to-event model (Cox)"
+    ]
+  },
+  {
+    "objectID": "worked/cox.html#step-2-the-data-and-the-effects",
+    "href": "worked/cox.html#step-2-the-data-and-the-effects",
+    "title": "A time-to-event model (Cox)",
+    "section": "Step 2: the data and the effects",
+    "text": "Step 2: the data and the effects\n\n\n\nData\n\n\n\n\nData set\nN\nEvents\n%\nRisk by horizon (KM)\nExcluded (missing)\n\n\n\n\nDevelopment\n2292\n568\n24.8 %\n16.8 %\n108\n\n\nExternal (heart_external.csv)\n908\n387\n42.6 %\n31.1 %\n92\n\n\n\nNote. Event: status = event. Risks are predicted by the horizon t = 5. Rows with a missing time, event or predictor are excluded (complete-case analysis).\n\n\n\n\n\n\n\n\n\nHazard Ratios\n\n\n\n\n\nCrude\nAdjusted\n\n\n\n\nHR\nLower\nUpper\np\nHR\nLower\nUpper\np\n\n\n\n\nsbp\nper 10 units\n1.24\n1.179\n1.31\n&lt; .001\n1.21\n1.149\n1.28\n&lt; .001\n\n\nchol\nper unit\n1.11\n1.025\n1.20\n.010\n1.17\n1.076\n1.27\n&lt; .001\n\n\nbmi\nper unit\n1.04\n1.016\n1.05\n&lt; .001\n1.03\n1.008\n1.05\n.006\n\n\nage\nQ3 vs Q1 (66 vs 53)\n1.20\n0.955\n1.50\n&lt; .001\n1.43\n0.992\n2.06\n&lt; .001\n\n\nsex\nfemale\n1.00\n\n\n&lt; .001\n1.00\n\n\n&lt; .001\n\n\n\nmale\n1.49\n1.259\n1.76\n&lt; .001\n1.50\n1.185\n1.90\n&lt; .001\n\n\nsmoking\nnever\n1.00\n\n\n&lt; .001\n1.00\n\n\n&lt; .001\n\n\n\nformer\n1.17\n0.961\n1.44\n.116\n1.23\n1.006\n1.51\n.043\n\n\n\ncurrent\n2.17\n1.784\n2.64\n&lt; .001\n2.24\n1.841\n2.73\n&lt; .001\n\n\ndiabetes\nno\n1.00\n\n\n&lt; .001\n1.00\n\n\n&lt; .001\n\n\n\nyes\n1.92\n1.492\n2.46\n&lt; .001\n1.86\n1.438\n2.40\n&lt; .001\n\n\n\nNote. Crude: each predictor alone, on the same rows. Adjusted: in the prediction model.\n\n\nNote. Spline predictors: hazard ratio between the third and the first quartile; the p is the likelihood ratio test of the whole (non-linear) association.\n\n\nNote. The p on a factor's reference row is the likelihood ratio test of the factor.\n\n\nNote. With interactions, an adjusted hazard ratio is the effect at the reference level (factor) or median (covariate) of the variables it interacts with; see Effects Within Subgroups.\n\n\n\n\n\n\n\n\nThe Risk by horizon (KM) column is the Kaplan–Meier estimate of the 5-year risk, which accounts for censoring; the crude share of events does not. The hazard ratios read like the odds ratios of the logistic model; with the age × sex interaction, the ratios for age and sex are at the reference level and median of the other (women; median age).",
+    "crumbs": [
+      "Home",
+      "Worked examples in jamovi",
+      "A time-to-event model (Cox)"
+    ]
+  },
+  {
+    "objectID": "worked/cox.html#step-3-performance-at-the-horizon",
+    "href": "worked/cox.html#step-3-performance-at-the-horizon",
+    "title": "A time-to-event model (Cox)",
+    "section": "Step 3: performance at the horizon",
+    "text": "Step 3: performance at the horizon\n\n\n\nPerformance in the Development Data\n\n\n\n\n\n95% CI\n\n\n\n\nMeasure\nApparent\nLower\nUpper\nOptimism\nCorrected\n\n\n\n\nDiscrimination\nHarrell's C\n0.68249\n0.660\n0.705\n0.00806\n0.67443\n\n\n\nUno's C (to the horizon)\n0.68410\n\n\n0.00853\n0.67558\n\n\n\nTime-dependent AUC (at the horizon)\n0.69996\n\n\n0.00885\n0.69112\n\n\n\nRoyston's D\n1.12406\n0.984\n1.264\n0.05897\n1.06509\n\n\nCalibration\nO/E ratio (at the horizon)\n1.00165\n0.911\n1.101\n-0.00134\n1.00299\n\n\n\nCalibration slope\n1.00000\n0.878\n1.122\n0.04866\n0.95134\n\n\n\nICI\n0.00162\n\n\n-0.00531\n0.00692\n\n\n\nE50\n0.00159\n\n\n-0.00400\n0.00559\n\n\n\nE90\n0.00236\n\n\n-0.01096\n0.01332\n\n\nOverall\nBrier score (at the horizon)\n0.12716\n\n\n-0.00114\n0.12830\n\n\n\nScaled Brier score (IPA)\n0.08921\n\n\n0.00974\n0.07947\n\n\n\nRoyston's R²_D\n0.23174\n\n\n0.01869\n0.21305\n\n\n\nNagelkerke R²\n0.10849\n\n\n0.01131\n0.09718\n\n\n\nCox–Snell R²\n0.10560\n\n\n0.01102\n0.09458\n\n\n\nNote. Bootstrap optimism correction (Harrell): 100 samples (100 usable); corrected = apparent − optimism.\n\n\nNote. Harrell's C: probability that, of two comparable patients, the one with the event first has the higher predicted risk. Uno's C: the same, weighted for censoring and restricted to the horizon. Time-dependent AUC: discrimination between events by t = 5 and patients event-free at t (censoring weighted). Royston's D: separation in log hazard between the halves of the prognostic index. O/E: observed (Kaplan–Meier) / mean predicted risk at t. Calibration slope: 1 is ideal; below 1 the predictions are too extreme. ICI, E50, E90: mean, median and 90th percentile absolute difference between predicted and observed risk at t (smoothed by a Cox model on a spline of the predicted risk). Brier: censoring-weighted mean squared error at t; scaled Brier (index of prediction accuracy): 1 − Brier / Brier of the Kaplan–Meier risk.\n\n\n\n\n\n\n\n\nDiscrimination: Harrell’s C uses every pair of patients whose order of events is known; Uno’s C and the time-dependent AUC focus on events by 5 years (Uno et al. 2011). Corrected for optimism, Harrell’s C is 0.674. Calibration at the horizon compares the predicted 5-year risk with the Kaplan–Meier risk; the calibration curve comes from a Cox model on a spline of the predicted risk (Austin et al. 2020). The scaled Brier score is the index of prediction accuracy (Kattan and Gerds 2018), the Brier score being weighted for censoring (Graf et al. 1999).\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nThe Kaplan–Meier curves of the risk groups (quartiles of the predicted risk in the development data) should separate, and each group’s observed curve should pass through its mean predicted event-free probability at the horizon (the diamonds) (Royston and Altman 2013). In the external cohort the curves fall below the diamonds: the model under-predicts there.",
+    "crumbs": [
+      "Home",
+      "Worked examples in jamovi",
+      "A time-to-event model (Cox)"
+    ]
+  },
+  {
+    "objectID": "worked/cox.html#step-4-external-validation-and-updating",
+    "href": "worked/cox.html#step-4-external-validation-and-updating",
+    "title": "A time-to-event model (Cox)",
+    "section": "Step 4: external validation and updating",
+    "text": "Step 4: external validation and updating\n\n\n\nPerformance in the Validation Data\n\n\n\n\n\n95% CI\n\n\nData set\n\nMeasure\nEstimate\nLower\nUpper\n\n\n\n\nExternal (heart_external.csv)\nDiscrimination\nHarrell's C\n0.6960\n0.669\n0.723\n\n\n\n\nUno's C (to the horizon)\n0.7036\n\n\n\n\n\n\nTime-dependent AUC (at the horizon)\n0.7434\n\n\n\n\n\n\nRoyston's D\n1.1215\n0.954\n1.290\n\n\n\nCalibration\nO/E ratio (at the horizon)\n1.3620\n1.232\n1.505\n\n\n\n\nCalibration slope\n0.7567\n0.649\n0.864\n\n\n\n\nICI\n0.0887\n\n\n\n\n\n\nE50\n0.0968\n\n\n\n\n\n\nE90\n0.1315\n\n\n\n\n\nOverall\nBrier score (at the horizon)\n0.1898\n\n\n\n\n\n\nScaled Brier score (IPA)\n0.1132\n\n\n\n\n\n\nRoyston's R²_D\n0.2309\n\n\n\n\n\n\nNagelkerke R²\n0.1424\n\n\n\n\n\n\nCox–Snell R²\n0.1417\n\n\n\n\n\nNote. The development model, with its baseline hazard, is applied unchanged to the validation data. An O/E far from 1 means the overall risk at the horizon differs between the populations; a slope below 1, that the predictions are too extreme there.\n\n\n\n\n\n\n\n\n\nModel Updating in the Validation Data\n\n\n\n\n\nSequential test\n\n\n\nData set\nMethod\nParameters\nShift\nSlope\nχ²\ndf\np\nChosen\nHarrell's C\nO/E\nBrier\n\n\n\n\nExternal (heart_external.csv)\nOriginal model\n0\n0.0000\n1.000\n\n\n\n\n0.696\n1.362\n0.190\n\n\n\nRecalibration in the large\n1\n0.3268\n1.000\n36.5\n1\n&lt; .001\n\n0.696\n1.067\n0.181\n\n\n\nRecalibration\n2\n0.0831\n0.757\n21.0\n1\n&lt; .001\n\n0.696\n1.006\n0.181\n\n\n\nModel revision\n14\n\n\n29.4\n12\n.003\n✓\n0.703\n0.994\n0.175\n\n\n\nNote. Recalibration in the large re-estimates the baseline risk at the horizon (the original linear predictor as offset); recalibration also its slope; revision refits every coefficient. Shift and slope: of the original linear predictor in the updated model. The partial likelihood does not involve the baseline risk, so the closed testing procedure is adapted into sequential tests (each p in the row of the more complex method): revision vs recalibration and slope = 1 by partial likelihood ratio, O/E at the horizon = 1 by a Wald test; the most complex method whose test is significant at α = 0.05 is chosen (✓). Performance of an updated model is measured in the data used to update it, so it is optimistic, most of all for revision.\n\n\n\n\n\n\n\n\nIn the external cohort the model discriminates as well (C 0.696), but under-predicts the 5-year risk (O/E 1.36) and its predictions are too extreme (slope 0.76).\nUpdating a Cox model re-estimates the baseline risk at the horizon (recalibration in the large), also the slope of the prognostic index (recalibration), or every coefficient (revision) (Houwelingen 2000). Because the partial likelihood ignores the baseline risk, clinpred tests sequentially from the most complex method down (see validation): here revision is significantly better than recalibration (p = 0.003), so the effects themselves differ in that population, as the external case-mix suggested.",
+    "crumbs": [
+      "Home",
+      "Worked examples in jamovi",
+      "A time-to-event model (Cox)"
+    ]
+  },
+  {
+    "objectID": "worked/cox.html#step-5-clinical-utility",
+    "href": "worked/cox.html#step-5-clinical-utility",
+    "title": "A time-to-event model (Cox)",
+    "section": "Step 5: clinical utility",
+    "text": "Step 5: clinical utility\n\n\n\nNet Benefit (at the Horizon)\n\n\n\n\nData set\nThreshold\nModel\nTreat all\nGain\nInterventions avoided per 100\n\n\n\n\nDevelopment\n0.0500\n0.1261\n0.1240\n0.00212\n4.031\n\n\n\n0.1000\n0.0842\n0.0753\n0.00891\n8.019\n\n\n\n0.2000\n0.0388\n-0.0403\n0.03880\n31.639\n\n\nExternal (heart_external.csv)\n0.0500\n0.2744\n0.2742\n0.00018\n0.340\n\n\n\n0.1000\n0.2334\n0.2339\n-0.00055\n-0.495\n\n\n\n0.2000\n0.1587\n0.1381\n0.02052\n8.208\n\n\n\nNote. Net benefit at t = 5, with the event risks above each threshold estimated by Kaplan–Meier (censoring accounted for): true positives/N − false positives/N × p/(1 − p) at threshold p. Gain: over the better of treating all and treating none.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nThe net benefit at 5 years uses Kaplan–Meier risks among the patients above each threshold, so censored patients count correctly. In the external cohort, where a quarter of patients have an event, treating everyone is about as good as using the model at low thresholds; the model helps from about 20%.",
+    "crumbs": [
+      "Home",
+      "Worked examples in jamovi",
+      "A time-to-event model (Cox)"
+    ]
+  },
+  {
+    "objectID": "foundations/performance.html",
+    "href": "foundations/performance.html",
+    "title": "Measuring performance",
+    "section": "",
+    "text": "A prediction model is judged on four aspects (Steyerberg et al. 2010). None of them replaces the others: a model can rank patients well and still give wrong risks, or give right risks that change no decision.",
+    "crumbs": [
+      "Home",
+      "Foundations",
+      "Measuring performance"
+    ]
+  },
+  {
+    "objectID": "foundations/performance.html#discrimination",
+    "href": "foundations/performance.html#discrimination",
+    "title": "Measuring performance",
+    "section": "Discrimination",
+    "text": "Discrimination\nThe C-statistic is the probability that, of two patients, one with and one without the event, the one with the event has the higher predicted risk. For a binary outcome it equals the area under the ROC curve (AUC). 0.5 is a coin toss, 1 is perfect separation; 0.7–0.8 is common for clinical models. clinpred gives DeLong’s confidence interval (DeLong et al. 1988).\nFor time-to-event outcomes, Harrell’s C compares pairs whose order of events is known; Uno’s C weights pairs for censoring and restricts them to the horizon (Uno et al. 2011); the time-dependent AUC separates patients with an event by the horizon from those event-free at it. Royston’s D measures the separation of the prognostic index (Royston and Sauerbrei 2004).\nDiscrimination depends on the case-mix: in a population where patients differ more, the same model discriminates better. Comparing AUCs across populations needs care (see the external validation example).",
+    "crumbs": [
+      "Home",
+      "Foundations",
+      "Measuring performance"
+    ]
+  },
+  {
+    "objectID": "foundations/performance.html#calibration",
+    "href": "foundations/performance.html#calibration",
+    "title": "Measuring performance",
+    "section": "Calibration",
+    "text": "Calibration\nCalibration is the agreement between predicted risks and observed frequencies, and it is the aspect most often neglected — “the Achilles heel of predictive analytics” (Van Calster et al. 2019). A miscalibrated model can mislead every patient it is used on, whatever its AUC.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nFigure 1: Three calibration curves: a well calibrated model lies on the diagonal; an overfitted model has a slope below 1 (low risks too low, high risks too high); a model from a population with a higher incidence predicts too high everywhere.\n\n\n\nThe measures follow a hierarchy (Van Calster et al. 2019):\n\nCalibration-in-the-large (or the O/E ratio, observed over expected events): is the average risk right? Ideal: 0 (O/E = 1). In the development data it is 0 by construction.\nCalibration slope: the slope of the outcome on the model’s linear predictor. Ideal 1; below 1 the predictions are too extreme (typical of overfitting, or of transporting a model to a more homogeneous population); above 1, too modest.\nCalibration curve: a smoothed plot of observed against predicted risk (a loess smoother; for Cox models a Cox model on a spline of the predicted risk at the horizon (Austin et al. 2020)), with grouped observed proportions and a histogram of the predictions. Its average absolute distance from the diagonal is the ICI; E50, E90 and Emax are its median, 90th percentile and maximum (Austin and Steyerberg 2019).",
+    "crumbs": [
+      "Home",
+      "Foundations",
+      "Measuring performance"
+    ]
+  },
+  {
+    "objectID": "foundations/performance.html#overall-performance",
+    "href": "foundations/performance.html#overall-performance",
+    "title": "Measuring performance",
+    "section": "Overall performance",
+    "text": "Overall performance\nThe Brier score is the mean squared difference between predicted risk and outcome (0/1): lower is better, and it mixes calibration and discrimination. Because its value depends on the outcome frequency, clinpred also reports the scaled Brier score, 1 − Brier / Brier of a model that gives everyone the overall risk (for Cox models, censoring weighted, the index of prediction accuracy (Graf et al. 1999; Kattan and Gerds 2018)). A negative scaled Brier in new patients means the model is worse than knowing the average risk. Nagelkerke’s and Cox–Snell’s R² are likelihood-based alternatives; the Cox–Snell R² is the input of the sample size criteria.\nFor a continuous outcome, R² is computed around the mean of the data where it is measured, so it can be negative in validation data; RMSE and MAE are in the units of the outcome.",
+    "crumbs": [
+      "Home",
+      "Foundations",
+      "Measuring performance"
+    ]
+  },
+  {
+    "objectID": "foundations/performance.html#clinical-utility",
+    "href": "foundations/performance.html#clinical-utility",
+    "title": "Measuring performance",
+    "section": "Clinical utility",
+    "text": "Clinical utility\nA model is used to make decisions: treat, test further, or reassure. Classifying patients at a risk threshold gives sensitivity, specificity and predictive values. The threshold should reflect the harm of a false positive relative to the benefit of a true positive: a threshold of 10% means that treating 1 patient with the event is worth treating 9 without it.\nDecision curve analysis (Vickers and Elkin 2006) makes this explicit. The net benefit at threshold t counts true positives minus false positives weighted by the odds of the threshold:\n\\[\\text{NB}(t) = \\frac{TP}{N} - \\frac{FP}{N}\\cdot\\frac{t}{1-t}.\\]\nThe model is useful at thresholds where its net benefit exceeds both treat all and treat none (NB = 0). The interventions avoided per 100 patients restate the gain as unnecessary treatments spared at the same benefit. For Cox models, clinpred estimates the event risks above each threshold by Kaplan–Meier, so censoring is accounted for.",
+    "crumbs": [
+      "Home",
+      "Foundations",
+      "Measuring performance"
+    ]
+  },
+  {
+    "objectID": "foundations/performance.html#what-to-report",
+    "href": "foundations/performance.html#what-to-report",
+    "title": "Measuring performance",
+    "section": "What to report",
+    "text": "What to report\nTRIPOD+AI (Collins et al. 2024) asks for discrimination and calibration (with a calibration plot) in the development data corrected for optimism, and in every validation; clinical utility when the model is meant to guide decisions. The reporting page maps each item to clinpred’s output.",
+    "crumbs": [
+      "Home",
+      "Foundations",
+      "Measuring performance"
+    ]
+  },
+  {
+    "objectID": "foundations/prediction-models.html",
+    "href": "foundations/prediction-models.html",
+    "title": "Prediction models and overfitting",
+    "section": "",
+    "text": "Regression is used for two different purposes. In an aetiological study the question is the effect of one exposure, and the other variables are there to remove confounding: the coefficient of the exposure is the result. In a prediction study no coefficient is the result: the result is the predicted risk of each patient, and the question is whether these risks are accurate (calibration) and separate patients with and without the outcome (discrimination) in patients who were not used to build the model (Steyerberg 2019). A predictor need not be causal; it must only carry information that is available at the moment of prediction.\nA diagnostic model predicts the presence of a disease now (e.g. pulmonary embolism in a patient with chest pain); a prognostic model predicts a future event (e.g. a cardiovascular event within 10 years). The tools are the same.",
+    "crumbs": [
+      "Home",
+      "Foundations",
+      "Prediction models and overfitting"
+    ]
+  },
+  {
+    "objectID": "foundations/prediction-models.html#explaining-and-predicting",
+    "href": "foundations/prediction-models.html#explaining-and-predicting",
+    "title": "Prediction models and overfitting",
+    "section": "",
+    "text": "Regression is used for two different purposes. In an aetiological study the question is the effect of one exposure, and the other variables are there to remove confounding: the coefficient of the exposure is the result. In a prediction study no coefficient is the result: the result is the predicted risk of each patient, and the question is whether these risks are accurate (calibration) and separate patients with and without the outcome (discrimination) in patients who were not used to build the model (Steyerberg 2019). A predictor need not be causal; it must only carry information that is available at the moment of prediction.\nA diagnostic model predicts the presence of a disease now (e.g. pulmonary embolism in a patient with chest pain); a prognostic model predicts a future event (e.g. a cardiovascular event within 10 years). The tools are the same.",
+    "crumbs": [
+      "Home",
+      "Foundations",
+      "Prediction models and overfitting"
+    ]
+  },
+  {
+    "objectID": "foundations/prediction-models.html#the-steps",
+    "href": "foundations/prediction-models.html#the-steps",
+    "title": "Prediction models and overfitting",
+    "section": "The steps",
+    "text": "The steps\n\nDefine the outcome and the moment of prediction. Who are the patients, when is the prediction made, and what is predicted by when (a time horizon for prognostic models).\nChoose candidate predictors from knowledge, not from the data: what is measured routinely, reliably and before the outcome.\nCheck the sample size for the number of candidate parameters (below).\nHandle missing values (exploration, imputation; see the example).\nSpecify the model: non-linear effects of continuous predictors (splines), interactions only when expected, no dichotomising of continuous variables.\nEstimate it, possibly with selection or penalisation (shrinkage).\nEvaluate the performance — discrimination, calibration, overall accuracy and clinical usefulness — and correct it for optimism by internal validation.\nValidate it in new patients (another period, centre or population) and, if needed, update it.\nPresent it so that others can use it (the full equation, a calculator) and report it following TRIPOD+AI (Collins et al. 2024).\n\nclinpred covers steps 3 to 9.",
+    "crumbs": [
+      "Home",
+      "Foundations",
+      "Prediction models and overfitting"
+    ]
+  },
+  {
+    "objectID": "foundations/prediction-models.html#overfitting-and-optimism",
+    "href": "foundations/prediction-models.html#overfitting-and-optimism",
+    "title": "Prediction models and overfitting",
+    "section": "Overfitting and optimism",
+    "text": "Overfitting and optimism\nA model fitted to a data set describes that data set best, noise included. Its apparent performance, measured in the same patients, is therefore optimistic: in new patients the discrimination will be lower and the predictions too extreme (high risks too high, low risks too low). The more parameters relative to the number of events, the larger the optimism.\nThe simulation below shows it. Each data set has 300 patients (about 45 events) and three real predictors; noise predictors are then added. The apparent C-statistic (AUC) keeps rising with every useless predictor, while the AUC in a large independent sample falls. The bootstrap optimism-corrected AUC, computed by clinpred’s own validation engine, removes most of the optimism. It removes less of it when the parameters approach the number of events: there the data are too few even to estimate the optimism, which is one more reason to respect the sample size (below).\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nFigure 1: Apparent, bootstrap-corrected and true (new-patient) AUC of logistic models with 3 real predictors and an increasing number of noise predictors; 300 patients, means of 12 simulated data sets.\n\n\n\nWith 30 noise predictors (33 parameters for about 45 events) the apparent AUC is 0.864, but in new patients it is 0.664; the bootstrap says 0.746. The bootstrap also estimates how much the predictions are too extreme: the calibration slope of the model in new patients, 0.43 here (1 would be perfect). This is the uniform shrinkage factor: multiplying the coefficients by it would make the predictions about right. The validation page explains how the bootstrap does this.\nThe remedies are, in order: fewer candidate parameters (pre-specification from knowledge), more data, and penalised estimation (shrinkage, elastic net). Selection by p-values or AIC does not remove the optimism — it adds its own — unless it is repeated inside the validation, as clinpred does.",
+    "crumbs": [
+      "Home",
+      "Foundations",
+      "Prediction models and overfitting"
+    ]
+  },
+  {
+    "objectID": "foundations/prediction-models.html#how-many-patients",
+    "href": "foundations/prediction-models.html#how-many-patients",
+    "title": "Prediction models and overfitting",
+    "section": "How many patients?",
+    "text": "How many patients?\nThe old rule of 10 events per variable is too crude. Riley et al. (2020) (and Richard D. Riley et al. (2019a), Richard D. Riley et al. (2019b) for continuous and time-to-event outcomes) derive the minimum sample size from explicit targets:\n\nexpected shrinkage of at least 0.9 (optimism in the predictions of at most 10%);\noptimism in the R² (Nagelkerke) of at most 0.05;\nprecise overall risk (the intercept within ±0.05), or, for a continuous outcome, a precise residual SD and mean.\n\nThe criteria depend on the number of candidate parameters (every spline term, every factor level, every candidate interaction counts, whether or not it is kept), the outcome proportion, and the anticipated Cox–Snell R² of the model. clinpred’s Sample size adequacy table computes the three criteria from the anticipated R² you enter or from the model’s own optimism-corrected R², and compares them with the data you have (see the logistic example).",
+    "crumbs": [
+      "Home",
+      "Foundations",
+      "Prediction models and overfitting"
+    ]
+  },
+  {
+    "objectID": "further/glossary.html",
+    "href": "further/glossary.html",
+    "title": "Glossary",
+    "section": "",
+    "text": "Apparent performance. Performance measured in the data used to develop the model; optimistic.\nBaseline covariates. Predictors forced into the model and never selected or penalised (in clinpred also the baseline model of the incremental-value analysis).\nBootstrap. Resampling the patients with replacement to imitate drawing new samples from the population; used to estimate optimism, shrinkage and stability.\nBrier score. Mean squared difference between predicted risk and outcome; scaled Brier compares it with a model without predictors.\nCalibration. Agreement between predicted risks and observed frequencies. In the large: the average; slope: the spread; curve: across the range.\nCase-mix. The distribution of patient characteristics in a population; it affects discrimination and calibration.\nC-statistic (AUC). Probability that a patient with the event has a higher predicted risk than one without; 0.5 is chance.\nClosed testing procedure. A sequence of tests choosing the simplest updating method that is not significantly worse than revising the whole model.\nCross-validation. Splitting the data into k folds, predicting each with a model fitted on the others.\nDecision curve. Net benefit of a model across risk thresholds, compared with treating all and treating none.\nElastic net. Penalised regression mixing the lasso (sets coefficients to 0) and ridge (shrinks them); λ is the strength of the penalty.\nExternal validation. Evaluating the model, unchanged, in patients from another time, place or setting.\nHorizon. The time by which a time-to-event model predicts the risk.\nICI. Integrated calibration index: mean absolute distance between the smoothed calibration curve and the diagonal.\nIncremental value. What added predictors contribute over a baseline model.\nLinear predictor (prognostic index). The weighted sum of the predictors, before the transformation into a risk.\nMembership c-statistic. How well a model separates development from validation patients: a summary of how different the populations are.\nMultiple imputation. Filling in missing values several times from models of each variable, analysing each completed data set and pooling the results.\nNet benefit. True positives minus false positives weighted by the threshold odds, per patient.\nO/E ratio. Observed over expected (predicted) number of events.\nOptimism. The difference between apparent and true performance in new patients.\nOverfitting. Fitting the noise of the development data; predictions too extreme in new patients.\nSHAP value. A predictor’s contribution to one patient’s prediction relative to the average patient.\nShapley decomposition. Sharing the model’s R² among predictors by averaging their gains over all orders of entry.\nShrinkage factor. The factor by which coefficients should be multiplied to correct for overfitting (the expected calibration slope).\nSpline (restricted cubic). A smooth, flexible curve for a continuous predictor, linear beyond the outer knots.\nUpdating. Adapting a model to a new population: recalibration in the large, recalibration, or revision.\n\n\n\n Back to top",
+    "crumbs": [
+      "Home",
+      "Further",
+      "Glossary"
+    ]
+  }
+]

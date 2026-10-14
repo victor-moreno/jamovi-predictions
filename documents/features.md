@@ -2,7 +2,9 @@
 
 The [README](../README.md) gives the overview. This document lists what each analysis computes,
 the options behind it and the methods used. The worked tour of every feature on example data is in
-[`examples/README.md`](../examples/README.md).
+[`examples/README.md`](../examples/README.md), and the
+[tutorial](https://victor-moreno.github.io/jamovi-predictions/) explains the methods with worked
+examples.
 
 Three development analyses share the same options, results and validation engine; a fourth
 validates published models:
@@ -43,13 +45,14 @@ validates published models:
 
 Of the other predictors over the baseline model: Δ of every performance measure (apparent,
 optimism-corrected on the same resamples, and in validation data), ΔAUC (paired DeLong) or ΔC with
-confidence intervals, LR or F test of the added predictors, NRI and IDI, Δ net benefit and overlaid
-decision curves.
+confidence intervals, LR or F test of the added predictors, continuous NRI, NRI over the risk
+categories cut at the net-benefit thresholds, IDI, Δ net benefit, and overlaid ROC curves
+(logistic) and decision curves of both models.
 
 ## Missing values
 
-- An exploration table (missing by variable, by outcome group, with tests) and the most frequent
-  patterns.
+- An exploration table (missing by variable, by outcome group, with tests; and the share missing in
+  each validation set) and the most frequent patterns.
 - Methods: complete cases; a **missing category / indicator** (a `(missing)` level for factors; the
   development median plus an indicator predictor for numeric variables); **single imputation**; or
   **multiple imputation** by chained equations (predictive mean matching, written in pure R; the
@@ -109,9 +112,12 @@ in case, unknown levels, and values outside the development range. A **case-mix*
 means, percentages, the spread of the linear predictor and the membership c-statistic (Debray et
 al. 2015).
 
-**Model updating** (logistic and linear) in each validation set: recalibration in the large,
-recalibration (intercept and slope) and model revision, with the **closed testing procedure** of
-Vergouwe et al. (2017) choosing among them.
+**Model updating** in each validation set: recalibration in the large, recalibration (intercept
+and slope) and model revision. For logistic and linear models the **closed testing procedure** of
+Vergouwe et al. (2017) chooses among them. For Cox models the baseline risk at the horizon is
+re-estimated with the linear predictor as offset; as the partial likelihood does not involve it,
+the choice is made by sequential tests from the most complex method down: revision vs
+recalibration and slope = 1 by partial likelihood ratio, O/E at the horizon = 1 by a Wald test.
 
 ## Clinical utility
 
@@ -149,6 +155,10 @@ summary and waterfall, instability plots.
 - **Export model (JSON)**: the fitted model (predictors, coding, spline knots, interactions,
   coefficients with SE, and for Cox the baseline survival at the horizon) as a file that *Validate
   a Published Model* reads, or that can accompany a publication.
+
+## Languages
+
+English, Spanish and Catalan (`jamovi/i18n/*.po`): options, tables, notes, messages and plots.
 
 ## Multicore
 
@@ -197,15 +207,14 @@ analyses. In the Data Library too:
 
 ## Known limitations
 
-- Model updating is not available for Cox models, nor with multiple imputation.
+- Model updating is not available with multiple imputation.
 - With multiple imputation, performance measures are averaged over the imputations without
   confidence intervals, and the incremental-value comparison is not optimism-corrected.
-- A model fitted with the missing-indicator method exports its indicator predictors (e.g.
-  `bmi (missing)`), which other data do not have, and not the development medians: such a model
-  cannot be revalidated from its JSON file as it stands.
-- When the horizon is left at 0, the Cox analyses use the median of the observed follow-up times.
+- Optimism-corrected error measures (ICI, E50, E90, Emax, Brier, RMSE, MAE) are floored at 0: a
+  noisy measure such as Emax can have an estimated optimism larger than its apparent value.
+- The Cox analyses assess the Brier score at the horizon, not integrated over time.
 
 ## Planned
 
-Model updating for Cox, machine-learning learners through the same validation pipeline, a tutorial
-website with worked examples, and Spanish and Catalan translations.
+Machine-learning learners (penalised and tree-based models, neural networks) through the same
+validation pipeline, with a comparison on identical resamples.
