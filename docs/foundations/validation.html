@@ -6,7 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="description" content="Internal validation by bootstrap and cross-validation, prediction stability, external validation and case-mix, and updating a model that does not transport.">
+<meta name="description" content="How cross-validation, the bootstrap and external validation reuse or add patients to measure performance honestly, prediction stability and case-mix, and how a model that does not transport is updated.">
 
 <title>Validation and updating – Clinical prediction models</title>
 <style>
@@ -469,13 +469,15 @@ div.csl-indent {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#internal-validation" id="toc-internal-validation" class="nav-link active" data-scroll-target="#internal-validation">Internal validation</a>
+  <li><a href="#four-ways-to-measure-performance" id="toc-four-ways-to-measure-performance" class="nav-link active" data-scroll-target="#four-ways-to-measure-performance">Four ways to measure performance</a>
   <ul class="collapse">
-  <li><a href="#bootstrap-optimism-correction" id="toc-bootstrap-optimism-correction" class="nav-link" data-scroll-target="#bootstrap-optimism-correction">Bootstrap optimism correction</a></li>
-  <li><a href="#cross-validation" id="toc-cross-validation" class="nav-link" data-scroll-target="#cross-validation">Cross-validation</a></li>
+  <li><a href="#the-bootstrap-step-by-step" id="toc-the-bootstrap-step-by-step" class="nav-link" data-scroll-target="#the-bootstrap-step-by-step">The bootstrap, step by step</a></li>
   </ul></li>
-  <li><a href="#external-validation" id="toc-external-validation" class="nav-link" data-scroll-target="#external-validation">External validation</a></li>
-  <li><a href="#updating" id="toc-updating" class="nav-link" data-scroll-target="#updating">Updating</a></li>
+  <li><a href="#external-validation-and-case-mix" id="toc-external-validation-and-case-mix" class="nav-link" data-scroll-target="#external-validation-and-case-mix">External validation and case-mix</a></li>
+  <li><a href="#updating-a-model-that-does-not-transport" id="toc-updating-a-model-that-does-not-transport" class="nav-link" data-scroll-target="#updating-a-model-that-does-not-transport">Updating a model that does not transport</a>
+  <ul class="collapse">
+  <li><a href="#choosing-the-method-the-closed-testing-procedure" id="toc-choosing-the-method-the-closed-testing-procedure" class="nav-link" data-scroll-target="#choosing-the-method-the-closed-testing-procedure">Choosing the method: the closed testing procedure</a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -490,7 +492,7 @@ div.csl-indent {
 
 <div>
   <div class="description">
-    Internal validation by bootstrap and cross-validation, prediction stability, external validation and case-mix, and updating a model that does not transport.
+    How cross-validation, the bootstrap and external validation reuse or add patients to measure performance honestly, prediction stability and case-mix, and how a model that does not transport is updated.
   </div>
 </div>
 
@@ -507,12 +509,44 @@ div.csl-indent {
 </header>
 
 
-<section id="internal-validation" class="level2">
-<h2 class="anchored" data-anchor-id="internal-validation">Internal validation</h2>
-<p>Internal validation estimates how the model would perform in new patients <strong>from the same population</strong>, using only the development data. Splitting the data once into a training and a test part is the worst way: it wastes data and the result depends on the split. clinpred offers the two recommended methods <span class="citation" data-cites="steyerberg2019">(<a href="#ref-steyerberg2019" role="doc-biblioref">Steyerberg 2019</a>)</span>.</p>
-<section id="bootstrap-optimism-correction" class="level3">
-<h3 class="anchored" data-anchor-id="bootstrap-optimism-correction">Bootstrap optimism correction</h3>
-<p>Harrell’s bootstrap <span class="citation" data-cites="harrell1996">(<a href="#ref-harrell1996" role="doc-biblioref">HARRELL et al. 1996</a>)</span> estimates the optimism directly:</p>
+<section id="four-ways-to-measure-performance" class="level2">
+<h2 class="anchored" data-anchor-id="four-ways-to-measure-performance">Four ways to measure performance</h2>
+<p>The <a href="../foundations/performance.html">previous page</a> defined the measures; this one is about <strong>which patients they are measured in</strong>. A model measured in the patients it was fitted to looks better than it is (<em>apparent</em> performance, see <a href="../foundations/prediction-models.html">overfitting</a>). The designs differ in how they find patients the model has not seen. In the figure, each square is a patient of a small development data set of 12.</p>
+<div id="fig-designs" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-designs-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell" data-renderings="[&quot;light&quot;,&quot;dark&quot;]">
+<div class="cell-output-display light-content">
+<div>
+<figure class="figure">
+<p><img src="validation_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid figure-img" width="1344"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display dark-content">
+<div>
+<figure class="figure">
+<p><img src="validation_files/figure-html/unnamed-chunk-3-2.png" class="img-fluid figure-img" width="1344"></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-designs-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Five designs on a data set of 12 patients (numbers are patient identifiers). Blue: the patients the model is fitted on; orange: the patients its performance is measured in. Each bootstrap model is also tested in its own sample, to measure its optimism.
+</figcaption>
+</figure>
+</div>
+<ul>
+<li><strong>Apparent</strong>: fit and test on the same 12 patients. Optimistic: the model has already seen the answers.</li>
+<li><strong>Split sample</strong>: fit on 8, test on the other 4. Honest but wasteful — the model is built on two thirds of the data and tested on a handful — and the result depends on which patients happened to land in the test part. Not recommended <span class="citation" data-cites="steyerberg2019">(<a href="#ref-steyerberg2019" role="doc-biblioref">Steyerberg 2019</a>)</span>.</li>
+<li><strong>Cross-validation</strong>: split into <em>k</em> folds (here 4); fit on 3 folds and predict the fourth, four times, so that <strong>every patient is predicted exactly once by a model that did not see them</strong>. Repeating with new random splits (<em>repeated</em> cross-validation) averages out the luck of the split.</li>
+<li><strong>Bootstrap</strong>: draw 12 patients <em>with replacement</em> from the 12 — some appear twice or three times, others not at all (sample 1 misses patients 1, 7, 9). Fit on the bootstrap sample, and measure the performance twice: in the bootstrap sample (where it is optimistic, as apparent performance is) and in the original 12. The difference is the <strong>optimism</strong> of that model. Repeated 200 times and averaged, it estimates how optimistic the real model is; subtracting it from the apparent performance gives the <strong>optimism-corrected</strong> performance <span class="citation" data-cites="harrell1996">(<a href="#ref-harrell1996" role="doc-biblioref">HARRELL et al. 1996</a>)</span>.</li>
+<li><strong>External</strong>: the model, fitted on all development patients, is applied <strong>unchanged</strong> to patients from another hospital or a later period (N1–N8), who played no part in building it.</li>
+</ul>
+<p>Cross-validation and the bootstrap are <strong>internal</strong> validation: they estimate performance in new patients <em>from the same population</em>. Only external validation tests whether the model works <em>elsewhere</em>.</p>
+<section id="the-bootstrap-step-by-step" class="level3">
+<h3 class="anchored" data-anchor-id="the-bootstrap-step-by-step">The bootstrap, step by step</h3>
 <div class="cell" data-layout-align="default">
 <div class="cell-output-display">
 <div>
@@ -534,72 +568,130 @@ div.csl-indent {
 </div>
 </div>
 </div>
-<p>The key is the second box from the left: <strong>everything</strong> that was done to build the model — variable selection, choice of interactions, the elastic net’s λ — is repeated in every bootstrap sample, so its optimism is included. clinpred does this automatically: the fitting procedure is a single function, used for the final model and for every resampled fit.</p>
+<p>The key is the box <em>Repeat the whole procedure</em>: <strong>everything</strong> that was done to build the model — variable selection, choice of interactions, the elastic net’s λ — is repeated in every bootstrap sample, so its optimism is included. clinpred does this automatically: the fitting procedure is a single function, used for the final model and for every resampled fit (and for every fold of cross-validation).</p>
 <p>Two by-products come free:</p>
 <ul>
 <li>the <strong>uniform shrinkage factor</strong>, the mean calibration slope of the bootstrap models in the original data (how much the coefficients should be shrunk), next to van Houwelingen’s heuristic estimate;</li>
 <li><strong>prediction stability</strong> <span class="citation" data-cites="riley2023">(<a href="#ref-riley2023" role="doc-biblioref">Riley and Collins 2023</a>)</span>: each bootstrap model predicts every patient, so the spread of a patient’s predicted risk across models (the <em>instability plot</em>, the mean absolute prediction error, MAPE) shows how much an individual prediction depends on the particular data.</li>
 </ul>
-</section>
-<section id="cross-validation" class="level3">
-<h3 class="anchored" data-anchor-id="cross-validation">Cross-validation</h3>
-<p>Repeated <em>k</em>-fold cross-validation splits the data into <em>k</em> parts, fits the model on <em>k</em> − 1 and predicts the left-out part, so that every patient is predicted by a model that did not see them; repeating with new splits stabilises the result. clinpred stratifies the folds by the outcome and repeats the whole procedure in every fold too. The bootstrap is preferred for small data; cross-validation is closer to what an external sample would give when data are large.</p>
+<p>The bootstrap is preferred for small and moderate data sets (it uses all patients to fit); repeated cross-validation behaves similarly when data are large. clinpred stratifies the folds by the outcome.</p>
 </section>
 </section>
-<section id="external-validation" class="level2">
-<h2 class="anchored" data-anchor-id="external-validation">External validation</h2>
-<p>A model must eventually be tested in patients from <strong>another time, place or setting</strong>. clinpred applies the development model, unchanged (the same coefficients and, for Cox models, the same baseline hazard), to:</p>
+<section id="external-validation-and-case-mix" class="level2">
+<h2 class="anchored" data-anchor-id="external-validation-and-case-mix">External validation and case-mix</h2>
+<p>clinpred applies the development model, unchanged (the same coefficients and, for Cox models, the same baseline hazard), to</p>
 <ul>
-<li>the rows marked by a <strong>validation split</strong> variable in the same data set (e.g.&nbsp;a later recruitment period — <em>temporal</em> validation, or another centre — <em>geographical</em>), and/or</li>
+<li>the rows marked by a <strong>validation split</strong> variable in the same data set (a later recruitment period — <em>temporal</em> validation; another centre — <em>geographical</em>), and/or</li>
 <li>an <strong>external data file</strong> (csv, tsv, txt, omv, xlsx, sav). Its columns are matched by name (ignoring case), its factor levels to the development levels, and a check table reports what could not be matched or lies beyond the development range.</li>
 </ul>
 <p>Whether performance holds or drops must be interpreted against the <strong>case-mix</strong> of the new population <span class="citation" data-cites="debray2015">(<a href="#ref-debray2015" role="doc-biblioref">Debray et al. 2015</a>)</span>. clinpred’s case-mix table compares the predictors, the spread of the linear predictor (a wider spread raises discrimination by itself) and a <strong>membership c-statistic</strong>: how well a model can tell development from validation patients. Near 0.5 the validation tests <em>reproducibility</em> (same kind of patients); high values test <em>transportability</em> to a different population. For Cox models see also <span class="citation" data-cites="royston2013">Royston and Altman (<a href="#ref-royston2013" role="doc-biblioref">2013</a>)</span>.</p>
 </section>
-<section id="updating" class="level2">
-<h2 class="anchored" data-anchor-id="updating">Updating</h2>
-<p>A model that discriminates well but is miscalibrated in a new population does not need to be rebuilt: it can be <strong>updated</strong> with a few parameters estimated in the new data <span class="citation" data-cites="steyerberg2019 vanhouwelingen2000">(<a href="#ref-steyerberg2019" role="doc-biblioref">Steyerberg 2019</a>; <a href="#ref-vanhouwelingen2000" role="doc-biblioref">Houwelingen 2000</a>)</span>:</p>
+<section id="updating-a-model-that-does-not-transport" class="level2">
+<h2 class="anchored" data-anchor-id="updating-a-model-that-does-not-transport">Updating a model that does not transport</h2>
+<p>A model rarely fails completely in a new population. More often it still <strong>ranks</strong> patients well but its risks are <strong>off</strong>: the new population has a different baseline risk (another country, period or referral pattern), or the predictors carry less weight there. The model does not need to be rebuilt: it can be <strong>updated</strong> with a few parameters estimated in the new data <span class="citation" data-cites="steyerberg2019 vanhouwelingen2000">(<a href="#ref-steyerberg2019" role="doc-biblioref">Steyerberg 2019</a>; <a href="#ref-vanhouwelingen2000" role="doc-biblioref">Houwelingen 2000</a>)</span>. Writing LP for the original model’s linear predictor (its log-odds), the methods are:</p>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 33%">
-<col style="width: 33%">
-<col style="width: 33%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
 </colgroup>
 <thead>
 <tr class="header">
 <th>Method</th>
-<th>What is re-estimated</th>
+<th>Updated model</th>
+<th>Re-estimated</th>
 <th>Parameters</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td>Original model</td>
+<td>logit(risk) = LP</td>
 <td>nothing</td>
 <td>0</td>
 </tr>
 <tr class="even">
 <td>Recalibration in the large</td>
-<td>the intercept (Cox: the baseline risk at the horizon)</td>
+<td>logit(risk) = <strong>a</strong> + LP</td>
+<td>the intercept: the overall risk level</td>
 <td>1</td>
 </tr>
 <tr class="odd">
 <td>Recalibration</td>
-<td>intercept and slope of the linear predictor</td>
+<td>logit(risk) = <strong>a</strong> + <strong>b</strong> × LP</td>
+<td>intercept and slope: level and spread</td>
 <td>2</td>
 </tr>
 <tr class="even">
 <td>Model revision</td>
-<td>every coefficient</td>
+<td>every coefficient refitted</td>
+<td>all</td>
 <td>all</td>
 </tr>
 </tbody>
 </table>
-<p>The simpler methods are preferred unless the data clearly need more. For logistic and linear models, clinpred chooses with the <strong>closed testing procedure</strong> of <span class="citation" data-cites="vergouwe2017">Vergouwe et al. (<a href="#ref-vergouwe2017" role="doc-biblioref">2017</a>)</span>: each method is compared with revision by a likelihood ratio (or F) test, and the first method, from the original model up, that is not significantly worse than revision is kept.</p>
-<p>For Cox models the partial likelihood does not involve the baseline hazard, so a change of the baseline risk cannot be tested against revision the same way. clinpred uses <strong>sequential tests</strong> from the most complex method down: revision against recalibration (partial likelihood ratio), slope = 1 (partial likelihood ratio), and observed/expected risk at the horizon = 1 (a Wald test of log O/E); the most complex method whose test is significant is chosen.</p>
-<p>Updated models are evaluated in the same data that updated them, so their performance is optimistic — most of all for revision.</p>
+<p>For Cox models, <em>a</em> re-estimates the baseline risk at the horizon instead of an intercept.</p>
+<p>The figure shows a simulated example: a model developed in one population, validated in another with a higher event rate and weaker effects.</p>
+<div id="fig-updating" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-updating-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell" data-renderings="[&quot;light&quot;,&quot;dark&quot;]">
+<div class="cell-output-display light-content">
+<div>
+<figure class="figure">
+<p><img src="validation_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="1344"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display dark-content">
+<div>
+<figure class="figure">
+<p><img src="validation_files/figure-html/unnamed-chunk-6-2.png" class="img-fluid figure-img" width="1344"></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-updating-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: Calibration in the new population. Left: the original model’s curve is flatter than the diagonal — its predictions are too extreme, low risks too low and high risks too high — and lies above it for most patients (more events than predicted overall). Middle: a new intercept fixes the average level but not the spread. Right: a new intercept and slope fix both.
+</figcaption>
+</figure>
+</div>
+<ul>
+<li><strong>Original</strong>: O/E = 1.44 — 44% more events than predicted — and a calibration slope of 0.52.</li>
+<li><strong>Recalibration in the large</strong> shifts every log-odds by a = 0.53: the average risk is now right (O/E = 1.00), but low risks are still too low and high risks too high.</li>
+<li><strong>Recalibration</strong> also multiplies the log-odds by b = 0.52, shrinking them toward the average: the curve now follows the diagonal.</li>
+</ul>
+<p>Updating changes the <em>risks</em>, not the <em>ranking</em>: the AUC is the same for the first three methods, because adding a constant or multiplying by a positive number does not reorder patients. Only revision, which re-weights the predictors, can change it.</p>
+<section id="choosing-the-method-the-closed-testing-procedure" class="level3">
+<h3 class="anchored" data-anchor-id="choosing-the-method-the-closed-testing-procedure">Choosing the method: the closed testing procedure</h3>
+<p>More parameters always fit the new data better, so the simplest method that is good enough should be chosen. For logistic and linear models clinpred uses the <strong>closed testing procedure</strong> of <span class="citation" data-cites="vergouwe2017">Vergouwe et al. (<a href="#ref-vergouwe2017" role="doc-biblioref">2017</a>)</span>. Each method is compared with revision (the most flexible) by a likelihood ratio test (F test for linear models), starting from the simplest:</p>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">flowchart TD
+  A{"Original model&lt;br/&gt;significantly worse than revision?"} -- no --&gt; O["Keep the original model"]
+  A -- yes --&gt; B{"Recalibration in the large&lt;br/&gt;significantly worse than revision?"}
+  B -- no --&gt; C["Recalibration in the large"]
+  B -- yes --&gt; D{"Recalibration&lt;br/&gt;significantly worse than revision?"}
+  D -- no --&gt; R["Recalibration"]
+  D -- yes --&gt; V["Model revision"]
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<p>The procedure protects against updating on noise. The price is power: when revision has many parameters, a one-parameter shift is diluted among them and may not be detected (the <a href="../worked/external.html">external validation example</a> shows a case). Look at the O/E ratio and its confidence interval as well, and decide with clinical judgement.</p>
+<p>For <strong>Cox models</strong> the partial likelihood does not involve the baseline hazard, so a change of the baseline risk cannot be tested against revision the same way. clinpred uses <strong>sequential tests</strong> from the most complex method down: revision against recalibration (partial likelihood ratio), slope = 1 (partial likelihood ratio), and observed/expected risk at the horizon = 1 (a Wald test of log O/E); the most complex method whose test is significant is chosen.</p>
+<p>Updated models are evaluated in the same data that updated them, so their performance is optimistic — most of all for revision. An updated model should itself be validated before use.</p>
 
 
 
+</section>
 </section>
 
 <a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a><div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">

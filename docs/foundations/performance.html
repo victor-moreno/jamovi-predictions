@@ -6,7 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="description" content="Discrimination, calibration, overall accuracy and clinical utility: what each measure says, its ideal value, and which to report.">
+<meta name="description" content="Discrimination, calibration, overall accuracy and clinical utility: what each measure says, how it is computed, its ideal value, and which to report — explained with the heart cohort.">
 
 <title>Measuring performance – Clinical prediction models</title>
 <style>
@@ -495,10 +495,19 @@ window.Quarto = {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#discrimination" id="toc-discrimination" class="nav-link active" data-scroll-target="#discrimination">Discrimination</a></li>
+  <li><a href="#discrimination-the-c-statistic" id="toc-discrimination-the-c-statistic" class="nav-link active" data-scroll-target="#discrimination-the-c-statistic">Discrimination: the C-statistic</a>
+  <ul class="collapse">
+  <li><a href="#counting-pairs" id="toc-counting-pairs" class="nav-link" data-scroll-target="#counting-pairs">Counting pairs</a></li>
+  <li><a href="#the-roc-curve" id="toc-the-roc-curve" class="nav-link" data-scroll-target="#the-roc-curve">The ROC curve</a></li>
+  </ul></li>
   <li><a href="#calibration" id="toc-calibration" class="nav-link" data-scroll-target="#calibration">Calibration</a></li>
-  <li><a href="#overall-performance" id="toc-overall-performance" class="nav-link" data-scroll-target="#overall-performance">Overall performance</a></li>
-  <li><a href="#clinical-utility" id="toc-clinical-utility" class="nav-link" data-scroll-target="#clinical-utility">Clinical utility</a></li>
+  <li><a href="#overall-performance-the-brier-score" id="toc-overall-performance-the-brier-score" class="nav-link" data-scroll-target="#overall-performance-the-brier-score">Overall performance: the Brier score</a></li>
+  <li><a href="#clinical-utility-net-benefit-and-decision-curves" id="toc-clinical-utility-net-benefit-and-decision-curves" class="nav-link" data-scroll-target="#clinical-utility-net-benefit-and-decision-curves">Clinical utility: net benefit and decision curves</a>
+  <ul class="collapse">
+  <li><a href="#the-threshold-is-a-value-judgement" id="toc-the-threshold-is-a-value-judgement" class="nav-link" data-scroll-target="#the-threshold-is-a-value-judgement">The threshold is a value judgement</a></li>
+  <li><a href="#net-benefit-at-one-threshold" id="toc-net-benefit-at-one-threshold" class="nav-link" data-scroll-target="#net-benefit-at-one-threshold">Net benefit at one threshold</a></li>
+  <li><a href="#the-decision-curve" id="toc-the-decision-curve" class="nav-link" data-scroll-target="#the-decision-curve">The decision curve</a></li>
+  </ul></li>
   <li><a href="#what-to-report" id="toc-what-to-report" class="nav-link" data-scroll-target="#what-to-report">What to report</a></li>
   </ul>
 </nav>
@@ -514,7 +523,7 @@ window.Quarto = {
 
 <div>
   <div class="description">
-    Discrimination, calibration, overall accuracy and clinical utility: what each measure says, its ideal value, and which to report.
+    Discrimination, calibration, overall accuracy and clinical utility: what each measure says, how it is computed, its ideal value, and which to report — explained with the heart cohort.
   </div>
 </div>
 
@@ -568,18 +577,13 @@ window.Quarto = {
 </tr>
 </tbody>
 </table>
-<section id="discrimination" class="level2">
-<h2 class="anchored" data-anchor-id="discrimination">Discrimination</h2>
-<p>The <strong>C-statistic</strong> is the probability that, of two patients, one with and one without the event, the one with the event has the higher predicted risk. For a binary outcome it equals the area under the ROC curve (AUC). 0.5 is a coin toss, 1 is perfect separation; 0.7–0.8 is common for clinical models. clinpred gives DeLong’s confidence interval <span class="citation" data-cites="delong1988">(<a href="#ref-delong1988" role="doc-biblioref">DeLong et al. 1988</a>)</span>.</p>
-<p>For time-to-event outcomes, <strong>Harrell’s C</strong> compares pairs whose order of events is known; <strong>Uno’s C</strong> weights pairs for censoring and restricts them to the horizon <span class="citation" data-cites="uno2011">(<a href="#ref-uno2011" role="doc-biblioref">Uno et al. 2011</a>)</span>; the <strong>time-dependent AUC</strong> separates patients with an event by the horizon from those event-free at it. <strong>Royston’s D</strong> measures the separation of the prognostic index <span class="citation" data-cites="royston2004">(<a href="#ref-royston2004" role="doc-biblioref">Royston and Sauerbrei 2004</a>)</span>.</p>
-<p>Discrimination depends on the <em>case-mix</em>: in a population where patients differ more, the same model discriminates better. Comparing AUCs across populations needs care (see the <a href="../worked/external.html">external validation example</a>).</p>
-</section>
-<section id="calibration" class="level2">
-<h2 class="anchored" data-anchor-id="calibration">Calibration</h2>
-<p>Calibration is the agreement between predicted risks and observed frequencies, and it is the aspect most often neglected — “the Achilles heel of predictive analytics” <span class="citation" data-cites="vancalster2019">(<a href="#ref-vancalster2019" role="doc-biblioref">Van Calster et al. 2019</a>)</span>. A miscalibrated model can mislead every patient it is used on, whatever its AUC.</p>
-<div id="fig-calibration" class="quarto-float quarto-figure quarto-figure-center anchored">
+<p>The examples on this page use the logistic model of the heart cohort (age as a spline with an age × sex interaction, blood pressure, cholesterol, smoking and diabetes): 2360 patients, 364 of whom had a cardiovascular event within 10 years (15.4%).</p>
+<section id="discrimination-the-c-statistic" class="level2">
+<h2 class="anchored" data-anchor-id="discrimination-the-c-statistic">Discrimination: the C-statistic</h2>
+<p>A model <strong>discriminates</strong> if it gives higher risks to the patients who will have the event than to those who will not. Look at the predicted risks of the two groups:</p>
+<div id="fig-riskdist" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
-<div aria-describedby="fig-calibration-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div aria-describedby="fig-riskdist-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell" data-renderings="[&quot;light&quot;,&quot;dark&quot;]">
 <div class="cell-output-display light-content">
 <div>
@@ -597,8 +601,100 @@ window.Quarto = {
 </div>
 </div>
 </div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-riskdist-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Predicted risks of the patients who had an event (orange) and of those who did not (blue). The event group is shifted to the right, but the two overlap a lot.
+</figcaption>
+</figure>
+</div>
+<p>Patients with an event tend to have higher predicted risks (median 19% against 13%), but the distributions overlap widely: many patients without an event get higher risks than some with one. The C-statistic puts a number on this overlap.</p>
+<section id="counting-pairs" class="level3">
+<h3 class="anchored" data-anchor-id="counting-pairs">Counting pairs</h3>
+<p>Take one patient <strong>with</strong> the event and one <strong>without</strong>. If the model gave the higher risk to the patient with the event, the pair is <strong>concordant</strong>; otherwise it is discordant (a tie counts half). The <strong>C-statistic is the proportion of concordant pairs</strong> among all such pairs. With 4 patients with an event and 5 without there are 4 × 5 = 20 pairs:</p>
+<div id="fig-pairs" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-pairs-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell" data-renderings="[&quot;light&quot;,&quot;dark&quot;]">
+<div class="cell-output-display light-content">
+<div>
+<figure class="figure">
+<p><img src="performance_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" width="1344"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display dark-content">
+<div>
+<figure class="figure">
+<p><img src="performance_files/figure-html/unnamed-chunk-5-2.png" class="img-fluid figure-img" width="1344"></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-pairs-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: Every pair of one patient with and one without the event. A pair is concordant (✓) when the patient with the event has the higher predicted risk. Here 15 of 20 pairs are concordant: C = 0.75.
+</figcaption>
+</figure>
+</div>
+<p>Patient A (risk 62%) is ranked above every patient without the event; patient D (9%) above only two of them. 15 of 20 pairs are concordant, so <strong>C = 0.75</strong>: for a random pair, the model ranks the patient with the event higher 75% of the time. For the heart model the same count over all 364 × 1996 = 726,544 pairs gives C = 0.686.</p>
+<p>How to read it: <strong>0.5</strong> is a coin toss (the model ranks no better than chance), <strong>1</strong> is perfect separation. 0.7–0.8 is typical of clinical models built from routine variables; above 0.8 is good. The C-statistic says nothing about whether the risks are <em>right</em>: doubling every risk would not change a single pair.</p>
+</section>
+<section id="the-roc-curve" class="level3">
+<h3 class="anchored" data-anchor-id="the-roc-curve">The ROC curve</h3>
+<p>For a binary outcome the C-statistic equals the <strong>area under the ROC curve</strong> (AUC). Choose a threshold — treat everyone above 20% — and count how many patients with the event are above it (<em>sensitivity</em>) and how many without the event are wrongly above it (<em>1 − specificity</em>). Each threshold gives one point; joining all of them, from 100% (nobody above) to 0% (everyone above), draws the ROC curve.</p>
+<div id="fig-roc" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-roc-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell" data-renderings="[&quot;light&quot;,&quot;dark&quot;]">
+<div class="cell-output-display light-content">
+<div>
+<figure class="figure">
+<p><img src="performance_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid figure-img" width="1344"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display dark-content">
+<div>
+<figure class="figure">
+<p><img src="performance_files/figure-html/unnamed-chunk-7-2.png" class="img-fluid figure-img" width="1344"></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-roc-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;3: ROC curve of the heart model. The point marks the 20% threshold; the shaded area under the curve is the C-statistic. The diagonal is a model that ranks at random.
+</figcaption>
+</figure>
+</div>
+<p>For time-to-event outcomes, <strong>Harrell’s C</strong> compares the pairs whose order of events is known (the one who had the event first should have the higher risk); <strong>Uno’s C</strong> weights the pairs for censoring and restricts them to the horizon <span class="citation" data-cites="uno2011">(<a href="#ref-uno2011" role="doc-biblioref">Uno et al. 2011</a>)</span>; the <strong>time-dependent AUC</strong> separates the patients with an event by the horizon from those event-free at it. <strong>Royston’s D</strong> measures the separation of the prognostic index <span class="citation" data-cites="royston2004">(<a href="#ref-royston2004" role="doc-biblioref">Royston and Sauerbrei 2004</a>)</span>. clinpred gives DeLong’s confidence interval for the AUC <span class="citation" data-cites="delong1988">(<a href="#ref-delong1988" role="doc-biblioref">DeLong et al. 1988</a>)</span>.</p>
+<p>Discrimination depends on the <strong>case-mix</strong>: in a population where patients differ more, the same model discriminates better. Comparing AUCs across populations needs care (see the <a href="../worked/external.html">external validation example</a>).</p>
+</section>
+</section>
+<section id="calibration" class="level2">
+<h2 class="anchored" data-anchor-id="calibration">Calibration</h2>
+<p>Calibration is the agreement between predicted risks and observed frequencies: among patients given a 20% risk, about 20% should have the event. It is the aspect most often neglected — “the Achilles heel of predictive analytics” <span class="citation" data-cites="vancalster2019">(<a href="#ref-vancalster2019" role="doc-biblioref">Van Calster et al. 2019</a>)</span> — and a miscalibrated model misleads every patient it is used on, whatever its AUC.</p>
+<div id="fig-calibration" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-calibration-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell" data-renderings="[&quot;light&quot;,&quot;dark&quot;]">
+<div class="cell-output-display light-content">
+<div>
+<figure class="figure">
+<p><img src="performance_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid figure-img" width="1344"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display dark-content">
+<div>
+<figure class="figure">
+<p><img src="performance_files/figure-html/unnamed-chunk-9-2.png" class="img-fluid figure-img" width="1344"></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-calibration-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;1: Three calibration curves: a well calibrated model lies on the diagonal; an overfitted model has a slope below 1 (low risks too low, high risks too high); a model from a population with a higher incidence predicts too high everywhere.
+Figure&nbsp;4: Three calibration curves: a well calibrated model lies on the diagonal; an overfitted model has a slope below 1 (low risks too low, high risks too high); a model from a population with a higher incidence predicts too high everywhere.
 </figcaption>
 </figure>
 </div>
@@ -609,17 +705,173 @@ Figure&nbsp;1: Three calibration curves: a well calibrated model lies on the dia
 <li><strong>Calibration curve</strong>: a smoothed plot of observed against predicted risk (a loess smoother; for Cox models a Cox model on a spline of the predicted risk at the horizon <span class="citation" data-cites="austin2020">(<a href="#ref-austin2020" role="doc-biblioref">Austin et al. 2020</a>)</span>), with grouped observed proportions and a histogram of the predictions. Its average absolute distance from the diagonal is the <strong>ICI</strong>; E50, E90 and Emax are its median, 90th percentile and maximum <span class="citation" data-cites="austin2019">(<a href="#ref-austin2019" role="doc-biblioref">Austin and Steyerberg 2019</a>)</span>.</li>
 </ul>
 </section>
-<section id="overall-performance" class="level2">
-<h2 class="anchored" data-anchor-id="overall-performance">Overall performance</h2>
-<p>The <strong>Brier score</strong> is the mean squared difference between predicted risk and outcome (0/1): lower is better, and it mixes calibration and discrimination. Because its value depends on the outcome frequency, clinpred also reports the <strong>scaled Brier score</strong>, 1 − Brier / Brier of a model that gives everyone the overall risk (for Cox models, censoring weighted, the <em>index of prediction accuracy</em> <span class="citation" data-cites="graf1999 kattan2018">(<a href="#ref-graf1999" role="doc-biblioref">Graf et al. 1999</a>; <a href="#ref-kattan2018" role="doc-biblioref">Kattan and Gerds 2018</a>)</span>). A negative scaled Brier in new patients means the model is worse than knowing the average risk. Nagelkerke’s and Cox–Snell’s R² are likelihood-based alternatives; the Cox–Snell R² is the input of the sample size criteria.</p>
-<p>For a continuous outcome, R² is computed around the mean of the data where it is measured, so it can be negative in validation data; RMSE and MAE are in the units of the outcome.</p>
+<section id="overall-performance-the-brier-score" class="level2">
+<h2 class="anchored" data-anchor-id="overall-performance-the-brier-score">Overall performance: the Brier score</h2>
+<p>The <strong>Brier score</strong> asks, patient by patient, how far the predicted risk was from what happened. What happened is coded 1 (event) or 0 (no event); the error is the difference, squared so that errors in both directions count, and averaged over patients:</p>
+<p><span class="math display">\[\text{Brier} = \frac{1}{N}\sum_{i=1}^{N} (\text{outcome}_i - \text{predicted risk}_i)^2.\]</span></p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: right;">Patient</th>
+<th style="text-align: right;">Predicted risk</th>
+<th style="text-align: right;">Outcome</th>
+<th style="text-align: right;">Squared error</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0.0500</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.0025</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0.1000</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.0100</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">0.2000</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0.6400</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">0.3000</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.0900</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.6000</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0.1600</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">0.8000</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0.0400</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>Patient 1 was given 5% and had no event: a tiny error (0.0025). Patient 3 was given 20% and <em>had</em> the event: a large error (0.64). The Brier score of these six is the mean of the last column, <strong>0.157</strong>. Lower is better; 0 would be a model that predicts 0% for everyone without the event and 100% for everyone with it.</p>
+<div id="fig-brier" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-brier-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell" data-renderings="[&quot;light&quot;,&quot;dark&quot;]">
+<div class="cell-output-display light-content">
+<div>
+<figure class="figure">
+<p><img src="performance_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid figure-img" width="1344"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display dark-content">
+<div>
+<figure class="figure">
+<p><img src="performance_files/figure-html/unnamed-chunk-12-2.png" class="img-fluid figure-img" width="1344"></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-brier-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;5: The penalty a patient adds to the Brier score, by the risk the model gave: a patient with the event is penalised for a low risk, one without it for a high risk.
+</figcaption>
+</figure>
+</div>
+<p>The value of a Brier score depends on how common the outcome is, so it needs a reference: a “model” without predictors that gives everyone the average risk (15.4% here) has a Brier score of 15.4% × (1 − 15.4%) = 0.1304. The heart model scores 0.1220. The <strong>scaled Brier score</strong> is the improvement over that reference: 1 − 0.1220 / 0.1304 = <strong>0.064</strong>. The model removes 6.4% of the prediction error of knowing only the average risk — small, as for most models of a long-term outcome built on a few variables, where much of what will happen to an individual is unpredictable. A negative scaled Brier in new patients means the model is <em>worse</em> than the average risk. For Cox models clinpred weights the Brier score for censoring at the horizon (the scaled version is the <em>index of prediction accuracy</em> <span class="citation" data-cites="graf1999 kattan2018">(<a href="#ref-graf1999" role="doc-biblioref">Graf et al. 1999</a>; <a href="#ref-kattan2018" role="doc-biblioref">Kattan and Gerds 2018</a>)</span>).</p>
+<p>Nagelkerke’s and Cox–Snell’s R² are likelihood-based alternatives; the Cox–Snell R² is the input of the sample size criteria. For a continuous outcome, R² is computed around the mean of the data where it is measured, so it can be negative in validation data; RMSE and MAE are in the units of the outcome.</p>
 </section>
-<section id="clinical-utility" class="level2">
-<h2 class="anchored" data-anchor-id="clinical-utility">Clinical utility</h2>
-<p>A model is used to make decisions: treat, test further, or reassure. Classifying patients at a <strong>risk threshold</strong> gives sensitivity, specificity and predictive values. The threshold should reflect the harm of a false positive relative to the benefit of a true positive: a threshold of 10% means that treating 1 patient with the event is worth treating 9 without it.</p>
-<p><strong>Decision curve analysis</strong> <span class="citation" data-cites="vickers2006">(<a href="#ref-vickers2006" role="doc-biblioref">Vickers and Elkin 2006</a>)</span> makes this explicit. The <strong>net benefit</strong> at threshold <em>t</em> counts true positives minus false positives weighted by the odds of the threshold:</p>
-<p><span class="math display">\[\text{NB}(t) = \frac{TP}{N} - \frac{FP}{N}\cdot\frac{t}{1-t}.\]</span></p>
-<p>The model is useful at thresholds where its net benefit exceeds both <em>treat all</em> and <em>treat none</em> (NB = 0). The <em>interventions avoided</em> per 100 patients restate the gain as unnecessary treatments spared at the same benefit. For Cox models, clinpred estimates the event risks above each threshold by Kaplan–Meier, so censoring is accounted for.</p>
+<section id="clinical-utility-net-benefit-and-decision-curves" class="level2">
+<h2 class="anchored" data-anchor-id="clinical-utility-net-benefit-and-decision-curves">Clinical utility: net benefit and decision curves</h2>
+<p>A good AUC and good calibration do not tell whether <strong>using</strong> the model helps. Models are used to decide: treat or not, test further or reassure. The question is whether deciding with the model leads to better decisions than the simple alternatives — <strong>treat everyone</strong> or <strong>treat no one</strong>.</p>
+<section id="the-threshold-is-a-value-judgement" class="level3">
+<h3 class="anchored" data-anchor-id="the-threshold-is-a-value-judgement">The threshold is a value judgement</h3>
+<p>Suppose a statin is offered to patients whose 10-year risk is above 20%. Choosing 20% means: <em>for a patient at exactly 20% risk, treating and not treating are equally good</em>. At that risk, out of 5 such patients 1 will have the event and 4 will not; being indifferent means that the benefit of treating the 1 is judged worth the harm (side effects, cost) of treating the 4. So the threshold fixes an <strong>exchange rate</strong> between false positives and true positives:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Threshold</th>
+<th>Odds t / (1 − t)</th>
+<th>One true positive is worth</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>5%</td>
+<td>1 : 19</td>
+<td>treating 19 patients unnecessarily</td>
+</tr>
+<tr class="even">
+<td>10%</td>
+<td>1 : 9</td>
+<td>treating 9 unnecessarily</td>
+</tr>
+<tr class="odd">
+<td>20%</td>
+<td>1 : 4</td>
+<td>treating 4 unnecessarily</td>
+</tr>
+<tr class="even">
+<td>33%</td>
+<td>1 : 2</td>
+<td>treating 2 unnecessarily</td>
+</tr>
+<tr class="odd">
+<td>50%</td>
+<td>1 : 1</td>
+<td>treating 1 unnecessarily</td>
+</tr>
+</tbody>
+</table>
+<p>A low threshold suits a cheap, safe intervention; a high one, a risky or expensive one.</p>
+</section>
+<section id="net-benefit-at-one-threshold" class="level3">
+<h3 class="anchored" data-anchor-id="net-benefit-at-one-threshold">Net benefit at one threshold</h3>
+<p><strong>Net benefit</strong> counts the true positives and subtracts the false positives, converted with the exchange rate, per patient <span class="citation" data-cites="vickers2006">(<a href="#ref-vickers2006" role="doc-biblioref">Vickers and Elkin 2006</a>)</span>:</p>
+<p><span class="math display">\[\text{Net benefit} = \frac{\text{TP}}{N} - \frac{\text{FP}}{N}\times\frac{t}{1-t}.\]</span></p>
+<p>With the heart model at t = 20% (exchange rate 1 : 4), 577 of the 2360 patients are above the threshold: 164 of them had the event (true positives) and 413 did not (false positives). Net benefit = 164/2360 − 413/2360 × 0.25 = <strong>0.0257</strong>: as if 2.6 patients per 100 were correctly treated with no one treated unnecessarily.</p>
+<p>The alternatives: <strong>treat no one</strong> has net benefit 0 (no true, no false positives); <strong>treat everyone</strong> gets all 364 events but also all 1996 non-events: 364/2360 − 1996/2360 × 0.25 = -0.0572, negative — at this threshold, treating everyone does more harm than good. The model beats both, so at 20% deciding with the model is the best of the three strategies.</p>
+</section>
+<section id="the-decision-curve" class="level3">
+<h3 class="anchored" data-anchor-id="the-decision-curve">The decision curve</h3>
+<p>Different clinicians and patients choose different thresholds, so the calculation is repeated for every threshold:</p>
+<div id="fig-dca" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-dca-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell" data-renderings="[&quot;light&quot;,&quot;dark&quot;]">
+<div class="cell-output-display light-content">
+<div>
+<figure class="figure">
+<p><img src="performance_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid figure-img" width="1344"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display dark-content">
+<div>
+<figure class="figure">
+<p><img src="performance_files/figure-html/unnamed-chunk-16-2.png" class="img-fluid figure-img" width="1344"></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-dca-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;6: Decision curve of the heart model. The shaded band marks the thresholds where deciding with the model gives more net benefit than both treating everyone and treating no one; the point is the 20% threshold worked above.
+</figcaption>
+</figure>
+</div>
+<p>How to read it: at each threshold on the horizontal axis, the highest line is the best strategy. At very low thresholds (an intervention so safe that you would give it to almost anyone) <em>treat everyone</em> is as good as the model. From about 4% to 41% the model is best: in that range its predictions lead to better decisions. Where the model’s curve falls to the <em>treat no one</em> line, it identifies too few patients above the threshold to matter.</p>
+<p>clinpred adds a table at chosen thresholds with the <strong>interventions avoided</strong> per 100 patients: how many fewer unnecessary treatments than <em>treat everyone</em>, for the same number of true positives — another way of saying the same thing. For Cox models, the risk of the event among the patients above each threshold is estimated by Kaplan–Meier at the horizon, so censoring is accounted for.</p>
+</section>
 </section>
 <section id="what-to-report" class="level2">
 <h2 class="anchored" data-anchor-id="what-to-report">What to report</h2>

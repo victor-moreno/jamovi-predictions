@@ -502,7 +502,11 @@ div.csl-indent {
    
   <ul>
   <li><a href="#step-1-the-panel" id="toc-step-1-the-panel" class="nav-link active" data-scroll-target="#step-1-the-panel">Step 1: the panel</a></li>
-  <li><a href="#shapley-decomposition-of-r²" id="toc-shapley-decomposition-of-r²" class="nav-link" data-scroll-target="#shapley-decomposition-of-r²">Shapley decomposition of R²</a></li>
+  <li><a href="#shapley-decomposition-of-r²" id="toc-shapley-decomposition-of-r²" class="nav-link" data-scroll-target="#shapley-decomposition-of-r²">Shapley decomposition of R²</a>
+  <ul class="collapse">
+  <li><a href="#a-worked-example-with-three-predictors" id="toc-a-worked-example-with-three-predictors" class="nav-link" data-scroll-target="#a-worked-example-with-three-predictors">A worked example with three predictors</a></li>
+  <li><a href="#in-clinpred" id="toc-in-clinpred" class="nav-link" data-scroll-target="#in-clinpred">In clinpred</a></li>
+  </ul></li>
   <li><a href="#permutation-importance" id="toc-permutation-importance" class="nav-link" data-scroll-target="#permutation-importance">Permutation importance</a></li>
   <li><a href="#shap-values" id="toc-shap-values" class="nav-link" data-scroll-target="#shap-values">SHAP values</a></li>
   <li><a href="#explaining-one-patient" id="toc-explaining-one-patient" class="nav-link" data-scroll-target="#explaining-one-patient">Explaining one patient</a></li>
@@ -579,7 +583,146 @@ div.csl-indent {
 </section>
 <section id="shapley-decomposition-of-r²" class="level2">
 <h2 class="anchored" data-anchor-id="shapley-decomposition-of-r²">Shapley decomposition of R²</h2>
-<p>How much of the model’s explained variation does each predictor contribute? Adding predictors one by one, each one’s gain depends on the order of entry. The <strong>Shapley value</strong> (in linear regression the LMG measure <span class="citation" data-cites="gromping2007">(<a href="#ref-gromping2007" role="doc-biblioref">Grömping 2007</a>)</span>) averages a predictor’s gain over <strong>all orders</strong>, so the shares add up to the R² of the full model and correlated predictors share credit fairly. clinpred fits every subset model (exact up to 10 predictors).</p>
+<p>How much of the model’s explained variation does each predictor contribute? The natural idea — add the predictors one at a time and record how much each raises the R² — has a flaw: the answer depends on the <strong>order</strong>. Predictors that share information (older patients have higher blood pressure) split that information according to who enters first.</p>
+<section id="a-worked-example-with-three-predictors" class="level3">
+<h3 class="anchored" data-anchor-id="a-worked-example-with-three-predictors">A worked example with three predictors</h3>
+<p>Take a logistic model for the 10-year event with three predictors: age, systolic pressure and smoking. Measure the explained variation by McFadden’s R² (the proportional reduction of the log-likelihood; shown here in %). First, fit every possible subset of the three — 2³ = 8 models:</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Model</th>
+<th style="text-align: right;">R² (%)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">(none)</td>
+<td style="text-align: right;">0.00</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">age</td>
+<td style="text-align: right;">0.96</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">sbp</td>
+<td style="text-align: right;">1.75</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">smoking</td>
+<td style="text-align: right;">1.53</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">age + sbp</td>
+<td style="text-align: right;">2.18</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">age + smoking</td>
+<td style="text-align: right;">2.46</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">sbp + smoking</td>
+<td style="text-align: right;">3.23</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">age + sbp + smoking</td>
+<td style="text-align: right;">3.64</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>The full model explains 3.64%. Now add the predictors one at a time, in every possible order (3! = 6 orders), and record each one’s <strong>gain</strong>: the R² after it entered minus the R² before. For the order <em>age → sbp → smoking</em>, age gains R²(age) − 0, sbp gains R²(age + sbp) − R²(age), smoking gains R²(all) − R²(age + sbp):</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Order</th>
+<th style="text-align: right;">age</th>
+<th style="text-align: right;">sbp</th>
+<th style="text-align: right;">smoking</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">age → sbp → smoking</td>
+<td style="text-align: right;">0.96</td>
+<td style="text-align: right;">1.22</td>
+<td style="text-align: right;">1.46</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">age → smoking → sbp</td>
+<td style="text-align: right;">0.96</td>
+<td style="text-align: right;">1.18</td>
+<td style="text-align: right;">1.50</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">sbp → age → smoking</td>
+<td style="text-align: right;">0.43</td>
+<td style="text-align: right;">1.75</td>
+<td style="text-align: right;">1.46</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">sbp → smoking → age</td>
+<td style="text-align: right;">0.41</td>
+<td style="text-align: right;">1.75</td>
+<td style="text-align: right;">1.48</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">smoking → age → sbp</td>
+<td style="text-align: right;">0.93</td>
+<td style="text-align: right;">1.18</td>
+<td style="text-align: right;">1.53</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">smoking → sbp → age</td>
+<td style="text-align: right;">0.41</td>
+<td style="text-align: right;">1.70</td>
+<td style="text-align: right;">1.53</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Average (Shapley value)</td>
+<td style="text-align: right;">0.68</td>
+<td style="text-align: right;">1.46</td>
+<td style="text-align: right;">1.49</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>Age gains 0.96 when it enters first but only 0.43 when it enters right after blood pressure — age and blood pressure are correlated (r = 0.27), and part of what each says is already said by the other. Smoking, nearly unrelated to the other two, gains between 1.46 and 1.53 whatever the order.</p>
+<p>The <strong>Shapley value</strong> of a predictor is its <strong>average gain over all orders</strong> (the last row) <span class="citation" data-cites="gromping2007">(<a href="#ref-gromping2007" role="doc-biblioref">Grömping 2007</a>)</span>. Every order ends at the same full model, so the three Shapley values add up to the full R² (3.64%), and shared information is split evenly. clinpred’s own decomposition gives the same values (age 0.68, sbp 1.46, smoking 1.49).</p>
+<div id="fig-shapley-orders" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-shapley-orders-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell" data-renderings="[&quot;light&quot;,&quot;dark&quot;]">
+<div class="cell-output-display light-content">
+<div>
+<figure class="figure">
+<p><img src="importance_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid figure-img" width="1344"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display dark-content">
+<div>
+<figure class="figure">
+<p><img src="importance_files/figure-html/unnamed-chunk-7-2.png" class="img-fluid figure-img" width="1344"></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-shapley-orders-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Each bar adds the predictors in one order; segment lengths are their gains. All bars reach the full model’s R². The bottom bar is the average of the six: the Shapley decomposition.
+</figcaption>
+</figure>
+</div>
+</section>
+<section id="in-clinpred" class="level3">
+<h3 class="anchored" data-anchor-id="in-clinpred">In clinpred</h3>
+<p>With more predictors the number of orders explodes (10 predictors: 3.6 million), but each predictor’s average gain can be computed from the subset models alone — 2^10 = 1,024 fits. clinpred does this exactly up to 10 predictors and, above that, averages 200 random orders. Each <strong>predictor as entered</strong> is one player: all the columns of a factor, of a spline or of an interaction enter together (an interaction once both of its variables are in). The measure is McFadden’s or Nagelkerke’s R² for logistic and Cox models, the usual R² for linear models.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div class="jtable">
@@ -652,12 +795,13 @@ div.csl-indent {
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="importance_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" width="1600"></p>
+<p><img src="importance_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid figure-img" width="1600"></p>
 </figure>
 </div>
 </div>
 </div>
-<p>With baseline covariates, a second decomposition shares only the <strong>gain over the baseline model</strong> among the other predictors: what each one adds to what is always in the model.</p>
+<p>The <em>share</em> column divides each value by the full R²: smoking, blood pressure, age and sex each account for a fifth or less; cholesterol and diabetes for about a tenth; body mass index for very little. With <strong>baseline covariates</strong>, a second decomposition shares only the <strong>gain over the baseline model</strong> among the other predictors, the baseline covariates being in every model: what each one adds to what is always there.</p>
+</section>
 </section>
 <section id="permutation-importance" class="level2">
 <h2 class="anchored" data-anchor-id="permutation-importance">Permutation importance</h2>
@@ -742,7 +886,7 @@ div.csl-indent {
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="importance_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid figure-img" width="1600"></p>
+<p><img src="importance_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid figure-img" width="1600"></p>
 </figure>
 </div>
 </div>
@@ -816,7 +960,7 @@ div.csl-indent {
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="importance_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid figure-img" width="1600"></p>
+<p><img src="importance_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid figure-img" width="1600"></p>
 </figure>
 </div>
 </div>
@@ -830,7 +974,7 @@ div.csl-indent {
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="importance_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid figure-img" width="1600"></p>
+<p><img src="importance_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid figure-img" width="1600"></p>
 </figure>
 </div>
 </div>
