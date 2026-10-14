@@ -102,3 +102,8 @@ test_that("elastic net and multiply imputed models can be exported", {
     expect_gt(length(files), 0)
     for (f in files) expect_equal(jsonlite::fromJSON(f)$format, "clinpred-model")
 })
+
+test_that("corrected error measures are never negative", {
+    x <- .clip_corrected(c(auc = 0.7, emax = -0.03, ici = 0.01, brier = -1e-3, citl = -0.2))
+    expect_equal(unname(x), c(0.7, 0, 0.01, 0, -0.2))
+})

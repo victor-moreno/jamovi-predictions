@@ -104,8 +104,16 @@ cp_internal <- function(X, y, fam, method = "boot", B = 200, k = 10, R = 1, seed
     })
     out$apparent <- apparent
     out$optimism <- optimism
-    out$corrected <- apparent - optimism
+    out$corrected <- .clip_corrected(apparent - optimism)
     out
+}
+
+# Error measures cannot be negative, but apparent - optimism can be when the
+# optimism of a noisy measure (Emax above all) exceeds its apparent value
+.clip_corrected <- function(x) {
+    nn <- intersect(names(x), c("ici", "e50", "e90", "emax", "brier", "rmse", "mae"))
+    x[nn] <- pmax(0, x[nn])
+    x
 }
 
 # How often each selected term (e.g. an interaction) was chosen across the

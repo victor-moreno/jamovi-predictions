@@ -809,6 +809,8 @@
         } else {
             t$setNote("iv", .("Apparent performance is optimistic: it is measured in the data used to fit the model. Choose bootstrap or cross-validation under Validation."))
         }
+        if (!is.null(iv) && any(iv$corrected != iv$apparent - iv$optimism, na.rm = TRUE))
+            t$setNote("clip", .("An error measure whose estimated optimism exceeds its apparent value (a noisy measure such as Emax) is shown corrected as 0."))
         neg <- intersect(c("r2n", "r2cs", "sbrier", "r2"), names(app))
         if (!is.null(iv) && any(iv$corrected[neg] < 0, na.rm = TRUE)) t$setNote("neg", private$.text("negNote"))
         if (self$options$explain) t$setNote("ex", private$.text("perfEx"))

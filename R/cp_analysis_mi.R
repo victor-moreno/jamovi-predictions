@@ -192,7 +192,7 @@
         iv <- ivs[[1]]
         iv$apparent <- avg(function(z) z$apparent)
         iv$optimism <- avg(function(z) z$optimism)
-        iv$corrected <- iv$apparent - iv$optimism
+        iv$corrected <- .clip_corrected(iv$apparent - iv$optimism)
         iv$B <- Bm * M; iv$nOk <- sum(vapply(ivs, function(z) z$nOk, 0))
         if (!is.null(iv$shrinkage)) iv$shrinkage <- mean(vapply(ivs, function(z) z$shrinkage, 0), na.rm = TRUE)
         iv$coefs <- do.call(rbind, lapply(ivs, function(z) z$coefs))
