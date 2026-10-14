@@ -997,7 +997,8 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "splineVars",
                     "factors",
                     "splitVar",
-                    "splitLevel"),
+                    "splitLevel",
+                    "extFile"),
                 columns=list(
                     list(
                         `name`="var", 
@@ -1016,6 +1017,20 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                         `title`="%", 
                         `type`="number", 
                         `format`="pc"),
+                    list(
+                        `name`="val_split", 
+                        `title`="Split", 
+                        `type`="number", 
+                        `format`="pc", 
+                        `superTitle`="% missing in validation data", 
+                        `visible`=FALSE),
+                    list(
+                        `name`="val_ext", 
+                        `title`="External", 
+                        `type`="number", 
+                        `format`="pc", 
+                        `superTitle`="% missing in validation data", 
+                        `visible`=FALSE),
                     list(
                         `name`="a_pct", 
                         `title`="Group 0", 
@@ -2771,6 +2786,7 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                             renderFun=".plotShapSummary",
                             visible="(shap)",
                             clearWith=list(
+                                "seed",
                                 "dep",
                                 "eventLevel",
                                 "covs",

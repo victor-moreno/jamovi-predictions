@@ -24,9 +24,10 @@
 # method: "boot" or "cv". Returns apparent, optimism and corrected metrics;
 # for the bootstrap also the mean calibration slope of the bootstrap models in
 # the original data (a uniform shrinkage factor) and stability summaries.
+# beta: the procedure's fit in these data when already computed (not refitted)
 cp_internal <- function(X, y, fam, method = "boot", B = 200, k = 10, R = 1, seed = 1,
-                        stability = TRUE, maxCurves = 100, maxIndiv = 400) {
-    beta <- fam$fit(X, y)
+                        stability = TRUE, maxCurves = 100, maxIndiv = 400, beta = NULL) {
+    beta <- beta %||% fam$fit(X, y)
     lp0 <- fam$lp(beta, X)
     apparent <- fam$metrics(y, lp0)
     n <- NROW(X)

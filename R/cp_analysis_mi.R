@@ -94,6 +94,7 @@
         if (!is.null(o$extFile)) {
             ext <- cp_read_external(o$extFile$path, o$extFile$filename %||% o$extFile$path)
             h <- cp_harmonise(ext, specRaw, outVars, sets[["ext"]], complete = FALSE)
+            if (o$missExplore) private$.fillMissVal("ext", h$all)
             for (i in seq_len(nrow(h$check)))
                 r$extCheck$setRow(rowKey = h$check$var[i], values = list(role = h$check$role[i], status = h$check$status[i],
                                                                          details = h$check$details[i]))
@@ -129,7 +130,7 @@
         }
         if (o$oddsRatios && o$crude) r$orTable$setNote("mi", .("Crude and adjusted effects pooled over the imputations by Rubin's rules."))
 
-        iv <- private$.internalMI(XCs, y, specC, so)
+        iv <- private$.internalMI(XCs, y, specC, so, sels)
         if (length(cands)) {
             private$.fillInt(XCs[[1]], y, specC, sels[[1]], iv, conf, spec, beta)
             r$intTable$setNote("mi", .("Screening shown in the first imputed data set; the terms in the model are those kept in most imputations."))
@@ -153,7 +154,7 @@
         if (private$.on("updating"))
             r$updTable$setNote("mi", .("Model updating is not available with multiple imputation (its tests are not defined across imputations); use single imputation or complete cases."))
         if (o$incremental) private$.fillIncMI(prep, specC, spec, y, Ds, lps, vsets, beta, pool)
-        if (!is.null(iv) && iv$method == "boot") private$.fillStab(iv, y, lps[[1]], XCs[[1]])
+        if (!is.null(iv) && iv$method == "boot") private$.fillStab(iv, y, lps, XCs[[1]])
 
         all <- c(list(dev = list(X = Xst, y = yst, lp = lpst, p = fam$risk(lpst), df = do.call(rbind, Ds))), stacked)
         private$.fillExtras(all, sets, conf)
@@ -173,7 +174,7 @@
 
     # internal validation within each imputation; optimism and selection
     # frequencies averaged (bootstrap samples shared out over the imputations)
-    .internalMI = function(XCs, y, specC, so) {
+    .internalMI = function(XCs, y, specC, so, sels = NULL) {
         o <- self$options
         if (o$validation == "none") return(NULL)
         iv <- self$results$perfDev$state
@@ -186,7 +187,8 @@
         M <- length(XCs)
         Bm <- max(10, ceiling(o$nBoot / M))
         ivs <- lapply(seq_len(M), function(m) cp_internal(XCs[[m]], y, fam, o$validation, B = Bm, k = o$nFolds,
-                                                           R = o$nRepeats, seed = o$seed + m, stability = m == 1 && o$validation == "boot"))
+                                                           R = o$nRepeats, seed = o$seed + m, stability = m == 1 && o$validation == "boot",
+                                                           beta = sels[[m]]))
         avg <- function(f) rowMeans(vapply(ivs, f, ivs[[1]]$apparent))
         iv <- ivs[[1]]
         iv$apparent <- avg(function(z) z$apparent)

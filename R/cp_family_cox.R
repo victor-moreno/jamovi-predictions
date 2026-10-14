@@ -62,7 +62,9 @@ cp_cox_outcome <- function(prep, timeName, statusName, eventLevel = "", horizon 
     status <- as.integer(st == eventLevel)
     if (sum(status) < 2) .fail("There are fewer than 2 events in the complete cases.")
     if (is.null(horizon) || !is.finite(horizon) || horizon <= 0) {
-        horizon <- unname(stats::median(tm))
+        horizon <- .median_followup(tm, status)
+        # a horizon with no event before it or nobody after it: the median observed time
+        if (!any(status == 1 & tm <= horizon) || !any(tm > horizon)) horizon <- unname(stats::median(tm))
         auto <- TRUE
     } else auto <- FALSE
     if (!any(status == 1 & tm <= horizon))
@@ -118,6 +120,17 @@ cp_cox_fit <- function(X, y, horizon) {
     gw <- cumsum(d / (nrisk * pmax(nrisk - d, 1)))
     idx <- findInterval(at, ut, left.open = left)
     list(surv = c(1, S)[idx + 1], var = (c(1, S)^2 * c(0, gw))[idx + 1])
+}
+
+# Median follow-up by the reverse Kaplan–Meier method (Schemper & Smith 1996):
+# censoring treated as the event; the median observed time when it is not reached
+.median_followup <- function(time, status) {
+    ut <- sort(unique(time[status == 0]))
+    if (length(ut)) {
+        s <- .km(time, 1 - status, ut)$surv
+        if (any(s <= 0.5)) return(ut[which(s <= 0.5)[1]])
+    }
+    unname(stats::median(time))
 }
 
 # Inverse probability of censoring weights at horizon h: events by h weigh

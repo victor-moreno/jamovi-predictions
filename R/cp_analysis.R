@@ -178,7 +178,7 @@
         }
 
         if (self$options$incremental) private$.initInc(sets)
-        if (self$options$missExplore) private$.initMiss()
+        if (self$options$missExplore) private$.initMiss(sets)
         private$.initExtras(sets)
         if (self$options$sampleSize) {
             crit <- private$.ssRows()
@@ -348,7 +348,10 @@
             if (!any(isVal)) .fail("No row has ", o$splitVar, " = ", sl, ".")
         }
         if (o$descTable) private$.fillDesc(data[isDev, , drop = FALSE])
-        if (o$missExplore) private$.fillMiss(data[isDev, , drop = FALSE])
+        if (o$missExplore) {
+            private$.fillMiss(data[isDev, , drop = FALSE])
+            if (any(isVal)) private$.fillMissVal("split", data[isVal, , drop = FALSE])
+        }
         if (o$missMethod == "mi") return(private$.analyseMI(data, isDev, isVal, sets, conf))
         cands <- private$.candidates()
         # missing values: complete cases, missing category / indicator, or single imputation
@@ -409,6 +412,7 @@
         if (!is.null(o$extFile)) {
             ext <- cp_read_external(o$extFile$path, o$extFile$filename %||% o$extFile$path)
             h <- cp_harmonise(ext, specRaw, outVars, sets[["ext"]], complete = cc)
+            if (o$missExplore) private$.fillMissVal("ext", h$all)
             for (i in seq_len(nrow(h$check)))
                 r$extCheck$setRow(rowKey = h$check$var[i],
                                   values = list(role = h$check$role[i], status = h$check$status[i],
@@ -430,7 +434,7 @@
                                           full = if (private$.selecting()) private$.fullModel(XC, y, specC) else NULL)
         if (o$predTests) private$.fillTests(lrt)
 
-        iv <- private$.internal(XC, y, specC, attr(sel, "lambda"))
+        iv <- private$.internal(XC, y, specC, attr(sel, "lambda"), sel)
         if (length(cands)) private$.fillInt(XC, y, specC, sel, iv, conf, spec, beta)
         if (o$selMode != "none") private$.fillSel(sel, iv)
         private$.postSelection(penalized, iv, beta, spec)
@@ -469,7 +473,8 @@
         # pooled (MI) or no (penalised) covariance: fam$vcov needs a single unpenalised fit
         V <- private$.vcov(beta)
         json <- cp_model_json(spec, beta, fam$name, se = if (!is.null(V)) sqrt(pmax(0, diag(V))),
-                              version = as.character(utils::packageVersion("clinpred")), development = dev)
+                              version = as.character(utils::packageVersion("clinpred")), development = dev,
+                              missing = private$.mh)
         file <- paste0("clinpred_", gsub("[^A-Za-z0-9_.-]", "_", spec$outcome$name), "_", fam$name, ".json")
         self$options$option("exportModel")$perform(function(action) {
             writeLines(json, action$params$fullPath, useBytes = TRUE)
@@ -768,7 +773,7 @@
     },
 
     # internal validation, cached in the performance table's state
-    .internal = function(X, y, specC, lambda = NULL) {
+    .internal = function(X, y, specC, lambda = NULL, final = NULL) {
         o <- self$options
         if (o$validation == "none") return(NULL)
         iv <- self$results$perfDev$state
@@ -781,7 +786,7 @@
                 fam$fit <- function(X, y) cp_fit_procedure(X, y, specC, base, so)
             }
             iv <- cp_internal(X, y, fam, o$validation, B = o$nBoot, k = o$nFolds,
-                              R = o$nRepeats, seed = o$seed, stability = o$validation == "boot")
+                              R = o$nRepeats, seed = o$seed, stability = o$validation == "boot", beta = final)
             self$results$perfDev$setState(iv)
         }
         iv
@@ -882,7 +887,8 @@
     .fillStab = function(iv, y, lp, X) {
         fam <- private$.fam
         t <- self$results$stabTable
-        lr <- 2 * (fam$nullLoss(y) - fam$loss(y, lp))
+        # lp: a list under multiple imputation (the LR chi-square averaged over imputations)
+        lr <- mean(vapply(if (is.list(lp)) lp else list(lp), function(l) 2 * (fam$nullLoss(y) - fam$loss(y, l)), 0))
         t$setRow(rowKey = "shrink", values = list(value = iv$shrinkage))
         if ("heur" %in% t$rowKeys) t$setRow(rowKey = "heur", values = list(value = (lr - ncol(X)) / lr))
         if (!is.null(iv$stability) && "mape" %in% t$rowKeys) {
@@ -1099,8 +1105,12 @@
                                       o$miIter, private$.nImputed))
     },
 
-    .initMiss = function() {
+    .initMiss = function(sets) {
         t <- self$results$missTable
+        # one column per validation set (shares after matching to the development coding)
+        vs <- intersect(c("split", "ext"), names(sets))
+        for (k in vs) t$getColumn(paste0("val_", k))$setVisible(TRUE)
+        if (length(vs)) t$setTitle(.("Missing Values"))
         for (v in private$.outcomeVars()) t$addRow(rowKey = v, values = list(var = v, role = .("Outcome")))
         for (v in private$.preds()) t$addRow(rowKey = v, values = list(var = v, role = .("Predictor")))
         if (identical(private$.famName, "gaussian")) {
@@ -1109,7 +1119,7 @@
             for (cn in c("a_pct", "b_pct")) t$getColumn(cn)$setVisible(TRUE)
             cox <- identical(private$.famName, "cox")
             t$getColumn("a_pct")$setTitle(if (cox) .("Censored") else .("Non-events"))
-            t$getColumn("b_pct")$setTitle(if (cox) .("Events") else .("Events"))
+            t$getColumn("b_pct")$setTitle(.("Events"))
         }
     },
 
@@ -1118,7 +1128,7 @@
         outVars <- private$.outcomeVars()
         g <- if (identical(private$.famName, "gaussian")) jmvcore::toNumeric(dd[[o$dep]]) else {
             sv <- if (identical(private$.famName, "cox")) o$status else o$dep
-            ev <- private$.level(sv, if (identical(private$.famName, "cox")) o$eventLevel else o$eventLevel)
+            ev <- private$.level(sv, o$eventLevel)
             x <- as.character(dd[[sv]]); ifelse(is.na(x), NA, as.integer(x == ev))
         }
         ex <- cp_miss_explore(dd, c(outVars, private$.preds()), g, identical(private$.famName, "gaussian"))
@@ -1138,6 +1148,13 @@
             private$.putRow(tp, paste0("p", i), list(pattern = if (pt$pattern[i] == "(complete)") .("none (complete)") else pt$pattern[i],
                                                      nvars = pt$nvars[i], n = pt$n[i], pct = pt$pct[i]))
         tp$setNote("ex", .("The most frequent combinations of missing variables in the development rows (at most 10)."))
+    },
+
+    # share missing of each variable in a validation set (key "split" or "ext")
+    .fillMissVal = function(key, dd) {
+        t <- self$results$missTable
+        for (v in intersect(t$rowKeys, names(dd))) private$.putRow(t, v, stats::setNames(list(mean(is.na(dd[[v]]))), paste0("val_", key)))
+        t$setNote("val", .("Validation data: the share missing in each variable; in an external file, after matching its values to the development coding (unknown levels count as missing)."))
     },
 
     # the model with every candidate predictor (unpenalised), for the effects table

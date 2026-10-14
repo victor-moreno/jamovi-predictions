@@ -131,6 +131,7 @@ items:
         - factors
         - splitVar
         - splitLevel
+        - extFile
       columns:
         - name: var
           title: Variable
@@ -145,6 +146,18 @@ items:
           title: '%'
           type: number
           format: pc
+        - name: val_split
+          title: Split
+          type: number
+          format: pc
+          superTitle: '% missing in validation data'
+          visible: false
+        - name: val_ext
+          title: External
+          type: number
+          format: pc
+          superTitle: '% missing in validation data'
+          visible: false
         - name: a_pct
           title: Group 0
           type: number
@@ -1651,6 +1664,7 @@ items:
           renderFun: .plotShapSummary
           visible: (shap)
           clearWith:
+            - seed
             - dep
             - eventLevel
             - covs

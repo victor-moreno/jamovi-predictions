@@ -109,3 +109,27 @@ test_that("the analyses handle missing values: category, single and multiple imp
     expect_null(rc$get("problem"))
     expect_equal(heading_problems(rc), character(0))
 })
+
+test_that("the missing-value table shows the share missing in the validation data", {
+    d <- pima_stacked()
+    d$bmi[d$sample == "test"][1:33] <- NA
+    d$bmi[2] <- NA
+    f <- file.path(tempdir(), "ext-miss.csv")
+    e <- MASS::Pima.te; e$glu[1:10] <- NA
+    write.csv(e, f, row.names = FALSE)
+    opts <- cpLogisticOptions$new(dep = "type", covs = c("glu", "bmi"), missExplore = TRUE,
+                                  splitVar = "sample", splitLevel = "test",
+                                  extFile = list(path = f, filename = "ext-miss.csv"))
+    an <- cpLogisticClass$new(options = opts, data = d, datasetId = "d", analysisId = "1", revision = 1)
+    an$init(); an$run()
+    mt <- an$results$missTable$asDF
+    expect_equal(mt$val_split[mt$var == "bmi"], 33 / 332)
+    expect_equal(mt$val_ext[mt$var == "glu"], 10 / 332)
+    expect_equal(mt$pct[mt$var == "bmi"], 1 / 200)
+})
+
+test_that("an elastic net with only baseline covariates is refused with a message", {
+    r <- cpLogistic(data = MASS::Pima.tr, dep = "type", covs = c("glu", "bmi"), selMode = "enet",
+                    baseline = list(list(var = "glu", forced = TRUE), list(var = "bmi", forced = TRUE)))
+    expect_match(r$get("problem")$content, "nothing to select")
+})

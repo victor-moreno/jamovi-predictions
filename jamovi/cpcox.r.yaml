@@ -139,6 +139,7 @@ items:
         - factors
         - splitVar
         - splitLevel
+        - extFile
       columns:
         - name: var
           title: Variable
@@ -153,6 +154,18 @@ items:
           title: '%'
           type: number
           format: pc
+        - name: val_split
+          title: Split
+          type: number
+          format: pc
+          superTitle: '% missing in validation data'
+          visible: false
+        - name: val_ext
+          title: External
+          type: number
+          format: pc
+          superTitle: '% missing in validation data'
+          visible: false
         - name: a_pct
           title: Group 0
           type: number
@@ -1401,7 +1414,36 @@ items:
           height: 400
           renderFun: .plotShapSummary
           visible: (shap)
-          clearWith: *fit
+          clearWith:
+            - time
+            - status
+            - eventLevel
+            - horizon
+            - covs
+            - splineVars
+            - factors
+            - knots
+            - refLevels
+            - covScales
+            - interactions
+            - intAllPairs
+            - intMode
+            - intAlpha
+            - baseline
+            - selMode
+            - selCrit
+            - selAlpha
+            - enetAlpha
+            - enetRule
+            - enetFolds
+            - enetTune
+            - enetRelax
+            - missMethod
+            - miM
+            - miIter
+            - splitVar
+            - splitLevel
+            - seed
 
         - name: shapPatient
           title: Explanation of One Prediction

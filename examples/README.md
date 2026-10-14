@@ -35,7 +35,8 @@ patients with smoking `unknown`, systolic pressures above the development range,
    - *Model*: descriptive table, odds ratios (crude and adjusted), likelihood ratio tests,
      coefficients, equation, sample size. *Covariate Scaling*: `sbp` per 10 units. *Reference
      Levels*: e.g. `smoking` = `current`.
-   - *Variable Selection*: tick `sex` and `centre` as baseline covariates (always in the model),
+   - *Variable Selection*: add `centre` to the factors (it adjusts for the institution without being
+     a predictor of interest), then tick `sex` and `centre` as baseline covariates (always in the model),
      choose backward elimination (AIC, BIC or LR test); the selection table shows what was kept,
      and with bootstrap validation how often each predictor was kept in the resampled fits. Or
      choose *Elastic net (penalised)*: λ by cross-validation (plot), baseline covariates unpenalised,

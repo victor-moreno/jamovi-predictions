@@ -87,7 +87,8 @@ cp_harmonise <- function(ext, spec, outcomeCols, setName, complete = TRUE) {
                      paste(c(note, if (bad) paste0(bad, " rows with unknown values (", paste(utils::head(unk, 5), collapse = ", "), ") set to missing")), collapse = "; "))
             out[[v]] <- factor(m, levels = lev)
         } else {
-            xn <- suppressWarnings(as.numeric(as.character(x)))
+            # decimal commas, as for the predictors
+            xn <- if (is.numeric(x)) x else suppressWarnings(as.numeric(sub(",", ".", as.character(x), fixed = TRUE)))
             bad <- sum(is.na(xn) & !is.na(x))
             add(v, "Outcome", if (bad) "Warning" else "OK",
                 paste(c(note, if (bad) paste0(bad, " non-numeric values set to missing")), collapse = "; "))
@@ -144,7 +145,7 @@ cp_harmonise <- function(ext, spec, outcomeCols, setName, complete = TRUE) {
     # complete = FALSE keeps incomplete rows (for a missing-data method to fill)
     keep <- if (complete) stats::complete.cases(out) else rep(TRUE, nrow(out))
     list(data = out[keep, , drop = FALSE], check = check, nMissing = sum(!keep),
-         nTotal = nrow(ext))
+         nTotal = nrow(ext), all = out)
 }
 
 # Validation rows of the current data defined by a split variable. The data are

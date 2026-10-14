@@ -141,7 +141,7 @@ cpPublishedClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class
                 if (!any(y[, 2] == 1)) .fail("There are no events in the data.")
                 if (o$horizon > 0 && !is.null(m$baseline) && !is.null(m$horizon) && !isTRUE(all.equal(o$horizon, m$horizon)))
                     .fail("The model's baseline survival is for t = ", .num(m$horizon), "; set the horizon to 0 (from the model file) or to ", .num(m$horizon), ".")
-                h <- if (o$horizon > 0) o$horizon else m$horizon %||% stats::median(y[, 1])
+                h <- if (o$horizon > 0) o$horizon else m$horizon %||% .median_followup(y[, 1], y[, 2])
                 if (!is.null(m$baseline) && is.null(m$horizon) && o$horizon <= 0)
                     .fail("The model gives a baseline survival but not its time: add a row 'horizon' to the model table, or set the prediction horizon.")
                 if (!any(y[, 2] == 1 & y[, 1] <= h)) .fail("No event happens before the horizon (", .num(h), ").")

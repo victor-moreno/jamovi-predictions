@@ -881,7 +881,8 @@ cpLinearResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "splineVars",
                     "factors",
                     "splitVar",
-                    "splitLevel"),
+                    "splitLevel",
+                    "extFile"),
                 columns=list(
                     list(
                         `name`="var", 
@@ -900,6 +901,20 @@ cpLinearResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                         `title`="%", 
                         `type`="number", 
                         `format`="pc"),
+                    list(
+                        `name`="val_split", 
+                        `title`="Split", 
+                        `type`="number", 
+                        `format`="pc", 
+                        `superTitle`="% missing in validation data", 
+                        `visible`=FALSE),
+                    list(
+                        `name`="val_ext", 
+                        `title`="External", 
+                        `type`="number", 
+                        `format`="pc", 
+                        `superTitle`="% missing in validation data", 
+                        `visible`=FALSE),
                     list(
                         `name`="a_pct", 
                         `title`="Group 0", 
@@ -2347,7 +2362,8 @@ cpLinearResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                                 "miM",
                                 "miIter",
                                 "splitVar",
-                                "splitLevel")))
+                                "splitLevel",
+                                "seed")))
                         self$add(jmvcore::Image$new(
                             options=options,
                             name="shapPatient",

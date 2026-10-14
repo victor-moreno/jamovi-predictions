@@ -163,3 +163,23 @@ test_that("a linear coefficient table reproduces lm predictions, and the tables 
     expect_true(an$.__enclos_env__$private$.plotCal(an$results$plots$calibration, ggtheme = ggplot2::theme_grey(), theme = NULL))
     grDevices::dev.off()
 })
+
+test_that("a missing-indicator model exported as JSON rebuilds its indicators from other data", {
+    d <- pima_stacked()
+    d$bmi[c(2, 5, 9, 300, 310)] <- NA
+    d$agegrp[c(4, 320)] <- NA
+    dev <- d[d$sample == "train", ]
+    h <- cp_miss_category(dev, c("bmi", "glu"), "agegrp")
+    prep <- cp_binary_outcome(cp_prepare(cp_miss_category_apply(h, dev), "type",
+                                         covs = c("glu", "bmi", "bmi (missing)"), factors = "agegrp"), "Yes")
+    fam <- cp_family("binary")
+    X <- cp_design(prep$spec, prep$data); b <- fam$fit(X, prep$y)
+    f <- tmpfile("miss.json")
+    writeLines(cp_model_json(prep$spec, b, "binary", missing = h), f)
+    m <- cp_model_read(f, "miss.json")
+    te <- d[d$sample == "test", c("type", "glu", "bmi", "agegrp")]
+    des <- cp_model_design(m, te)
+    expect_false(anyNA(des$X))
+    lp0 <- fam$lp(b, cp_design(prep$spec, cp_miss_category_apply(h, te)))
+    expect_equal(unname(fam$lp(cp_model_beta(m), des$X)), unname(lp0), tolerance = 1e-12)
+})

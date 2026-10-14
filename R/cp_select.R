@@ -106,7 +106,10 @@ cp_fit_procedure <- function(X, y, spec, fam, sel) {
 .fit_enet <- function(X, y, spec, fam, sel) {
     forced <- sel$forced %||% character(0)
     pf <- ifelse(spec$colTerm %in% forced, 0, 1)
-    if (all(pf == 0)) pf[] <- 1
+    # nothing to penalise: baseline covariates are never penalised
+    if (all(pf == 0))
+        .fail("The elastic net has nothing to select: every predictor is a baseline covariate. ",
+              "Choose no selection, or leave some predictors out of the baseline.")
     b <- cp_enet_fit(X, y, fam, alpha = sel$enetAlpha %||% 0.5, pf = pf, rule = sel$enetRule %||% "min",
                      nfolds = sel$enetFolds %||% 10, seed = sel$seed %||% 1, lambda = sel$lambda)
     nz <- spec$colTerm[b[-1] != 0]

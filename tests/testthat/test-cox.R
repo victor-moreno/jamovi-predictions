@@ -163,7 +163,10 @@ test_that("the Cox analysis runs with every option, validates externally, saves 
 test_that("the default horizon is the median follow-up and problems reach the user", {
     d <- rott()
     r <- cpCox(data = d, time = "years", status = "status", eventLevel = "event", covs = "nodes", explain = TRUE)
-    expect_match(r$samples$notes$ev$note, sprintf("t = %s", .num(median(d$years), 4)), fixed = TRUE)
+    ev <- as.integer(d$status == "event")
+    fu <- unname(summary(survival::survfit(survival::Surv(d$years, 1 - ev) ~ 1))$table["median"])
+    expect_equal(.median_followup(d$years, ev), fu)
+    expect_match(r$samples$notes$ev$note, sprintf("t = %s", .num(fu, 4)), fixed = TRUE)
     r <- cpCox(data = d, time = "years", status = "status", eventLevel = "event", covs = "nodes", horizon = 100)
     expect_match(r$get("problem")$content, "Nobody is followed beyond")
 })

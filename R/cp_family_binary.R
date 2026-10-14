@@ -198,8 +198,13 @@ cp_binary_threshold <- function(y, p, method, value) {
         value = value,
         prevalence = mean(y),
         youden = {
+            # sensitivity and specificity at every distinct threshold from cumulative counts
+            # (p >= t is positive), linear after sorting
             u <- sort(unique(p))
-            j <- vapply(u, function(t) mean(p[y == 1] >= t) + mean(p[y == 0] < t) - 1, numeric(1))
+            g <- match(p, u)
+            tp <- rev(cumsum(rev(tabulate(g[y == 1], length(u)))))
+            fp <- rev(cumsum(rev(tabulate(g[y == 0], length(u)))))
+            j <- tp / sum(y == 1) + (1 - fp / sum(y == 0)) - 1
             u[which.max(j)]
         })
 }

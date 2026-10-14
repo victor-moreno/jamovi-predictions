@@ -16,7 +16,9 @@
 
 # JSON text of a fitted clinpred model. Arrays are wrapped in I() so that
 # length-1 vectors stay arrays.
-cp_model_json <- function(spec, beta, family, se = NULL, version = "", development = NULL) {
+# missing: the missing-category coding (cp_miss_category), so that the indicator
+# predictors can be rebuilt from other data
+cp_model_json <- function(spec, beta, family, se = NULL, version = "", development = NULL, missing = NULL) {
     vars <- lapply(spec$vars, function(info) {
         out <- list(name = info$name, role = info$role)
         if (info$role == "factor") out$levels <- I(info$levels)
@@ -44,6 +46,9 @@ cp_model_json <- function(spec, beta, family, se = NULL, version = "", developme
         out$intercept <- list(estimate = unname(beta[1]), se = if (!is.null(se)) unname(se[1]))
     }
     out$coefficients <- coefs
+    if (!is.null(missing) && length(c(missing$num, missing$fac)))
+        out$missing <- list(method = "indicator", medians = as.list(missing$median),
+                            factors = I(missing$fac))
     if (!is.null(development)) out$development <- development
     jsonlite::toJSON(out, auto_unbox = TRUE, digits = NA, pretty = TRUE, null = "null")
 }
@@ -86,6 +91,12 @@ cp_model_read <- function(path, filename = path) {
     se <- vapply(js$coefficients, function(cf) as.numeric(cf$se %||% NA), 0)
     out <- list(kind = "spec", family = js$family, spec = spec, terms = terms, estimate = est, se = se,
                 source = basename(filename), outcome = js$outcome)
+    # missing-indicator coding: development medians and the factors with a "(missing)" level
+    if (!is.null(js$missing)) {
+        med <- unlist(js$missing$medians)
+        out$missing <- list(num = names(med), fac = unlist(js$missing$factors), median = med,
+                            indicator = stats::setNames(paste(names(med), "(missing)"), names(med)))
+    }
     if (js$family == "cox") {
         out$horizon <- js$baseline$horizon
         out$baseline <- js$baseline$survival
@@ -234,6 +245,8 @@ cp_terms_design <- function(model, data) {
 # Design matrix and checks for either kind of model
 cp_model_design <- function(model, data) {
     if (model$kind == "terms") return(cp_terms_design(model, data))
+    # indicator predictors are made from the data, as in development
+    if (!is.null(model$missing)) data <- cp_miss_category_apply(model$missing, data)
     miss <- names(model$spec$vars)[is.na(vapply(names(model$spec$vars), .match_column, "", available = names(data)))]
     if (length(miss))
         .fail("The model uses ", paste0("'", miss, "'", collapse = ", "),

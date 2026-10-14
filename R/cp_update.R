@@ -8,7 +8,8 @@
 
 cp_update <- function(fam, X, y, lp, alpha = 0.05) {
     n <- NROW(X)
-    a1 <- unname(fam$metrics(y, lp)[["citl"]])
+    # calibration-in-the-large only (the full metric set would fit the loess smoother too)
+    a1 <- if (identical(fam$name, "gaussian")) mean(y - lp) else unname(.cal_glm(y, lp)$citl)
     f2 <- fam$fit(matrix(lp, ncol = 1, dimnames = list(NULL, "lp")), y)
     br <- tryCatch(fam$fit(X, y), error = function(e) NULL)
     revOk <- !is.null(br) && isTRUE(attr(br, "converged"))
