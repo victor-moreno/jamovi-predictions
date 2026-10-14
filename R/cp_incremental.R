@@ -30,9 +30,10 @@ cp_delta_c <- function(y, lp1, lp2, conf = 0.95) {
     c(est = d, lower = d - z * se, upper = d + z * se, p = 2 * stats::pnorm(-abs(d / se)))
 }
 
-# Continuous net reclassification improvement (Pencina et al. 2011) and the
-# integrated discrimination improvement (Pencina et al. 2008) of risks p2 over p1
-cp_nri_idi <- function(y, p1, p2, conf = 0.95) {
+# Continuous net reclassification improvement (Pencina et al. 2011), the
+# categorical NRI over risk categories cut at `cuts` (Pencina et al. 2008) and
+# the integrated discrimination improvement (Pencina et al. 2008) of risks p2 over p1
+cp_nri_idi <- function(y, p1, p2, conf = 0.95, cuts = NULL) {
     z <- stats::qnorm(1 - (1 - conf) / 2)
     e <- y == 1
     up <- p2 > p1; down <- p2 < p1
@@ -43,7 +44,18 @@ cp_nri_idi <- function(y, p1, p2, conf = 0.95) {
     dd <- p2 - p1
     idi <- mean(dd[e]) - mean(dd[!e])
     sei <- sqrt(stats::var(dd[e]) / ne + stats::var(dd[!e]) / nn)
+    nriCat <- NULL
+    if (length(cuts)) {
+        # moving to a higher or a lower risk category
+        cat1 <- findInterval(p1, sort(cuts)); cat2 <- findInterval(p2, sort(cuts))
+        upc <- cat2 > cat1; dnc <- cat2 < cat1
+        a <- mean(upc[e]); b <- mean(dnc[e]); c2 <- mean(upc[!e]); d <- mean(dnc[!e])
+        nc <- (a - b) + (d - c2)
+        sec <- sqrt((a + b - (a - b)^2) / ne + (c2 + d - (c2 - d)^2) / nn)
+        nriCat <- c(est = nc, lower = nc - z * sec, upper = nc + z * sec, p = 2 * stats::pnorm(-abs(nc / sec)))
+    }
     list(nri = c(est = nri, lower = nri - z * se, upper = nri + z * se, p = 2 * stats::pnorm(-abs(nri / se))),
+         nricat = nriCat,
          nriEvents = pue - pde, nriNonevents = pdn - pun,
          idi = c(est = idi, lower = idi - z * sei, upper = idi + z * sei, p = 2 * stats::pnorm(-abs(idi / sei))))
 }

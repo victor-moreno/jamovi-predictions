@@ -38,6 +38,8 @@ cpCoxOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             splitVar = NULL,
             splitLevel = "",
             extFile = NULL,
+            updating = FALSE,
+            updAlpha = 0.05,
             validation = "none",
             nBoot = 200,
             nFolds = 10,
@@ -316,6 +318,16 @@ cpCoxOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     "omv",
                     "xlsx",
                     "sav"))
+            private$..updating <- jmvcore::OptionBool$new(
+                "updating",
+                updating,
+                default=FALSE)
+            private$..updAlpha <- jmvcore::OptionNumber$new(
+                "updAlpha",
+                updAlpha,
+                min=0.0001,
+                max=0.5,
+                default=0.05)
             private$..validation <- jmvcore::OptionList$new(
                 "validation",
                 validation,
@@ -543,6 +555,8 @@ cpCoxOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
             self$.addOption(private$..splitVar)
             self$.addOption(private$..splitLevel)
             self$.addOption(private$..extFile)
+            self$.addOption(private$..updating)
+            self$.addOption(private$..updAlpha)
             self$.addOption(private$..validation)
             self$.addOption(private$..nBoot)
             self$.addOption(private$..nFolds)
@@ -618,6 +632,8 @@ cpCoxOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
         splitVar = function() private$..splitVar$value,
         splitLevel = function() private$..splitLevel$value,
         extFile = function() private$..extFile$value,
+        updating = function() private$..updating$value,
+        updAlpha = function() private$..updAlpha$value,
         validation = function() private$..validation$value,
         nBoot = function() private$..nBoot$value,
         nFolds = function() private$..nFolds$value,
@@ -692,6 +708,8 @@ cpCoxOptions <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
         ..splitVar = NA,
         ..splitLevel = NA,
         ..extFile = NA,
+        ..updating = NA,
+        ..updAlpha = NA,
         ..validation = NA,
         ..nBoot = NA,
         ..nFolds = NA,
@@ -758,6 +776,7 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
         equationText = function() private$.items[["equationText"]],
         perfDev = function() private$.items[["perfDev"]],
         perfVal = function() private$.items[["perfVal"]],
+        updTable = function() private$.items[["updTable"]],
         stabTable = function() private$.items[["stabTable"]],
         nbTable = function() private$.items[["nbTable"]],
         ssTable = function() private$.items[["ssTable"]],
@@ -1972,6 +1991,96 @@ cpCoxResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                         `superTitle`="CI"))))
             self$add(jmvcore::Table$new(
                 options=options,
+                name="updTable",
+                title="Model Updating in the Validation Data",
+                visible=FALSE,
+                clearWith=list(
+                    "time",
+                    "status",
+                    "eventLevel",
+                    "horizon",
+                    "covs",
+                    "splineVars",
+                    "factors",
+                    "knots",
+                    "refLevels",
+                    "covScales",
+                    "interactions",
+                    "intAllPairs",
+                    "intMode",
+                    "intAlpha",
+                    "baseline",
+                    "selMode",
+                    "selCrit",
+                    "selAlpha",
+                    "enetAlpha",
+                    "enetRule",
+                    "enetFolds",
+                    "enetTune",
+                    "enetRelax",
+                    "missMethod",
+                    "miM",
+                    "miIter",
+                    "splitVar",
+                    "splitLevel",
+                    "extFile",
+                    "updAlpha"),
+                columns=list(
+                    list(
+                        `name`="set", 
+                        `title`="Data set", 
+                        `type`="text", 
+                        `combineBelow`=TRUE),
+                    list(
+                        `name`="method", 
+                        `title`="Method", 
+                        `type`="text"),
+                    list(
+                        `name`="k", 
+                        `title`="Parameters", 
+                        `type`="integer"),
+                    list(
+                        `name`="a", 
+                        `title`="Shift", 
+                        `type`="number"),
+                    list(
+                        `name`="b", 
+                        `title`="Slope", 
+                        `type`="number"),
+                    list(
+                        `name`="stat", 
+                        `title`="\u03C7\u00B2", 
+                        `type`="number", 
+                        `superTitle`="Sequential test"),
+                    list(
+                        `name`="df", 
+                        `title`="df", 
+                        `type`="integer", 
+                        `superTitle`="Sequential test"),
+                    list(
+                        `name`="p", 
+                        `title`="p", 
+                        `type`="number", 
+                        `format`="zto,pvalue", 
+                        `superTitle`="Sequential test"),
+                    list(
+                        `name`="chosen", 
+                        `title`="Chosen", 
+                        `type`="text"),
+                    list(
+                        `name`="c", 
+                        `title`="Harrell's C", 
+                        `type`="number"),
+                    list(
+                        `name`="oe", 
+                        `title`="O/E", 
+                        `type`="number"),
+                    list(
+                        `name`="brier", 
+                        `title`="Brier", 
+                        `type`="number"))))
+            self$add(jmvcore::Table$new(
+                options=options,
                 name="stabTable",
                 title="Stability and Shrinkage (Bootstrap)",
                 visible=FALSE,
@@ -2991,6 +3100,11 @@ cpCoxBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
 #'   (default) uses the second level
 #' @param extFile a file with the external validation data (csv, tsv, txt,
 #'   omv, xlsx or sav), with the same variable names as the development data
+#' @param updating in the validation data, compare the original model with
+#'   recalibration in the large (new baseline), recalibration (new baseline and
+#'   slope) and model revision, choosing among them by sequential tests from
+#'   revision down
+#' @param updAlpha .
 #' @param validation \code{'none'}, \code{'boot'} (Harrell's bootstrap
 #'   optimism correction) or \code{'cv'} (repeated k-fold cross-validation)
 #' @param nBoot .
@@ -3057,6 +3171,7 @@ cpCoxBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
 #'   \code{results$equationText} \tab \tab \tab \tab \tab a preformatted \cr
 #'   \code{results$perfDev} \tab \tab \tab \tab \tab a table \cr
 #'   \code{results$perfVal} \tab \tab \tab \tab \tab a table \cr
+#'   \code{results$updTable} \tab \tab \tab \tab \tab a table \cr
 #'   \code{results$stabTable} \tab \tab \tab \tab \tab a table \cr
 #'   \code{results$nbTable} \tab \tab \tab \tab \tab a table \cr
 #'   \code{results$ssTable} \tab \tab \tab \tab \tab a table \cr
@@ -3120,6 +3235,8 @@ cpCox <- function(
     splitVar = NULL,
     splitLevel = "",
     extFile = NULL,
+    updating = FALSE,
+    updAlpha = 0.05,
     validation = "none",
     nBoot = 200,
     nFolds = 10,
@@ -3217,6 +3334,8 @@ cpCox <- function(
         splitVar = splitVar,
         splitLevel = splitLevel,
         extFile = extFile,
+        updating = updating,
+        updAlpha = updAlpha,
         validation = validation,
         nBoot = nBoot,
         nFolds = nFolds,

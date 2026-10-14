@@ -198,7 +198,7 @@
 
         # one facet per data set
         w <- 420 * length(sets) + 60
-        for (p in c("calibration", "riskDist", "dcaCurves"))
+        for (p in c("calibration", "riskDist", "dcaCurves", "incDca", "incRoc"))
             if (length(sets) > 1 && !is.null(r$plots[[p]])) r$plots[[p]]$setSize(w, 450)
         np <- length(private$.preds())
         for (p in c("shapleyBar", "permBar", "shapSummary", "shapPatient"))
@@ -935,6 +935,10 @@
             if (identical(private$.famName, "binary")) {
                 t$addRow(rowKey = paste(k, "nri"), values = list(set = sets[[k]], measure = .("NRI (continuous)")))
                 t$addRow(rowKey = paste(k, "idi"), values = list(set = sets[[k]], measure = .("IDI")))
+                th <- private$.incThresholds()
+                if (length(th))
+                    t$addRow(rowKey = paste(k, "nricat"), values = list(set = sets[[k]],
+                        measure = sprintf(.("NRI (risk categories cut at %s)"), paste(vapply(th, .num, ""), collapse = ", "))))
             }
             for (x in private$.incThresholds())
                 t$addRow(rowKey = paste(k, "nb", x), values = list(set = sets[[k]], measure = sprintf(.("Net benefit at %s"), .num(x))))
@@ -945,6 +949,7 @@
         for (cn in c("lower", "upper")) t$getColumn(cn)$setSuperTitle(paste0("Δ ", self$options$ciWidth, "% CI"))
         # the decision curves of both models only when decision curves are asked for
         if (!is.null(self$results$plots[["incDca"]])) self$results$plots[["incDca"]]$setVisible(isTRUE(self$options$dca))
+        if (!is.null(self$results$plots[["incRoc"]])) self$results$plots[["incRoc"]]$setVisible(isTRUE(self$options$rocPlot))
     },
 
     .fillInc = function(prep, specC, spec, y, lp, iv, vsets, conf, beta) {
@@ -979,8 +984,8 @@
                 private$.putRow(t, paste(k, m), v)
             }
             if (fam$name == "binary") {
-                ni <- cp_nri_idi(yy, fam$risk(lb), fam$risk(lf), conf)
-                for (z in c("nri", "idi"))
+                ni <- cp_nri_idi(yy, fam$risk(lb), fam$risk(lf), conf, cuts = th)
+                for (z in c("nri", "idi", if (length(th)) "nricat"))
                     private$.putRow(t, paste(k, z), list(delta = ni[[z]][["est"]], lower = ni[[z]][["lower"]],
                                                          upper = ni[[z]][["upper"]], p = ni[[z]][["p"]]))
             }
@@ -1024,6 +1029,18 @@
         if (fam$name == "binary")
             t$setNote("nri", .("NRI and IDI are reported for completeness; they can favour miscalibrated models (Pepe et al. 2015) and say less than ΔAUC, the LR test and Δ net benefit."))
 
+        # ROC curves of both models in each data set (logistic)
+        img <- self$results$plots[["incRoc"]]
+        if (!is.null(img) && isTRUE(o$rocPlot) && is.null(img$state) && fam$name == "binary") {
+            sets <- private$.sets()
+            mk <- function(label, yy, lb, lf) list(label = label,
+                base = c(cp_roc_points(yy, fam$risk(lb)), auc = .auc_delong(yy, fam$risk(lb))$auc),
+                full = c(cp_roc_points(yy, fam$risk(lf)), auc = .auc_delong(yy, fam$risk(lf))$auc))
+            st <- list(mk(sets[["dev"]], y, lpB, lp))
+            for (k in names(vsets)) st[[length(st) + 1]] <- mk(sets[[k]], vsets[[k]]$y, fam$lp(bB, cp_design(specB, vsets[[k]]$df)), vsets[[k]]$lp)
+            img$setState(st)
+        }
+
         img <- self$results$plots[["incDca"]]
         if (!is.null(img) && isTRUE(o$dca) && is.null(img$state) && fam$name != "gaussian") {
             grid <- seq(0.01, o$dcaMax, by = 0.01)
@@ -1034,6 +1051,11 @@
             for (k in names(vsets)) st[[length(st) + 1]] <- mk(sets[[k]], vsets[[k]]$y, fam$lp(bB, cp_design(specB, vsets[[k]]$df)), vsets[[k]]$lp)
             img$setState(st)
         }
+    },
+
+    .plotIncRoc = function(image, ggtheme, theme, ...) {
+        if (is.null(image$state)) return(FALSE)
+        print(cp_plot_inc_roc(image$state, ggtheme)); TRUE
     },
 
     .plotIncDca = function(image, ggtheme, theme, ...) {

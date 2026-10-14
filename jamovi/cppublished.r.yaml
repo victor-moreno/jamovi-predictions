@@ -208,6 +208,14 @@ items:
           title: RMSE
           type: number
           visible: false
+        - name: c
+          title: Harrell's C
+          type: number
+          visible: false
+        - name: oe
+          title: O/E
+          type: number
+          visible: false
 
     - name: confTable
       title: Classification — Counts

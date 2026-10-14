@@ -523,6 +523,16 @@ cpPublishedResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class
                         `name`="rmse", 
                         `title`="RMSE", 
                         `type`="number", 
+                        `visible`=FALSE),
+                    list(
+                        `name`="c", 
+                        `title`="Harrell's C", 
+                        `type`="number", 
+                        `visible`=FALSE),
+                    list(
+                        `name`="oe", 
+                        `title`="O/E", 
+                        `type`="number", 
                         `visible`=FALSE))))
             self$add(jmvcore::Table$new(
                 options=options,

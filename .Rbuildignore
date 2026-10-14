@@ -9,3 +9,4 @@
 ^.*\.jmo$
 ^examples$
 ^data-raw$
+^LICENSE$

@@ -2506,6 +2506,7 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                     shapPatient = function() private$.items[["shapPatient"]],
                     enetCv = function() private$.items[["enetCv"]],
                     incDca = function() private$.items[["incDca"]],
+                    incRoc = function() private$.items[["incRoc"]],
                     instability = function() private$.items[["instability"]],
                     calInstability = function() private$.items[["calInstability"]]),
                 private = list(),
@@ -2936,6 +2937,49 @@ cpLogisticResults <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
                                 "dcaMax")))
                         self$add(jmvcore::Image$new(
                             options=options,
+                            name="incRoc",
+                            title="ROC Curves \u2014 Baseline and Full Model",
+                            width=480,
+                            height=480,
+                            renderFun=".plotIncRoc",
+                            visible=FALSE,
+                            clearWith=list(
+                                "dep",
+                                "eventLevel",
+                                "covs",
+                                "splineVars",
+                                "factors",
+                                "knots",
+                                "refLevels",
+                                "covScales",
+                                "interactions",
+                                "intAllPairs",
+                                "intMode",
+                                "intAlpha",
+                                "baseline",
+                                "selMode",
+                                "selCrit",
+                                "selAlpha",
+                                "enetAlpha",
+                                "enetRule",
+                                "enetFolds",
+                                "enetTune",
+                                "enetRelax",
+                                "missMethod",
+                                "miM",
+                                "miIter",
+                                "splitVar",
+                                "splitLevel",
+                                "validation",
+                                "nBoot",
+                                "nFolds",
+                                "nRepeats",
+                                "seed",
+                                "ciWidth",
+                                "incremental",
+                                "extFile")))
+                        self$add(jmvcore::Image$new(
+                            options=options,
                             name="instability",
                             title="Prediction Instability",
                             width=500,
@@ -3269,6 +3313,7 @@ cpLogisticBase <- if (requireNamespace("jmvcore", quietly=TRUE)) R6::R6Class(
 #'   \code{results$plots$shapPatient} \tab \tab \tab \tab \tab an image \cr
 #'   \code{results$plots$enetCv} \tab \tab \tab \tab \tab an image \cr
 #'   \code{results$plots$incDca} \tab \tab \tab \tab \tab an image \cr
+#'   \code{results$plots$incRoc} \tab \tab \tab \tab \tab an image \cr
 #'   \code{results$plots$instability} \tab \tab \tab \tab \tab an image \cr
 #'   \code{results$plots$calInstability} \tab \tab \tab \tab \tab an image \cr
 #'   \code{results$predRisk} \tab \tab \tab \tab \tab an output \cr

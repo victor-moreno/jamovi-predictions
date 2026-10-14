@@ -68,3 +68,17 @@ test_that("the analyses report incremental value: LR test as anova, validation o
     rn <- cpLogistic(data = d, dep = "event10", eventLevel = "yes", covs = "sbp", incremental = TRUE)
     expect_match(rn$incTable$notes$need$note, "baseline covariates")
 })
+
+test_that("categorical NRI equals the reclassification tables of events and non-events", {
+    set.seed(4)
+    n <- 600; y <- rbinom(n, 1, 0.3)
+    p1 <- plogis(qlogis(0.3) + 0.8 * (y - 0.3) + rnorm(n)); p2 <- plogis(qlogis(p1) + 0.6 * (y - 0.3) + rnorm(n, 0, 0.5))
+    cuts <- c(0.2, 0.4)
+    c1 <- cut(p1, c(-Inf, cuts, Inf), right = FALSE); c2 <- cut(p2, c(-Inf, cuts, Inf), right = FALSE)
+    moves <- function(i) { t <- table(as.integer(c1[i]), as.integer(c2[i]))
+        up <- sum(t[upper.tri(t)]); dn <- sum(t[lower.tri(t)]); c(up, dn) / sum(t) }
+    me <- moves(y == 1); mn <- moves(y == 0)
+    ni <- cp_nri_idi(y, p1, p2, cuts = cuts)
+    expect_equal(ni$nricat[["est"]], (me[1] - me[2]) + (mn[2] - mn[1]))
+    expect_null(cp_nri_idi(y, p1, p2)$nricat)
+})

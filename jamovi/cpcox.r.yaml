@@ -939,6 +939,84 @@ items:
           type: number
           superTitle: CI
 
+    - name: updTable
+      title: Model Updating in the Validation Data
+      type: Table
+      visible: false
+      clearWith:
+        - time
+        - status
+        - eventLevel
+        - horizon
+        - covs
+        - splineVars
+        - factors
+        - knots
+        - refLevels
+        - covScales
+        - interactions
+        - intAllPairs
+        - intMode
+        - intAlpha
+        - baseline
+        - selMode
+        - selCrit
+        - selAlpha
+        - enetAlpha
+        - enetRule
+        - enetFolds
+        - enetTune
+        - enetRelax
+        - missMethod
+        - miM
+        - miIter
+        - splitVar
+        - splitLevel
+        - extFile
+        - updAlpha
+      columns:
+        - name: set
+          title: Data set
+          type: text
+          combineBelow: true
+        - name: method
+          title: Method
+          type: text
+        - name: k
+          title: Parameters
+          type: integer
+        - name: a
+          title: Shift
+          type: number
+        - name: b
+          title: Slope
+          type: number
+        - name: stat
+          title: χ²
+          type: number
+          superTitle: Sequential test
+        - name: df
+          title: df
+          type: integer
+          superTitle: Sequential test
+        - name: p
+          title: p
+          type: number
+          format: zto,pvalue
+          superTitle: Sequential test
+        - name: chosen
+          title: Chosen
+          type: text
+        - name: c
+          title: Harrell's C
+          type: number
+        - name: oe
+          title: O/E
+          type: number
+        - name: brier
+          title: Brier
+          type: number
+
     - name: stabTable
       title: Stability and Shrinkage (Bootstrap)
       type: Table

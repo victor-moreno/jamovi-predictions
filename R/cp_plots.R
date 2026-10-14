@@ -295,6 +295,31 @@ cp_plot_enet_cv <- function(st, ggtheme) {
         .jtheme(ggtheme)
 }
 
+# ROC curves of the baseline and the full model, one panel per data set
+cp_plot_inc_roc <- function(sets, ggtheme) {
+    df <- do.call(rbind, lapply(sets, function(s) rbind(
+        data.frame(fpr = s$base$fpr, tpr = s$base$tpr, model = "Baseline model", label = s$label),
+        data.frame(fpr = s$full$fpr, tpr = s$full$tpr, model = "Full model", label = s$label))))
+    df$label <- factor(df$label, vapply(sets, `[[`, "", "label"))
+    df$model <- factor(df$model, c("Full model", "Baseline model"))
+    aucs <- do.call(rbind, lapply(sets, function(s) data.frame(label = s$label,
+        text = sprintf("AUC full %.3f\nbaseline %.3f", s$full$auc, s$base$auc))))
+    aucs$label <- factor(aucs$label, levels(df$label))
+    th <- .jtheme(ggtheme)
+    ggplot2::ggplot(df, ggplot2::aes(.data$fpr, .data$tpr, colour = .data$model, linetype = .data$model)) +
+        ggplot2::geom_abline(intercept = 0, slope = 1, linetype = "dashed", colour = "grey60") +
+        ggplot2::geom_step(direction = "vh", linewidth = 0.9) +
+        ggplot2::geom_text(data = aucs, ggplot2::aes(1, 0, label = .data$text), inherit.aes = FALSE,
+                           hjust = 1, vjust = 0, size = 0.8 * (ggplot2::calc_element("axis.text", th)$size %||% 11) / ggplot2::.pt,
+                           colour = ggplot2::calc_element("axis.text", th)$colour %||% "grey30") +
+        ggplot2::scale_colour_manual(values = c(`Full model` = "#0072B2", `Baseline model` = "#009E73")) +
+        ggplot2::scale_linetype_manual(values = c(`Full model` = "solid", `Baseline model` = "twodash")) +
+        ggplot2::facet_wrap(~label) +
+        ggplot2::coord_equal(xlim = c(0, 1), ylim = c(0, 1)) +
+        ggplot2::labs(x = "1 − Specificity", y = "Sensitivity") +
+        .base_theme(ggtheme)
+}
+
 # Forest plot of the effects table: estimates with CIs, one colour per model
 # (crude, adjusted, selected), baseline covariates in their own panel below
 cp_plot_forest <- function(st, blocks, ggtheme) {

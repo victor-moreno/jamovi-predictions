@@ -41,3 +41,39 @@ test_that("the analysis fills the updating table for each validation set", {
     expect_equal(sum(u$chosen == "✓", na.rm = TRUE), 1)
     expect_true(all(is.finite(u$auc)))
 })
+
+test_that("Cox updating: slope and likelihood ratios as coxph, baseline re-estimated at the horizon", {
+    set.seed(8)
+    n <- 3000
+    x <- matrix(rnorm(n * 2), n, dimnames = list(NULL, c("a", "b")))
+    eta <- drop(x %*% c(0.7, -0.4))
+    tm <- rexp(n, 0.1 * exp(eta)); cens <- runif(n, 0, 15)
+    y <- cbind(time = pmin(tm, cens), status = as.integer(tm <= cens))
+    fam <- cp_family("cox", horizon = 5)
+    beta <- fam$fit(x, y); lp <- fam$lp(beta, x)
+    u <- cp_update(fam, x, y, lp)
+    expect_equal(u$chosen, "original")
+    f1 <- survival::coxph(survival::Surv(y[, 1], y[, 2]) ~ lp)
+    expect_equal(u$methods$recal$b, unname(coef(f1)), tolerance = 1e-6)
+    f0 <- survival::coxph(survival::Surv(y[, 1], y[, 2]) ~ offset(lp))
+    f2 <- survival::coxph(survival::Surv(y[, 1], y[, 2]) ~ x)
+    expect_equal(u$methods$recal$test[["stat"]], 2 * (f1$loglik[2] - f0$loglik), tolerance = 1e-6)
+    expect_equal(u$methods$revision$test[["stat"]], 2 * (f2$loglik[2] - f1$loglik[2]), tolerance = 1e-6)
+    # a doubled hazard: the baseline needs updating, not the slope
+    t2 <- rexp(n, 0.2 * exp(eta)); y2 <- cbind(time = pmin(t2, cens), status = as.integer(t2 <= cens))
+    u2 <- cp_update(fam, x, y2, lp)
+    expect_equal(u2$chosen, "citl")
+    expect_equal(u2$methods$citl$a, log(2), tolerance = 0.1)
+})
+
+test_that("the Cox analysis fills the updating table", {
+    d <- survival::rotterdam; d$status <- factor(ifelse(d$recur == 1 | d$death == 1, "event", "censored"))
+    d$years <- pmin(d$rtime, d$dtime) / 365.25; d$set <- factor(ifelse(d$year < 1990, "early", "late"))
+    r <- cpCox(data = d, time = "years", status = "status", eventLevel = "event", horizon = 5,
+               covs = c("age", "nodes"), splitVar = "set", splitLevel = "late", updating = TRUE)
+    expect_null(r$get("problem"))
+    u <- r$updTable$asDF
+    expect_equal(nrow(u), 4)
+    expect_equal(sum(u$chosen == "✓", na.rm = TRUE), 1)
+    expect_true(all(is.finite(u$c)))
+})

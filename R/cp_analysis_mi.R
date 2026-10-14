@@ -252,8 +252,8 @@
             mf <- rowMeans(vapply(lfs, function(l) fam$metrics(yy, l), fam$metrics(yy, lfs[[1]])))
             for (m in keys) private$.putRow(t, paste(k, m), list(base = mb[[m]], full = mf[[m]], delta = mf[[m]] - mb[[m]]))
             if (fam$name == "binary") {
-                nis <- lapply(seq_along(lbs), function(i) cp_nri_idi(yy, fam$risk(lbs[[i]]), fam$risk(lfs[[i]])))
-                for (z in c("nri", "idi"))
+                nis <- lapply(seq_along(lbs), function(i) cp_nri_idi(yy, fam$risk(lbs[[i]]), fam$risk(lfs[[i]]), cuts = th))
+                for (z in c("nri", "idi", if (length(th)) "nricat"))
                     private$.putRow(t, paste(k, z), list(delta = mean(vapply(nis, function(x) x[[z]][["est"]], 0))))
             }
             if (length(th)) for (i in seq_along(th)) {

@@ -1813,6 +1813,49 @@ items:
             - nbThresholds
             - dcaMax
 
+        - name: incRoc
+          title: ROC Curves — Baseline and Full Model
+          type: Image
+          width: 480
+          height: 480
+          renderFun: .plotIncRoc
+          visible: false
+          clearWith:
+            - dep
+            - eventLevel
+            - covs
+            - splineVars
+            - factors
+            - knots
+            - refLevels
+            - covScales
+            - interactions
+            - intAllPairs
+            - intMode
+            - intAlpha
+            - baseline
+            - selMode
+            - selCrit
+            - selAlpha
+            - enetAlpha
+            - enetRule
+            - enetFolds
+            - enetTune
+            - enetRelax
+            - missMethod
+            - miM
+            - miIter
+            - splitVar
+            - splitLevel
+            - validation
+            - nBoot
+            - nFolds
+            - nRepeats
+            - seed
+            - ciWidth
+            - incremental
+            - extFile
+
         - name: instability
           title: Prediction Instability
           type: Image

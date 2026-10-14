@@ -72,7 +72,6 @@ children:
             format: number
           - type: CheckBox
             name: updating
-            enable: (family:binary || family:gaussian)
             children:
               - type: TextBox
                 name: updAlpha

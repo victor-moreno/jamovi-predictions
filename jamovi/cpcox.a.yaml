@@ -394,6 +394,24 @@ options:
               a file with the external validation data (csv, tsv, txt, omv, xlsx
               or sav), with the same variable names as the development data
 
+    - name: updating
+      title: Model updating (sequential tests)
+      type: Bool
+      default: false
+      description:
+          R: >-
+              in the validation data, compare the original model with
+              recalibration in the large (new baseline), recalibration (new
+              baseline and slope) and model revision, choosing among them by
+              sequential tests from revision down
+
+    - name: updAlpha
+      title: α
+      type: Number
+      min: 0.0001
+      max: 0.5
+      default: 0.05
+
     - name: validation
       title: Internal validation
       type: List

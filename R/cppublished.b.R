@@ -3,6 +3,9 @@
 # family functions, the updating and classification engine, and the plots of
 # the development analyses.
 
+# performance columns of the updating table, per model type
+.pub_upd_keys <- list(binary = c("auc", "brier", "ici"), gaussian = c("r2", "rmse"), cox = c("c", "oe", "brier"))
+
 cpPublishedClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class(
     "cpPublishedClass",
     inherit = cpPublishedBase,
@@ -72,11 +75,12 @@ cpPublishedClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class
             vis <- switch(fam, binary = c("events", "pct"), gaussian = c("mean", "sd"), cox = c("events", "pct", "km"))
             for (cn in vis) r$samples$getColumn(cn)$setVisible(TRUE)
 
-            if (o$updating && fam != "cox") {
+            if (o$updating) {
                 u <- r$updTable
                 u$setVisible(TRUE)
-                for (cn in if (fam == "binary") c("auc", "brier", "ici") else c("r2", "rmse")) u$getColumn(cn)$setVisible(TRUE)
+                for (cn in .pub_upd_keys[[fam]]) u$getColumn(cn)$setVisible(TRUE)
                 if (fam == "gaussian") u$getColumn("stat")$setTitle("F")
+                if (fam == "cox") for (cn in c("stat", "df", "p")) u$getColumn(cn)$setSuperTitle(.("Sequential test"))
                 meth <- c(original = .("Original model"), citl = .("Recalibration in the large"),
                           recal = .("Recalibration"), revision = .("Model revision"))
                 for (k in names(meth)) u$addRow(rowKey = k, values = list(method = meth[[k]]))
@@ -173,7 +177,7 @@ cpPublishedClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class
                 r$perf$setRow(rowKey = k, values = list(est = if (isTRUE(abs(mt[[k]]) < 1e-8)) 0 else mt[[k]], lower = ci[[k]][1] %||% "", upper = ci[[k]][2] %||% ""))
             r$perf$setNote("ex", .("The published model is applied unchanged. Calibration-in-the-large (or O/E) far from its ideal means that the overall risk differs from the population where the model was developed; a calibration slope below 1, that its predictions are too extreme here."))
 
-            if (o$updating && famName != "cox") private$.fillUpd(fam, X, y, lp)
+            if (o$updating) private$.fillUpd(fam, X, y, lp)
             if (o$classif && famName == "binary") private$.fillClassif(y, p, conf)
             if (o$dca && famName != "gaussian") private$.fillDca(y, p, h)
             private$.plotStates(famName, y, p, h, conf)
@@ -222,7 +226,7 @@ cpPublishedClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class
         .fillUpd = function(fam, X, y, lp) {
             t <- self$results$updTable
             u <- cp_update(fam, X, y, lp, self$options$updAlpha)
-            keys <- if (fam$name == "binary") c("auc", "brier", "ici") else c("r2", "rmse")
+            keys <- .pub_upd_keys[[fam$name]]
             for (k in t$rowKeys) {
                 mm <- u$methods[[k]]
                 if (is.null(mm)) next
@@ -234,7 +238,7 @@ cpPublishedClass <- if (requireNamespace('jmvcore', quietly = TRUE)) R6::R6Class
             }
             if (is.na(u$chosen))
                 t$setNote("fail", .("The revised model could not be fitted in these data, so the closed testing procedure was not run."))
-            t$setNote("ex", sprintf(.("Recalibration re-estimates the intercept and the slope of the published linear predictor; revision re-estimates every coefficient. Each test compares a method with revision; the closed testing procedure (Vergouwe et al. 2017) keeps the first method, from the original model up, not significantly worse than revision at α = %s (✓). Performance of an updated model is measured in the data used to update it, so it is optimistic."),
+            t$setNote("ex", if (fam$name == "cox") sprintf(.("Recalibration in the large re-estimates the baseline risk at the horizon; recalibration also the slope of the published linear predictor; revision re-estimates every coefficient. Sequential tests (each p in the row of the more complex method): revision vs recalibration and slope = 1 by partial likelihood ratio, O/E at the horizon = 1 by a Wald test; the most complex method whose test is significant at α = %s is chosen (✓). Performance of an updated model is measured in the data used to update it, so it is optimistic."), .num(self$options$updAlpha)) else sprintf(.("Recalibration re-estimates the intercept and the slope of the published linear predictor; revision re-estimates every coefficient. Each test compares a method with revision; the closed testing procedure (Vergouwe et al. 2017) keeps the first method, from the original model up, not significantly worse than revision at α = %s (✓). Performance of an updated model is measured in the data used to update it, so it is optimistic."),
                                     .num(self$options$updAlpha)))
         },
 
