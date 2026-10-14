@@ -56,3 +56,49 @@ test_that("saved predictions cover the validation rows too", {
     fit <- glm(type ~ glu + bmi, binomial, d[d$sample == "train", ])
     expect_equal(unname(v[400]), unname(predict(fit, d[400, ], type = "response")), tolerance = 1e-8)
 })
+
+test_that("missing category: saved predictions and the SHAP waterfall use the indicator coding", {
+    d <- pima_stacked()
+    d$bmi[c(3, 10, 20)] <- NA
+    opts <- cpLogisticOptions$new(dep = "type", covs = c("glu", "bmi"), missMethod = "category", shap = TRUE, shapRow = 3)
+    opts <- enable_output(opts, "predRisk")
+    an <- cpLogisticClass$new(options = opts, data = d, datasetId = "d", analysisId = "1", revision = 1)
+    an$init(); an$run()
+    expect_null(an$results$get("problem"))
+    v <- unlist(an$results$predRisk$.__enclos_env__$private$.values[[1]])
+    expect_false(anyNA(v))
+    d$bmiMiss <- as.numeric(is.na(d$bmi))
+    d$bmi[is.na(d$bmi)] <- median(d$bmi, na.rm = TRUE)
+    fit <- glm(type ~ glu + bmi + bmiMiss, binomial, d)
+    expect_equal(unname(v[3]), unname(predict(fit, d[3, ], type = "response")), tolerance = 1e-8)
+    expect_false(is.null(an$results$plots$shapPatient$state))
+})
+
+test_that("a SHAP row with missing predictors is a warning, not a failed analysis", {
+    d <- pima_stacked()
+    d$bmi[3] <- NA
+    r <- cpLogistic(data = d, dep = "type", covs = c("glu", "bmi"), shap = TRUE, shapRow = 3)
+    expect_null(r$get("problem"))
+    expect_match(r$get("shapRow")$content, "Row 3")
+    expect_true(all(is.finite(r$shapTable$asDF$meanAbs)))
+})
+
+test_that("elastic net and multiply imputed models can be exported", {
+    d <- MASS::Pima.tr
+    d$bmi[c(3, 10)] <- NA
+    tmp <- tempfile("export"); dir.create(tmp)
+    for (sm in c("enet", "none")) for (mm in c("cc", "mi")) {
+        opts <- cpLogisticOptions$new(dep = "type", eventLevel = "Yes", covs = c("npreg", "glu", "bmi"),
+                                      selMode = sm, missMethod = mm, miM = 2)
+        ea <- opts$option("exportModel"); ea$value <- TRUE
+        an <- cpLogisticClass$new(options = opts, data = d, datasetId = "d", analysisId = "1", revision = 1)
+        unlockBinding(".getSessionTemp", an)
+        an$.getSessionTemp <- function() tmp
+        an$init(); an$run()
+        expect_null(an$results$get("export"))
+        expect_length(an$results$get("exportModel"), 1)
+    }
+    files <- list.files(tmp, "[.]json$", recursive = TRUE, full.names = TRUE)
+    expect_gt(length(files), 0)
+    for (f in files) expect_equal(jsonlite::fromJSON(f)$format, "clinpred-model")
+})

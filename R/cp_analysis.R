@@ -466,7 +466,9 @@
                     events = if (is.matrix(y)) sum(y[, 2]) else if (fam$name == "binary") sum(y) else NULL,
                     validation = if (is.null(iv)) "none" else iv$method,
                     apparent = as.list(app), corrected = if (!is.null(iv)) as.list(iv$corrected))
-        json <- cp_model_json(spec, beta, fam$name, se = sqrt(pmax(0, diag(fam$vcov(beta)))),
+        # pooled (MI) or no (penalised) covariance: fam$vcov needs a single unpenalised fit
+        V <- private$.vcov(beta)
+        json <- cp_model_json(spec, beta, fam$name, se = if (!is.null(V)) sqrt(pmax(0, diag(V))),
                               version = as.character(utils::packageVersion("clinpred")), development = dev)
         file <- paste0("clinpred_", gsub("[^A-Za-z0-9_.-]", "_", spec$outcome$name), "_", fam$name, ".json")
         self$options$option("exportModel")$perform(function(action) {
@@ -792,7 +794,8 @@
         app <- app %||% private$.fam$metrics(y, lp)
         for (k in t$rowKeys) {
             # apparent calibration-in-the-large is 0 by construction; print it as 0, not as rounding noise
-            a <- if (abs(app[[k]]) < 1e-8) 0 else app[[k]]
+            # isTRUE: a measure can be NA (e.g. a calibration fit that fails)
+            a <- if (isTRUE(abs(app[[k]]) < 1e-8)) 0 else app[[k]]
             v <- list(apparent = a, lower = ci[[k]][1] %||% "", upper = ci[[k]][2] %||% "")
             if (!is.null(iv)) { v$optimism <- iv$optimism[[k]]; v$corrected <- iv$corrected[[k]] }
             t$setRow(rowKey = k, values = v)
@@ -1246,10 +1249,15 @@
         row <- self$options$shapRow
         img <- self$results$plots$shapPatient
         if (row > 0 && is.null(img$state)) {
+            if (!is.null(private$.mh)) data <- cp_miss_category_apply(private$.mh, data)
             nd <- cp_newdata(data, spec)
             rk <- as.character(row)
-            if (!(rk %in% rownames(nd)))
-                .fail("Row ", row, " has missing predictor values (or does not exist), so its prediction cannot be explained.")
+            # a warning, not .fail: a bad row number must not hide every other result
+            if (!(rk %in% rownames(nd))) {
+                .show_warning(self, "shapRow", sprintf(.("Row %d has missing predictor values (or does not exist), so its prediction cannot be explained."), row))
+                img$setVisible(FALSE)
+                return()
+            }
             Xi <- cp_design(spec, nd[rk, , drop = FALSE])
             ph <- cp_shap(beta, spec, Xi, Xbg = X, intercept = fam$intercept)
             labs <- vapply(names(spec$vars), function(v) {
@@ -1283,6 +1291,8 @@
         defs <- private$.outputDefs()
         on <- Filter(function(k) isTRUE(self$options[[k]]), names(defs))
         if (!length(on)) return()
+        # missing category / indicator: the model's predictors are made from the data
+        if (!is.null(private$.mh)) data <- cp_miss_category_apply(private$.mh, data)
         nd <- cp_newdata(data, spec)
         lp <- rep(NA_real_, nrow(data)); names(lp) <- rownames(data)
         lp[rownames(nd)] <- private$.fam$lp(beta, cp_design(spec, nd))

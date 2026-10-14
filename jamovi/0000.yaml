@@ -1,12 +1,12 @@
 ---
 title: Clinical Prediction Models
 name: clinpred
-version: 0.4.4
+version: 0.4.5
 jms: '1.0'
 authors:
   - V. Moreno
 maintainer: V. Moreno <v.moreno@iconcologia.net>
-date: '2026-10-08'
+date: '2026-10-14'
 type: R
 description: >-
   Develop and validate clinical prediction models (TRIPOD+AI) for binary,

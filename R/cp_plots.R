@@ -289,7 +289,8 @@ cp_plot_enet_cv <- function(st, ggtheme) {
         ggplot2::geom_vline(xintercept = log(st$lambda[c(st$imin, st$i1se)]), linetype = "dashed", colour = "grey50") +
         ggplot2::geom_vline(xintercept = log(st$chosen), colour = "#0072B2") +
         ggplot2::geom_text(data = lab, ggplot2::aes(.data$ll, top, label = .data$nz), vjust = -0.3,
-                           size = 0.8 * ggplot2::calc_element("axis.text", .jtheme(ggtheme))$size / ggplot2::.pt %||% 3.5) +
+                           # fallback on the size itself: %||% binds tighter than * and /, so it never applied
+                           size = 0.8 * (ggplot2::calc_element("axis.text", .jtheme(ggtheme))$size %||% 11) / ggplot2::.pt) +
         ggplot2::labs(x = "log(λ)", y = st$ylab, subtitle = "Numbers: non-zero coefficients") +
         .jtheme(ggtheme)
 }

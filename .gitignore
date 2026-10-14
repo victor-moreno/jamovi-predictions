@@ -15,8 +15,10 @@ node_modules
 dist/
 build/
 .jmc-docker.jmo
-# local only, never pushed: development notes and plans (task_plan, findings, progress)
-documents/
+# local only, never pushed: development notes, plans (task_plan, findings, progress)
+# and reviews; the feature reference linked from the README is pushed
+documents/*
+!documents/features.md
 # tutorial: Quarto source, data generator and caches are local only; the
 # rendered site (docs/, GitHub Pages) is pushed
 tutorial/
